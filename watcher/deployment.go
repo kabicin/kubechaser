@@ -59,7 +59,7 @@ func (watcher *Watcher) WatchDeployments(nsName string) {
 				return
 			}
 			if e.Type == watch.Added {
-				rawDeployment, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawDeployment, _ := watcher.ToUnstructuredSync(e.Object)
 				deploy, err := watcher.ParseDeployment(rawDeployment)
 				if err != nil {
 					return
@@ -81,7 +81,7 @@ func (watcher *Watcher) WatchDeployments(nsName string) {
 					log.Println("ADDED deployment " + deployName)
 				}
 			} else if e.Type == watch.Modified {
-				rawDeployment, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawDeployment, _ := watcher.ToUnstructuredSync(e.Object)
 				deploy, err := watcher.ParseDeployment(rawDeployment)
 				if err != nil {
 					return
@@ -101,7 +101,7 @@ func (watcher *Watcher) WatchDeployments(nsName string) {
 
 				}
 			} else if e.Type == watch.Deleted {
-				rawDeployment, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawDeployment, _ := watcher.ToUnstructuredSync(e.Object)
 				deploy, err := watcher.ParseDeployment(rawDeployment)
 				if err != nil {
 					return

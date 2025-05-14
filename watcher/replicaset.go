@@ -59,7 +59,7 @@ func (watcher *Watcher) WatchReplicaSets(nsName string) {
 				return
 			}
 			if e.Type == watch.Added {
-				rawReplicaSet, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawReplicaSet, _ := watcher.ToUnstructuredSync(e.Object)
 				replicaset, err := watcher.ParseReplicaSet(rawReplicaSet)
 				if err != nil {
 					return
@@ -92,7 +92,7 @@ func (watcher *Watcher) WatchReplicaSets(nsName string) {
 					log.Println("ADDED replicaset " + replicasetName)
 				}
 			} else if e.Type == watch.Modified {
-				rawReplicaSet, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawReplicaSet, _ := watcher.ToUnstructuredSync(e.Object)
 				replicaset, err := watcher.ParseReplicaSet(rawReplicaSet)
 				if err != nil {
 					return
@@ -112,7 +112,7 @@ func (watcher *Watcher) WatchReplicaSets(nsName string) {
 
 				}
 			} else if e.Type == watch.Deleted {
-				rawReplicaSet, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawReplicaSet, _ := watcher.ToUnstructuredSync(e.Object)
 				replicaset, err := watcher.ParseReplicaSet(rawReplicaSet)
 				if err != nil {
 					return

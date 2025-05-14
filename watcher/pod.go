@@ -60,7 +60,7 @@ func (watcher *Watcher) WatchPods(nsName string) {
 				return
 			}
 			if e.Type == watch.Added {
-				rawPod, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawPod, _ := watcher.ToUnstructuredSync(e.Object)
 				pod, err := watcher.ParsePod(rawPod)
 				if err != nil {
 					return
@@ -94,7 +94,7 @@ func (watcher *Watcher) WatchPods(nsName string) {
 					log.Println("ADDED pod " + podName)
 				}
 			} else if e.Type == watch.Modified {
-				rawPod, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawPod, _ := watcher.ToUnstructuredSync(e.Object)
 				pod, err := watcher.ParsePod(rawPod)
 				if err != nil {
 					return
@@ -114,7 +114,7 @@ func (watcher *Watcher) WatchPods(nsName string) {
 
 				}
 			} else if e.Type == watch.Deleted {
-				rawPod, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawPod, _ := watcher.ToUnstructuredSync(e.Object)
 				pod, err := watcher.ParsePod(rawPod)
 				if err != nil {
 					return

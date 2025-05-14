@@ -30,7 +30,7 @@ type Watcher struct {
 	PodPoints        *sync.Map
 }
 
-func (watcher *Watcher) ToUnstructuredConcurrent(obj interface{}) (map[string]interface{}, error) {
+func (watcher *Watcher) ToUnstructuredSync(obj interface{}) (map[string]interface{}, error) {
 	watcher.UnstructuredConverterMutex.Lock()
 	u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 	watcher.UnstructuredConverterMutex.Unlock()

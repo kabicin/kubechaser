@@ -54,7 +54,7 @@ func (watcher *Watcher) WatchNamespaces() {
 				return
 			}
 			if e.Type == watch.Added {
-				rawNamespace, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawNamespace, _ := watcher.ToUnstructuredSync(e.Object)
 				ns, err := watcher.ParseNamespace(rawNamespace)
 				if err != nil {
 					return
@@ -78,7 +78,7 @@ func (watcher *Watcher) WatchNamespaces() {
 
 				}
 			} else if e.Type == watch.Deleted {
-				rawNamespace, _ := watcher.ToUnstructuredConcurrent(e.Object)
+				rawNamespace, _ := watcher.ToUnstructuredSync(e.Object)
 				ns, err := watcher.ParseNamespace(rawNamespace)
 				if err != nil {
 					return
