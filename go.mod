@@ -7,7 +7,7 @@ require (
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240506104042-037f3cc74f2a
 	github.com/go-gl/mathgl v1.1.0
-	golang.org/x/image v0.3.0
+	golang.org/x/image v0.18.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
@@ -40,7 +40,7 @@ require (
 	golang.org/x/oauth2 v0.12.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
