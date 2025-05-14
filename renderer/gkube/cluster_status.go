@@ -1,5 +1,7 @@
 package gkube
 
+type GNamespaceObjectFrameStatus struct{}
+
 type GDeploymentStatus struct {
 	ReadyReplicas int32
 	Replicas      int32

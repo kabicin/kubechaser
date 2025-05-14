@@ -29,7 +29,15 @@ func (gd *GNamespaceObjectFrame) Create(parent *GCluster, name string, namespace
 	gd.parent = parent
 
 	gd.object = &scene.SceneObject{}
-	gd.object.OnClickColor = mgl.Vec3{0, 1, 1}
+	// color := mgl.Vec3{0, 1, 0}
+	onClickColor := mgl.Vec3{0, 1, 1}
+	gd.object.OnClickColor = onClickColor
+
+	// objFrame := &entity.ObjectFrame{}
+	// objFrame.Init(gd.font, "")
+	// t := &camera.Transform3D{}
+	// t.Init(&mgl.Vec3{0, 0, 0}, &mgl.Vec3{1, 1, 1}, nil)
+	// gd.object.Init(objFrame, t, gd.shaderID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 
 	gd.font = font
 	gd.shaderID = shaderID
@@ -50,14 +58,21 @@ func (gd *GNamespaceObjectFrame) Delete() {
 
 }
 
-func (gd *GNamespaceObjectFrame) SetFrame(center, bounds mgl.Vec3) {
+func (gd *GNamespaceObjectFrame) SetObjectFrame(center, bounds mgl.Vec3, onFinishCallback func()) {
+	defer onFinishCallback()
 	objFrame := &entity.ObjectFrame{}
-	objFrame.SetFrame(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
+	objFrame.SetObjectFrame(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
 	objFrame.Init(gd.font, "")
 	t := &camera.Transform3D{}
 	t.Init(&center, &mgl.Vec3{1, 1, 1}, nil)
 	gd.object.Init(objFrame, t, gd.shaderID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
+}
+
+func (gd *GNamespaceObjectFrame) UpdateObjectFrame(center, bounds mgl.Vec3, onFinishCallback func()) {
+	defer onFinishCallback()
+	gd.object.Object.(*entity.ObjectFrame).SetObjectFrame(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
+	gd.object.Transform.SetTranslate(&center)
 }
 
 func (gd *GNamespaceObjectFrame) GetCurrentOffset() *mgl.Vec3 {

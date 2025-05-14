@@ -51,6 +51,10 @@ func (s *Scene) Click(r *camera.Ray) {
 	minNormSquared := float32(math.MaxFloat32)
 	minObjectIndex := -1
 	for i, so := range s.Objects {
+		if !so.RenderReady {
+			// don't check collision if the SceneObject is not ready for rendering
+			return
+		}
 		// model := s.MainCamera.GetModel(so.Transform)
 		t, intersects := so.Object.Intersect(s.MainCamera, so.Transform, r, debug)
 		rt := r.Eye.Add(r.Direction.Mul(float32(t)))
@@ -70,13 +74,22 @@ func (s *Scene) Click(r *camera.Ray) {
 
 func (s *Scene) Draw(deltaT float32) {
 	for _, object := range s.Objects {
+		if !object.RenderReady {
+			// don't preset shaders if the SceneObject is not ready for rendering
+			continue
+		}
+		// If object is an active ObjectFrame update it
+		// if object.IsObjectFrame {
+
+		// }
+
 		if object.ShaderProgramID == nil {
 			log.Println("Object " + object.Object.GetName() + " could not be drawn because there is no shader..")
-			return
+			continue
 		}
 		if object.CachedShaderProgramIndex < 0 || object.CachedShaderProgramIndex >= len(s.Shaders) {
 			log.Println("Object " + object.Object.GetName() + " could not be drawn because the shader is OOB..")
-			return
+			continue
 		}
 		// handle lit objects
 		var lightPos, cameraPos *mgl.Vec3
@@ -98,6 +111,10 @@ func (s *Scene) Draw(deltaT float32) {
 	}
 	// delay text render after all objects drawn
 	for _, obj := range s.Objects {
+		if !obj.RenderReady {
+			// don't process if the SceneObject is not ready for rendering
+			continue
+		}
 		cameraRay := &camera.Ray{}
 		cameraRay.Init(s.MainCamera.EyeAnimator.X_init, &s.MainCamera.Front)
 		model := s.MainCamera.GetModel(obj.Transform)

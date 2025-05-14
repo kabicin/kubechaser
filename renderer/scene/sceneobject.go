@@ -14,12 +14,17 @@ import (
 )
 
 type SceneObject struct {
+	// Object properties
 	Object              entity.Entity
 	Transform           *camera.Transform3D
 	DeleteColorAnimator camera.ColorAnimator
-	IsDeleting          bool
-	IsDeleteReady       bool
 
+	// Scene state
+	RenderReady   bool
+	IsDeleting    bool
+	IsDeleteReady bool
+
+	// Shader
 	ShaderProgramID          *uint32
 	CachedShaderProgramIndex int
 	IgnoreLights             bool
@@ -32,9 +37,9 @@ type SceneObject struct {
 	OnClick      bool
 	Wireframe    bool
 
-	Spinning bool
-	Opacity  float32
-
+	// Animation attribs
+	Spinning            bool
+	Opacity             float32
 	LastTime            *uint64
 	AccelerateForward   bool
 	AccelerateStart     float64
@@ -71,6 +76,12 @@ func (so *SceneObject) Init(ent entity.Entity, transform *camera.Transform3D, sh
 	so.OnClickColor = onClickColor
 	so.DeleteColorAnimator = camera.InitColorAnimator(&so.Color, &mgl.Vec3{1, 0, 0}, 4)
 
+	defer func() {
+		// RenderReady informs the Scene that this so.Object is ready for drawing.
+		// It is possible that Init() is not called until a later point.
+		// For example, creation of GObjectNamespaceObjectFrame yields until some Pods and Deployments are up before wrapping all the components.
+		so.RenderReady = true
+	}()
 }
 
 func (so *SceneObject) SetLightObject(isLightObject bool) {
@@ -99,6 +110,10 @@ func (so *SceneObject) NotifyOnClickHandlers() {
 }
 
 func (s *SceneObject) Draw(deltaT float32, transform *camera.Transform3D, program *shader.Program, cam *camera.Camera, lightPos *mgl.Vec3, cameraPos *mgl.Vec3) {
+	if !s.RenderReady {
+		// Exit if the SceneObject is not ready for drawing
+		return
+	}
 	gl.UseProgram(program.ID)
 	cam.Update(deltaT)
 	// update transform

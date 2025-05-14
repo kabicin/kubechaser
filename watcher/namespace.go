@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/kabicin/kubechaser/renderer/gkube"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -69,6 +70,7 @@ func (watcher *Watcher) WatchNamespaces() {
 					}
 					// add namespace point
 					watcher.NamespacePoints.Store(nsName, ParseNamespacePoint(ns))
+					watcher.MainCluster.PushGObjectEvent(gkube.GCREATE, gkube.GNAMESPACEOBJECTFRAME, nsName, ns.Namespace, gkube.GNONE, gkube.GSETTING_NONE, nil, &gkube.GNamespaceObjectFrameStatus{}, -1, rawNamespace)
 					log.Println("ADDED namespace " + nsName)
 
 					// Add watchers for this namespace

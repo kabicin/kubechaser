@@ -28,7 +28,9 @@ func (gd *GPod) Create(parent *GCluster, name string, namespace string, offset *
 	color := mgl.Vec3{0.19607843137, 0.42352941176, 0.89803921568}
 	onClickColor := mgl.Vec3{0.19607843137, 0.42352941176, 0.89803921568}
 
-	gpod := &entity.WavefrontOBJ{FileName: "pod.obj"}
+	// gpod := &entity.WavefrontOBJ{FileName: "pod.obj"}
+	// gpod.Init(font, "")
+	gpod := &entity.Heptagon{}
 	gpod.Init(font, "")
 
 	// gpod := &entity.TexturedCube{}

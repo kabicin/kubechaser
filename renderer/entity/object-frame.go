@@ -43,7 +43,7 @@ func (entity *ObjectFrame) createFragment(font *v41.Font, trans, scale, rot *mgl
 	c1bb := BuildAABB(bb1)
 	entity.objects = append(entity.objects, &TEntity{object: c1, transform: c1t, BoundingBox: c1bb})
 }
-func (entity *ObjectFrame) SetFrame(width, height, depth, barLength float32) {
+func (entity *ObjectFrame) SetObjectFrame(width, height, depth, barLength float32) {
 	entity.width = width
 	entity.height = height
 	entity.depth = depth

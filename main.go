@@ -112,14 +112,14 @@ func createMainCluster(ctrl *controller.Controller, font *v41.Font) *gkube.GClus
 	crosshairquad.Init(font, "")
 	crosshair.Init(crosshairquad, camera.CreateTransform3D(&mgl.Vec3{0, 0, 0}, &mgl.Vec3{5, 5, 0}, nil), crosshairProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 
-	gui := &scene.SceneObject{}
-	guiQuad := &entity.Quad{}
-	guiQuad.Init(font, "")
-	gui.Init(guiQuad, camera.CreateTransform3D(&mgl.Vec3{0, -windowHeight / 3, 0}, &mgl.Vec3{windowWidth, windowHeight / 2, 0}, nil), guiProgram.ID, mgl.Vec3{0, 0, 111}, mgl.Vec3{1, 1, 1})
+	// gui := &scene.SceneObject{}
+	// guiQuad := &entity.Quad{}
+	// guiQuad.Init(font, "")
+	// gui.Init(guiQuad, camera.CreateTransform3D(&mgl.Vec3{0, -windowHeight / 3, 0}, &mgl.Vec3{windowWidth, windowHeight / 2, 0}, nil), guiProgram.ID, mgl.Vec3{0, 0, 111}, mgl.Vec3{1, 1, 1})
 
 	frame := &scene.SceneObject{}
 	framebox := &entity.ObjectFrame{}
-	framebox.SetFrame(10, 20, 4, 1)
+	framebox.SetObjectFrame(10, 20, 4, 1)
 	framebox.Init(font, "")
 	frame.Init(framebox, camera.CreateTransform3D(&mgl.Vec3{3, 5, 0}, &mgl.Vec3{1, 1, 1}, nil), mvpProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 
@@ -127,8 +127,8 @@ func createMainCluster(ctrl *controller.Controller, font *v41.Font) *gkube.GClus
 	gc.Create(ctrl, cam, font, []*shader.Program{texturedCubeProgram, mvpProgram, crosshairProgram, mvpProgramStripe, guiProgram})
 	// gc.GetMainScene().AddObject(sceneGround)
 	gc.GetMainScene().AddObject(sceneCube)
-	gc.GetMainScene().AddObject(crosshair)
-	gc.GetMainScene().AddObject(gui)
+	// gc.GetMainScene().AddObject(crosshair)
+	// gc.GetMainScene().AddObject(gui)
 
 	watcher := watcher.Watcher{}
 	watcher.Init(gc)
@@ -183,15 +183,6 @@ func main() {
 				}
 			}
 		}
-
-		// now := float64(glfw.GetTimerValue())
-		// x := math.Sin(now/20000000) * 10.0
-		// z := math.Cos(now/20000000) * 5.0
-		// mainWindow.Scenes[0].Objects[0].Transform.Translate = &mgl.Vec3{float32(x), 5, float32(z)}
-		// mainWindow.Scenes[0].Objects[3].Transform.Translate = &mgl.Vec3{-float32(x), 5, -float32(z)}
-
-		// mainWindow.Scenes[0].Objects[36].Transform.Rotate = &mgl.Vec3{0, mgl.DegToRad(float32((int(now / 1000000)) % 360)), 0}
-
 		mainWindow.Draw(float32(timer.GetElapsedTime()))
 		glfwWindow.SwapBuffers()
 		glfw.PollEvents()

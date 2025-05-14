@@ -53,14 +53,21 @@ func (gd *GClusterObjectFrame) GetCurrentOffset() *mgl.Vec3 {
 	return gd.currentOffset
 }
 
-func (gd *GClusterObjectFrame) SetFrame(center, bounds mgl.Vec3) {
+func (gd *GClusterObjectFrame) SetObjectFrame(center, bounds mgl.Vec3, onFinishCallback func()) {
+	defer onFinishCallback()
 	objFrame := &entity.ObjectFrame{}
-	objFrame.SetFrame(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
+	objFrame.SetObjectFrame(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
 	objFrame.Init(gd.font, "")
 	t := &camera.Transform3D{}
 	t.Init(&center, &mgl.Vec3{1, 1, 1}, nil)
 	gd.object.Init(objFrame, t, gd.shaderID, mgl.Vec3{0, 0, 0}, mgl.Vec3{111, 111, 111})
 	gd.object.AddOnClickHandler(gd.OnClick)
+}
+
+func (gd *GClusterObjectFrame) UpdateObjectFrame(center, bounds mgl.Vec3, onFinishCallback func()) {
+	defer onFinishCallback()
+	gd.object.Object.(*entity.ObjectFrame).SetObjectFrame(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
+	gd.object.Transform.SetTranslate(&center)
 }
 
 func (gd *GClusterObjectFrame) GetObject() *scene.SceneObject {

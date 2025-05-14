@@ -79,7 +79,7 @@ func DuplicateTransform3D(transform3D *Transform3D) *Transform3D {
 	}
 }
 
-func (t *Transform3D) Init(translate *mgl.Vec3, scale *mgl.Vec3, rotate *mgl.Vec3) {
+func (t *Transform3D) SetTranslate(translate *mgl.Vec3) {
 	if translate != nil {
 		t.PositionAnimator.X_final = translate
 		if t.PositionAnimator.X_init == nil {
@@ -88,21 +88,33 @@ func (t *Transform3D) Init(translate *mgl.Vec3, scale *mgl.Vec3, rotate *mgl.Vec
 	} else {
 		t.PositionAnimator.X_final = &mgl.Vec3{0, 0, 0}
 	}
+	t.PositionAnimator.AnimationDuration = 3
+	t.PositionAnimator.InMotion = false
+	t.PositionAnimator.A = mgl.Vec3{0, 0, 0}
+	t.PositionAnimator.V_init = mgl.Vec3{0, 0, 0}
+}
+
+func (t *Transform3D) SetScale(scale *mgl.Vec3) {
 	if scale != nil {
 		t.Scale = scale
 	} else {
 		t.Scale = &mgl.Vec3{0, 0, 0}
 	}
+}
+
+func (t *Transform3D) SetRotate(rotate *mgl.Vec3) {
 	if rotate != nil {
 		t.Rotate = rotate
 	} else {
 		t.Rotate = &mgl.Vec3{0, 0, 0}
 	}
 	t.IPRotate = &mgl.Vec3{0, 0, 0}
-	t.PositionAnimator.AnimationDuration = 3
-	t.PositionAnimator.InMotion = false
-	t.PositionAnimator.A = mgl.Vec3{0, 0, 0}
-	t.PositionAnimator.V_init = mgl.Vec3{0, 0, 0}
+}
+
+func (t *Transform3D) Init(translate *mgl.Vec3, scale *mgl.Vec3, rotate *mgl.Vec3) {
+	t.SetTranslate(translate)
+	t.SetScale(scale)
+	t.SetRotate(rotate)
 }
 
 func (c *Camera) SetCameraFront(front mgl.Vec3) {

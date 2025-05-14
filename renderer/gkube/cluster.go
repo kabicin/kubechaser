@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand/v2"
 	"reflect"
+	"slices"
 	"sync"
 
 	v41 "github.com/4ydx/gltext/v4.1"
@@ -170,7 +171,8 @@ type GObject interface {
 
 type GObjectFrame interface {
 	GObject
-	SetFrame(center, bounds mgl.Vec3)
+	SetObjectFrame(center, bounds mgl.Vec3, onFinishCallback func())
+	UpdateObjectFrame(center, bounds mgl.Vec3, onFinishCallback func())
 }
 
 type GCluster struct {
@@ -263,6 +265,15 @@ func getGResourceName(resource GResource) string {
 		return "GNAMESPACEOBJECTFRAME"
 	}
 	return "N/A"
+}
+
+var OBJECT_FRAMES = []GResource{
+	GCLUSTEROBJECTFRAME,
+	GNAMESPACEOBJECTFRAME,
+}
+
+func isGResourceObjectFrame(gob GObject) bool {
+	return slices.Contains(OBJECT_FRAMES, gob.GetResource())
 }
 
 func (gc *GCluster) GetMainScene() *scene.Scene {
@@ -397,32 +408,30 @@ func (gc *GCluster) Create(ctrl *controller.Controller, cam *camera.Camera, font
 	gc.namespaceSlots = []string{}
 
 	// create shader mapping
-	// gc.shaders = make(map[GResource]*shader.Program)
 	gc.shaders = &sync.Map{}
 
-	// TODO: fix this
-	gc.shaders.Store(GDEPLOYMENT, shaderPrograms[1])
-	gc.shaders.Store(GSTATEFULSET, shaderPrograms[1])
-	gc.shaders.Store(GREPLICASET, shaderPrograms[1])
-	gc.shaders.Store(GWIRE, shaderPrograms[1])
-	gc.shaders.Store(GPOD, shaderPrograms[1])
-	gc.shaders.Store(GSERVICE, shaderPrograms[1])
-	gc.shaders.Store(GINGRESS, shaderPrograms[1])
-	gc.shaders.Store(GSERVICEACCOUNT, shaderPrograms[1])
-	gc.shaders.Store(GROLE, shaderPrograms[1])
-	gc.shaders.Store(GROLEBINDING, shaderPrograms[1])
-	gc.shaders.Store(GCLUSTERROLE, shaderPrograms[1])
-	gc.shaders.Store(GCLUSTERROLEBINDING, shaderPrograms[1])
-	gc.shaders.Store(GJOB, shaderPrograms[1])
-	gc.shaders.Store(GCRONJOB, shaderPrograms[1])
-	gc.shaders.Store(GDAEMONSET, shaderPrograms[1])
-	gc.shaders.Store(GSECRET, shaderPrograms[1])
-	gc.shaders.Store(GCONFIGMAP, shaderPrograms[1])
-	gc.shaders.Store(GPERSISTENTVOLUME, shaderPrograms[1])
-	gc.shaders.Store(GPERSISTENTVOLUMECLAIM, shaderPrograms[1])
-
-	gc.shaders.Store(GCLUSTEROBJECTFRAME, shaderPrograms[1])
-	gc.shaders.Store(GNAMESPACEOBJECTFRAME, shaderPrograms[1])
+	defaultShaderProgram := shaderPrograms[1]
+	gc.shaders.Store(GDEPLOYMENT, defaultShaderProgram)
+	gc.shaders.Store(GSTATEFULSET, defaultShaderProgram)
+	gc.shaders.Store(GREPLICASET, defaultShaderProgram)
+	gc.shaders.Store(GWIRE, defaultShaderProgram)
+	gc.shaders.Store(GPOD, defaultShaderProgram)
+	gc.shaders.Store(GSERVICE, defaultShaderProgram)
+	gc.shaders.Store(GINGRESS, defaultShaderProgram)
+	gc.shaders.Store(GSERVICEACCOUNT, defaultShaderProgram)
+	gc.shaders.Store(GROLE, defaultShaderProgram)
+	gc.shaders.Store(GROLEBINDING, defaultShaderProgram)
+	gc.shaders.Store(GCLUSTERROLE, defaultShaderProgram)
+	gc.shaders.Store(GCLUSTERROLEBINDING, defaultShaderProgram)
+	gc.shaders.Store(GJOB, defaultShaderProgram)
+	gc.shaders.Store(GCRONJOB, defaultShaderProgram)
+	gc.shaders.Store(GDAEMONSET, defaultShaderProgram)
+	gc.shaders.Store(GSECRET, defaultShaderProgram)
+	gc.shaders.Store(GCONFIGMAP, defaultShaderProgram)
+	gc.shaders.Store(GPERSISTENTVOLUME, defaultShaderProgram)
+	gc.shaders.Store(GPERSISTENTVOLUMECLAIM, defaultShaderProgram)
+	gc.shaders.Store(GCLUSTEROBJECTFRAME, defaultShaderProgram)
+	gc.shaders.Store(GNAMESPACEOBJECTFRAME, defaultShaderProgram)
 
 	ctrl.AddClickHandler(gc.mainScene.Click)
 }
@@ -463,8 +472,6 @@ const (
 func randomizePointInSpace() *mgl.Vec3 {
 	return &mgl.Vec3{rand.Float32()*XDIST + -XDIST/2, rand.Float32()*YDIST + -YDIST/2, rand.Float32()*ZDIST + -ZDIST/2}
 }
-
-// binary hash tree
 
 func KubeStateToString(kubeState map[string]interface{}) string {
 	out := ""
@@ -644,29 +651,33 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 		gc.gobjects = append(gc.gobjects, gd)
 	}
 	if resource == GCLUSTEROBJECTFRAME {
-		gd := &GClusterObjectFrame{}
-		gd.Create(gc, name, namespace, randomDisplacement, gc.font, shader.ID, settings, true)
+		gof := &GClusterObjectFrame{}
+		gof.Create(gc, name, namespace, randomDisplacement, gc.font, shader.ID, settings, true)
 		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 10, 10}, func(obj GObject) bool {
-			return false // get every object
+			return false // skip filter: return false to skip no objects (gets all GObjects)
 		})
 		if hasPoints {
-			gd.SetFrame(center, bounds)
+			gof.SetObjectFrame(center, bounds, func() {
+				gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
+			})
 		}
-		gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
-		gc.gobjects = append(gc.gobjects, gd)
+		gc.gobjects = append(gc.gobjects, gof)
+		gc.gobjectFrames = append(gc.gobjectFrames, gof) // a handle to the object frame is stored for polling updates
 	}
 	if resource == GNAMESPACEOBJECTFRAME {
-		gd := &GNamespaceObjectFrame{}
-		gd.Create(gc, name, namespace, randomDisplacement, gc.font, shader.ID, settings, true)
+		gof := &GNamespaceObjectFrame{}
+		gof.Create(gc, name, namespace, randomDisplacement, gc.font, shader.ID, settings, true)
 		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 10, 10}, func(obj GObject) bool {
 			_, ns := obj.GetIdentifier()
-			return ns != namespace // skip if namespace is not the same
+			return ns != namespace // skip filter: don't consider GObjects where namespace is not the same
 		})
 		if hasPoints {
-			gd.SetFrame(center, bounds)
+			gof.SetObjectFrame(center, bounds, func() {
+				gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
+			})
 		}
-		gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
-		gc.gobjects = append(gc.gobjects, gd)
+		gc.gobjects = append(gc.gobjects, gof)
+		gc.gobjectFrames = append(gc.gobjectFrames, gof) // a handle to the object frame is stored for polling updates
 	}
 }
 
