@@ -120,7 +120,6 @@ func (s *SceneObject) Draw(deltaT float32, transform *camera.Transform3D, progra
 
 	if s.Spinning {
 		now := float64(glfw.GetTimerValue())
-		// transform.IPRotate = &mgl.Vec3{0, mgl.DegToRad(float32((int(now / 300000)) % 360)), 0}
 		if s.AccelerateForward {
 			if s.Accelerate > s.AccelerateEnd {
 				s.Accelerate -= 1

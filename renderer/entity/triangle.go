@@ -69,18 +69,18 @@ func (entity *Triangle) Intersect(cam *camera.Camera, camTransform *camera.Trans
 		log.Printf("Check %s intersect\n", entity.GetName())
 	}
 
-	// localToWorld := cam.GetModel(camTransform)
-	// v1 := entity.vertices[0]
-	// v2 := entity.vertices[1]
-	// v3 := entity.vertices[2]
+	localToWorld := cam.GetModel(camTransform)
+	v1 := entity.vertices[0]
+	v2 := entity.vertices[1]
+	v3 := entity.vertices[2]
 
-	// pv1 := localToWorld.Mul4x1(v1.Vec4(1)).Vec3()
-	// pv2 := localToWorld.Mul4x1(v2.Vec4(1)).Vec3()
-	// pv3 := localToWorld.Mul4x1(v3.Vec4(1)).Vec3()
+	pv1 := localToWorld.Mul4x1(v1.Vec4(1)).Vec3()
+	pv2 := localToWorld.Mul4x1(v2.Vec4(1)).Vec3()
+	pv3 := localToWorld.Mul4x1(v3.Vec4(1)).Vec3()
 
-	// if tempT, n, intersects := utils.RayPlane(pv1, pv2, pv3, ray); intersects {
-	// 	p := ray.Eye.Add(ray.Direction.Mul(float32(tempT)))
-	// 	return utils.RayTriangle(pv1, pv2, pv3, p, *n, tempT)
-	// }
+	if tempT, n, intersects := utils.RayPlane(pv1, pv2, pv3, ray); intersects {
+		p := ray.Eye.Add(ray.Direction.Mul(float32(tempT)))
+		return utils.RayTriangle(pv1, pv2, pv3, p, *n, tempT)
+	}
 	return 0, false
 }

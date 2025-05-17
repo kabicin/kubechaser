@@ -82,7 +82,6 @@ func createMainCluster(ctrl *controller.Controller, font *v41.Font) *gkube.GClus
 	texturedCubeProgram := shader.CreateAndLoadShaders("textured-cube")
 	crosshairProgram := shader.CreateAndLoadShaders("crosshair")
 	mvpProgram := shader.CreateAndLoadShaders("material")
-	mvpProgramStripe := shader.CreateAndLoadShaders("material-stripe")
 	guiProgram := shader.CreateAndLoadShaders("gui")
 
 	// ground
@@ -124,10 +123,10 @@ func createMainCluster(ctrl *controller.Controller, font *v41.Font) *gkube.GClus
 	frame.Init(framebox, camera.CreateTransform3D(&mgl.Vec3{3, 5, 0}, &mgl.Vec3{1, 1, 1}, nil), mvpProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 
 	gc := &gkube.GCluster{}
-	gc.Create(ctrl, cam, font, []*shader.Program{texturedCubeProgram, mvpProgram, crosshairProgram, mvpProgramStripe, guiProgram})
+	gc.Create(ctrl, cam, font, []*shader.Program{texturedCubeProgram, mvpProgram, crosshairProgram, guiProgram})
 	// gc.GetMainScene().AddObject(sceneGround)
 	gc.GetMainScene().AddObject(sceneCube)
-	// gc.GetMainScene().AddObject(crosshair)
+	gc.GetMainScene().AddObject(crosshair)
 	// gc.GetMainScene().AddObject(gui)
 
 	watcher := watcher.Watcher{}
@@ -152,7 +151,7 @@ func main() {
 	timer.Init()
 
 	// init fonts
-	font := fonts.LoadFont("assets/fonts/RedHatDisplay.ttf")
+	font := fonts.LoadFont("assets/fonts/Alata-Regular.ttf")
 	width, height := glfwWindow.GetSize()
 	font.ResizeWindow(float32(width), float32(height))
 	// text := fonts.CreateText("KubeChaser", font, &mgl.Vec3{0.5, 0.6, 0.3}, 0.6)
@@ -161,6 +160,8 @@ func main() {
 	cluster := createMainCluster(ctrl, font)
 	// mainWindow.AddCluster(cluster)
 	mainWindow.AddScenes([]*scene.Scene{cluster.GetMainScene()})
+
+	debug := false
 
 	i := 0
 	gl.ClearColor(0, 0, 0, 0)
@@ -173,15 +174,16 @@ func main() {
 		}
 
 		if i%10 == 0 {
-			event, found := cluster.PopGObjectEvent()
-			if found {
-				if event.GetType() == gkube.GCREATE {
+			event, hasNewEvent := cluster.PopGObjectEvent()
+			if hasNewEvent {
+				switch event.GetType() {
+				case gkube.GCREATE:
 					cluster.AddGObject(event)
-				}
-				if event.GetType() == gkube.GDELETE {
+				case gkube.GDELETE:
 					cluster.RemoveGObject(event)
 				}
 			}
+			cluster.UpdateGObjectFrames(debug)
 		}
 		mainWindow.Draw(float32(timer.GetElapsedTime()))
 		glfwWindow.SwapBuffers()

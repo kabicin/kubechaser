@@ -163,6 +163,7 @@ func LoadTrianglesFromOBJ(filePath string) ([]*Tri, error) {
 }
 
 func LoadNTrianglesFromOBJ(filePath string) ([]*NTri, error) {
+	debug := false
 	triangles := make([]*NTri, 0)
 
 	file, err := os.Open(filePath)
@@ -185,7 +186,9 @@ func LoadNTrianglesFromOBJ(filePath string) ([]*NTri, error) {
 	validVts := make([]bool, 0)
 
 	for s.Scan() {
-		fmt.Printf("line: %s\n", line)
+		if debug {
+			fmt.Printf("line: %s\n", line)
+		}
 		line = strings.TrimSpace(s.Text())
 		// Check for vertices 'v <x>,<y>,<z>'
 		if strings.HasPrefix(line, "v ") {
@@ -252,7 +255,9 @@ func LoadNTrianglesFromOBJ(filePath string) ([]*NTri, error) {
 
 				vnsIndex, _ := strconv.ParseInt(faceArr[2], 10, 64)
 				vnsIndex -= 1 // offset OBJ's 1-based index
-				fmt.Printf("arr size: %d and getting index %d\n", len(vns), vnsIndex)
+				if debug {
+					fmt.Printf("arr size: %d and getting index %d\n", len(vns), vnsIndex)
+				}
 
 				if seenVertices == 1 {
 					lastLastVertex = *vs[vsIndex]

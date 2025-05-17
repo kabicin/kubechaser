@@ -13,6 +13,7 @@ import (
 	mgl "github.com/go-gl/mathgl/mgl32"
 	"github.com/kabicin/kubechaser/renderer/camera"
 	"github.com/kabicin/kubechaser/renderer/controller"
+	"github.com/kabicin/kubechaser/renderer/logg"
 	"github.com/kabicin/kubechaser/renderer/scene"
 	"github.com/kabicin/kubechaser/renderer/shader"
 	"github.com/kabicin/kubechaser/renderer/utils"
@@ -171,8 +172,8 @@ type GObject interface {
 
 type GObjectFrame interface {
 	GObject
-	SetObjectFrame(center, bounds mgl.Vec3, onFinishCallback func())
-	UpdateObjectFrame(center, bounds mgl.Vec3, onFinishCallback func())
+	SetObjectFrame(center, bounds mgl.Vec3, onPostInitCallback func())
+	UpdateObjectFrame(center, bounds mgl.Vec3, onPostInitCallback func())
 }
 
 type GCluster struct {
@@ -487,6 +488,34 @@ func KubeStateToString(kubeState map[string]interface{}) string {
 	return out
 }
 
+func (gc *GCluster) UpdateGObjectFrames(debug bool) {
+	gc.gobjectMutex.Lock()
+	defer gc.gobjectMutex.Unlock()
+
+	for _, gobjectFrame := range gc.gobjectFrames {
+		gobjectFrameNamespace, _ := gobjectFrame.GetIdentifier() // identifier for ObjectFrame uses name attrib as the namespace
+		if gobjectFrame.GetResource() == GNAMESPACEOBJECTFRAME && gobjectFrameNamespace == "kube-system" {
+			hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 10, 10}, func(obj GObject) bool {
+				_, ns := obj.GetIdentifier()
+				return ns != gobjectFrameNamespace // skip filter: don't consider GObjects where namespace is not the same
+			})
+			if hasPoints {
+				if debug {
+					fmt.Printf("gobjectframe has points: \n")
+					logg.PrintVec3(center)
+					logg.PrintVec3(bounds)
+				}
+				gobjectFrame.UpdateObjectFrame(center, bounds, func() {
+					gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
+					if debug {
+						fmt.Println("gobjectframe: shaders updated")
+					}
+				})
+			}
+		}
+	}
+}
+
 func (gc *GCluster) AddGObject(event GObjectEvent) {
 	gc.gobjectMutex.Lock()
 	defer gc.gobjectMutex.Unlock()
@@ -666,7 +695,7 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 	}
 	if resource == GNAMESPACEOBJECTFRAME {
 		gof := &GNamespaceObjectFrame{}
-		gof.Create(gc, name, namespace, randomDisplacement, gc.font, shader.ID, settings, true)
+		gof.Create(gc, name, namespace, &mgl.Vec3{0, 0, 0}, gc.font, shader.ID, settings, false)
 		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 10, 10}, func(obj GObject) bool {
 			_, ns := obj.GetIdentifier()
 			return ns != namespace // skip filter: don't consider GObjects where namespace is not the same

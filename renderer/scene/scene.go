@@ -53,7 +53,7 @@ func (s *Scene) Click(r *camera.Ray) {
 	for i, so := range s.Objects {
 		if !so.RenderReady {
 			// don't check collision if the SceneObject is not ready for rendering
-			return
+			continue
 		}
 		// model := s.MainCamera.GetModel(so.Transform)
 		t, intersects := so.Object.Intersect(s.MainCamera, so.Transform, r, debug)
@@ -78,11 +78,6 @@ func (s *Scene) Draw(deltaT float32) {
 			// don't preset shaders if the SceneObject is not ready for rendering
 			continue
 		}
-		// If object is an active ObjectFrame update it
-		// if object.IsObjectFrame {
-
-		// }
-
 		if object.ShaderProgramID == nil {
 			log.Println("Object " + object.Object.GetName() + " could not be drawn because there is no shader..")
 			continue
