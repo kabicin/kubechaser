@@ -63,9 +63,9 @@ func DuplicatePositionAnimator(animator Animator) Animator {
 	}
 }
 
-func CreateTransform3D(translate, scale, rotate *mgl.Vec3) *Transform3D {
+func CreateTransform3D(translate, scale, rotate *mgl.Vec3, animate bool) *Transform3D {
 	t3 := &Transform3D{}
-	t3.Init(translate, scale, rotate)
+	t3.Init(translate, scale, rotate, animate)
 	return t3
 }
 
@@ -79,11 +79,13 @@ func DuplicateTransform3D(transform3D *Transform3D) *Transform3D {
 	}
 }
 
-func (t *Transform3D) SetTranslate(translate *mgl.Vec3) {
+func (t *Transform3D) SetTranslate(translate *mgl.Vec3, animate bool) {
 	if translate != nil {
 		t.PositionAnimator.X_final = translate
 		if t.PositionAnimator.X_init == nil {
 			t.PositionAnimator.X_init = &mgl.Vec3{t.PositionAnimator.X_final.X(), t.PositionAnimator.X_final.Y(), t.PositionAnimator.X_final.Z()}
+		} else if !animate {
+			t.PositionAnimator.X_init = translate
 		}
 	} else {
 		t.PositionAnimator.X_final = &mgl.Vec3{0, 0, 0}
@@ -111,8 +113,8 @@ func (t *Transform3D) SetRotate(rotate *mgl.Vec3) {
 	t.IPRotate = &mgl.Vec3{0, 0, 0}
 }
 
-func (t *Transform3D) Init(translate *mgl.Vec3, scale *mgl.Vec3, rotate *mgl.Vec3) {
-	t.SetTranslate(translate)
+func (t *Transform3D) Init(translate *mgl.Vec3, scale *mgl.Vec3, rotate *mgl.Vec3, animate bool) {
+	t.SetTranslate(translate, animate)
 	t.SetScale(scale)
 	t.SetRotate(rotate)
 }

@@ -46,7 +46,7 @@ func (gd *GStatefulSet) Create(parent *GCluster, name string, namespace string, 
 	gstatefulsetCube := &entity.Cube{}
 	gstatefulsetCube.Init(font, fmt.Sprintf("%s", name))
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{3, 3, 3}, nil)
+	t.Init(offset, &mgl.Vec3{3, 3, 3}, nil, true)
 	gd.object.Init(gstatefulsetCube, t, shaderID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
 

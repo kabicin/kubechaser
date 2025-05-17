@@ -46,7 +46,7 @@ func (gd *GPersistentVolume) Create(parent *GCluster, name string, namespace str
 	gpod := &entity.HeptagonalPrism{}
 	gpod.Init(font, fmt.Sprintf("%s", name))
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{3, 3, 3}, nil)
+	t.Init(offset, &mgl.Vec3{3, 3, 3}, nil, true)
 	gd.object.Init(gpod, t, shaderID, mgl.Vec3{float32(218) / 255, float32(227) / 255, float32(227) / 255}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
 

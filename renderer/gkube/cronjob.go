@@ -39,7 +39,7 @@ func (gd *GCronJob) Create(parent *GCluster, name string, namespace string, offs
 	gdeploymentCube.Init(font, fmt.Sprintf("%s", name))
 	t := &camera.Transform3D{}
 	tOffset := mgl.Vec3{offset.X(), offset.Y(), offset.Z()}
-	t.Init(&tOffset, &mgl.Vec3{3, 3, 3}, nil)
+	t.Init(&tOffset, &mgl.Vec3{3, 3, 3}, nil, true)
 	gd.object.Init(gdeploymentCube, t, shaderID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 
 	gd.object.AddOnClickHandler(gd.OnClick)

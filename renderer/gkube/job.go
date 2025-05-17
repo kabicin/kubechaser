@@ -46,7 +46,7 @@ func (gd *GJob) Create(parent *GCluster, name string, namespace string, offset *
 	gdeploymentCube := &entity.Cube{}
 	gdeploymentCube.Init(font, fmt.Sprintf("%s", name))
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{3, 3, 3}, nil)
+	t.Init(offset, &mgl.Vec3{3, 3, 3}, nil, true)
 	gd.object.Init(gdeploymentCube, t, shaderID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
 

@@ -30,7 +30,7 @@ func (gd *GClusterRole) Create(parent *GCluster, name string, namespace string, 
 	gpod.Init(font, fmt.Sprintf("%s", name))
 	t := &camera.Transform3D{}
 	tOffset := mgl.Vec3{offset.X(), offset.Y() + 0.25, offset.Z()}
-	t.Init(&tOffset, &mgl.Vec3{3, 1, 3}, nil)
+	t.Init(&tOffset, &mgl.Vec3{3, 1, 3}, nil, true)
 	gd.object.Init(gpod, t, shaderID, mgl.Vec3{float32(179) / 255, float32(50) / 255, float32(109) / 255}, mgl.Vec3{1, 1, 1})
 
 	gd.currentOffset = offset

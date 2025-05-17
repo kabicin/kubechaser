@@ -54,7 +54,7 @@ func (gd *GDeployment) Create(parent *GCluster, name string, namespace string, o
 	gdeploymentCube.Init(font, "")
 
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{1, 1, 1}, nil)
+	t.Init(offset, &mgl.Vec3{1, 1, 1}, nil, true)
 	gd.object.Init(gdeploymentCube, t, shaderID, mgl.Vec3{float32(50) / 255, float32(229) / 255, float32(148) / 255}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
 

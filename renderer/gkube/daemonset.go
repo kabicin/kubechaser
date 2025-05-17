@@ -28,7 +28,7 @@ func (gd *GDaemonSet) Create(parent *GCluster, name string, namespace string, of
 	gdaemonset.Init(font, "")
 	t := &camera.Transform3D{}
 	tOffset := mgl.Vec3{offset.X(), offset.Y(), offset.Z()}
-	t.Init(&tOffset, &mgl.Vec3{1, 1, 1}, nil)
+	t.Init(&tOffset, &mgl.Vec3{1, 1, 1}, nil, true)
 	gd.object.Init(gdaemonset, t, shaderID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
 	gd.currentOffset = offset

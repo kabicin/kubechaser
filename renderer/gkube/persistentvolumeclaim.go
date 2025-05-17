@@ -44,7 +44,7 @@ func (gd *GPersistentVolumeClaim) Create(parent *GCluster, name string, namespac
 	gpod.Init(font, fmt.Sprintf("%s", name))
 	t := &camera.Transform3D{}
 	tOffset := mgl.Vec3{offset.X(), offset.Y() + 0.25, offset.Z()}
-	t.Init(&tOffset, &mgl.Vec3{1.6, 1.4, 1}, nil)
+	t.Init(&tOffset, &mgl.Vec3{1.6, 1.4, 1}, nil, true)
 	gd.object.Init(gpod, t, shaderID, mgl.Vec3{float32(218) / 255, float32(227) / 255, float32(227) / 255}, mgl.Vec3{1, 1, 1})
 
 	gd.object.AddOnClickHandler(gd.OnClick)

@@ -30,7 +30,7 @@ func (gd *GRole) Create(parent *GCluster, name string, namespace string, offset 
 	gpod := &entity.Heptagon{}
 	gpod.Init(font, fmt.Sprintf("%s", name))
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{3, 1, 3}, nil)
+	t.Init(offset, &mgl.Vec3{3, 1, 3}, nil, true)
 	gd.object.Init(gpod, t, shaderID, mgl.Vec3{float32(229) / 255, float32(50) / 255, float32(59) / 255}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
 

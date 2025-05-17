@@ -103,24 +103,24 @@ func createMainCluster(ctrl *controller.Controller, font *v41.Font) *gkube.GClus
 	// 	totalTextureCount += 1
 	// }
 	sceneCube := &scene.SceneObject{}
-	sceneCube.Init(cube, camera.CreateTransform3D(&mgl.Vec3{-10, 10, 10}, &mgl.Vec3{1, 1, 1}, nil), texturedCubeProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
+	sceneCube.Init(cube, camera.CreateTransform3D(&mgl.Vec3{-10, 10, 10}, &mgl.Vec3{1, 1, 1}, nil, false), texturedCubeProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 	sceneCube.SetLightObject(true)
 
 	crosshair := &scene.SceneObject{}
 	crosshairquad := &entity.Triangle{}
 	crosshairquad.Init(font, "")
-	crosshair.Init(crosshairquad, camera.CreateTransform3D(&mgl.Vec3{0, 0, 0}, &mgl.Vec3{5, 5, 0}, nil), crosshairProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
+	crosshair.Init(crosshairquad, camera.CreateTransform3D(&mgl.Vec3{0, 0, 0}, &mgl.Vec3{5, 5, 0}, nil, false), crosshairProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 
 	// gui := &scene.SceneObject{}
 	// guiQuad := &entity.Quad{}
 	// guiQuad.Init(font, "")
 	// gui.Init(guiQuad, camera.CreateTransform3D(&mgl.Vec3{0, -windowHeight / 3, 0}, &mgl.Vec3{windowWidth, windowHeight / 2, 0}, nil), guiProgram.ID, mgl.Vec3{0, 0, 111}, mgl.Vec3{1, 1, 1})
 
-	frame := &scene.SceneObject{}
-	framebox := &entity.ObjectFrame{}
-	framebox.SetObjectFrame(10, 20, 4, 1)
-	framebox.Init(font, "")
-	frame.Init(framebox, camera.CreateTransform3D(&mgl.Vec3{3, 5, 0}, &mgl.Vec3{1, 1, 1}, nil), mvpProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
+	// frame := &scene.SceneObject{}
+	// framebox := &entity.ObjectFrame{}
+	// framebox.SetObjectFrameBounds(10, 20, 4, 1)
+	// framebox.Init(font, "")
+	// frame.Init(framebox, camera.CreateTransform3D(&mgl.Vec3{3, 5, 0}, &mgl.Vec3{1, 1, 1}, nil), mvpProgram.ID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 
 	gc := &gkube.GCluster{}
 	gc.Create(ctrl, cam, font, []*shader.Program{texturedCubeProgram, mvpProgram, crosshairProgram, guiProgram})
@@ -161,7 +161,7 @@ func main() {
 	// mainWindow.AddCluster(cluster)
 	mainWindow.AddScenes([]*scene.Scene{cluster.GetMainScene()})
 
-	debug := false
+	debug := true
 
 	i := 0
 	gl.ClearColor(0, 0, 0, 0)

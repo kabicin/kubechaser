@@ -29,18 +29,10 @@ func (gd *GPod) Create(parent *GCluster, name string, namespace string, offset *
 	onClickColor := mgl.Vec3{0.19607843137, 0.42352941176, 0.89803921568}
 
 	gpod := &entity.WavefrontOBJ{FileName: "pod.obj"}
-	// gpod.Init(font, "")
-	// gpod := &entity.Heptagon{}
-	// gpod := &entity.Cube{}
 	gpod.Init(font, name)
 
-	// gpod := &entity.TexturedCube{}
-	// var totalTextureCount uint32
-	// totalTextureCount = shader.MinShaderTextureIndex
-	// gpod.InitWithTexture(font, "", "./pod-128.png", totalTextureCount)
-
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{2, 2, 2}, nil)
+	t.Init(offset, &mgl.Vec3{2, 2, 2}, nil, true)
 	gd.object.Init(gpod, t, shaderID, color, onClickColor)
 	gd.object.AddOnClickHandler(gd.OnClick)
 

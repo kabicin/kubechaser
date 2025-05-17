@@ -40,7 +40,7 @@ func (gd *GReplicaSet) Create(parent *GCluster, name string, namespace string, o
 	greplicaset := &entity.WavefrontOBJ{FileName: "replicaset.obj"}
 	greplicaset.Init(font, "")
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{1, 1, 1}, nil)
+	t.Init(offset, &mgl.Vec3{1, 1, 1}, nil, true)
 	gd.object.Init(greplicaset, t, shaderID, mgl.Vec3{1, 1, 0}, mgl.Vec3{1, 1, 0})
 	gd.object.AddOnClickHandler(gd.OnClick)
 

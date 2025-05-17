@@ -58,10 +58,10 @@ func (gd *GClusterObjectFrame) GetCurrentOffset() *mgl.Vec3 {
 func (gd *GClusterObjectFrame) SetObjectFrame(center, bounds mgl.Vec3, onPostInitCallback func()) {
 	defer onPostInitCallback()
 	objFrame := &entity.ObjectFrame{}
-	objFrame.SetObjectFrame(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
+	objFrame.SetObjectFrameBounds(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
 	objFrame.Init(gd.font, gd.name)
 	t := &camera.Transform3D{}
-	t.Init(&center, &mgl.Vec3{1, 1, 1}, nil)
+	t.Init(&center, &mgl.Vec3{1, 1, 1}, nil, false)
 	gd.object.Init(objFrame, t, gd.shaderID, mgl.Vec3{0, 0, 0}, mgl.Vec3{111, 111, 111})
 	gd.object.AddOnClickHandler(gd.OnClick)
 	gd.isObjectFrameCreated = true
@@ -72,8 +72,8 @@ func (gd *GClusterObjectFrame) UpdateObjectFrame(center, bounds mgl.Vec3, onPost
 	if !gd.isObjectFrameCreated {
 		gd.SetObjectFrame(center, bounds, func() {})
 	} else {
-		gd.object.Object.(*entity.ObjectFrame).SetObjectFrame(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
-		gd.object.Transform.SetTranslate(&center)
+		gd.object.Object.(*entity.ObjectFrame).UpdateObjectFrameBounds(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
+		gd.object.Transform.SetTranslate(&center, false)
 	}
 }
 

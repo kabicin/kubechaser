@@ -73,7 +73,7 @@ func (gd *GWire) Create(parent *GCluster, name string, namespace string, offset 
 	}
 
 	tOffset := extraOffset.Add(mgl.Vec3{offset.X(), offset.Y(), offset.Z()})
-	t.Init(&tOffset, &scale, nil)
+	t.Init(&tOffset, &scale, nil, true)
 
 	gd.object.Init(gwireCube, t, shaderID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)

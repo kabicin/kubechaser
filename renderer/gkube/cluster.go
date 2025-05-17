@@ -494,8 +494,8 @@ func (gc *GCluster) UpdateGObjectFrames(debug bool) {
 
 	for _, gobjectFrame := range gc.gobjectFrames {
 		gobjectFrameNamespace, _ := gobjectFrame.GetIdentifier() // identifier for ObjectFrame uses name attrib as the namespace
-		if gobjectFrame.GetResource() == GNAMESPACEOBJECTFRAME && gobjectFrameNamespace == "kube-system" {
-			hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 10, 10}, func(obj GObject) bool {
+		if gobjectFrame.GetResource() == GNAMESPACEOBJECTFRAME {
+			hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, 3, 5}, func(obj GObject) bool {
 				_, ns := obj.GetIdentifier()
 				return ns != gobjectFrameNamespace // skip filter: don't consider GObjects where namespace is not the same
 			})
@@ -682,7 +682,7 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 	if resource == GCLUSTEROBJECTFRAME {
 		gof := &GClusterObjectFrame{}
 		gof.Create(gc, name, namespace, randomDisplacement, gc.font, shader.ID, settings, true)
-		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 10, 10}, func(obj GObject) bool {
+		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, 3, 5}, func(obj GObject) bool {
 			return false // skip filter: return false to skip no objects (gets all GObjects)
 		})
 		if hasPoints {
@@ -696,7 +696,7 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 	if resource == GNAMESPACEOBJECTFRAME {
 		gof := &GNamespaceObjectFrame{}
 		gof.Create(gc, name, namespace, &mgl.Vec3{0, 0, 0}, gc.font, shader.ID, settings, false)
-		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 10, 10}, func(obj GObject) bool {
+		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, 3, 5}, func(obj GObject) bool {
 			_, ns := obj.GetIdentifier()
 			return ns != namespace // skip filter: don't consider GObjects where namespace is not the same
 		})
@@ -743,7 +743,7 @@ func (cluster *GCluster) getBounds(padding mgl.Vec3, skipFilter func(GObject) bo
 		if skipFilter(obj) {
 			continue
 		}
-		if obj.GetObject() != nil && obj.GetObject().Transform != nil && obj.GetObject().Transform.PositionAnimator.X_init != nil {
+		if obj.GetObject() != nil && obj.GetObject().Transform != nil && obj.GetObject().Transform.PositionAnimator.X_final != nil {
 			if obj.GetObject().Transform.Scale != nil {
 				s := *obj.GetObject().Transform.Scale
 				for i := range 3 {
@@ -752,7 +752,7 @@ func (cluster *GCluster) getBounds(padding mgl.Vec3, skipFilter func(GObject) bo
 					}
 				}
 			}
-			t := obj.GetObject().Transform.PositionAnimator.X_init
+			t := obj.GetObject().Transform.PositionAnimator.X_final
 			cluster.expandBound(&frontTopLeft, t, mgl.Vec3{-1, 1, 1})
 			cluster.expandBound(&frontTopRight, t, mgl.Vec3{1, 1, 1})
 			cluster.expandBound(&frontBottomLeft, t, mgl.Vec3{-1, -1, 1})

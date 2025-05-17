@@ -29,7 +29,7 @@ func (gd *GServiceAccount) Create(parent *GCluster, name string, namespace strin
 	gpod := &entity.Heptagon{}
 	gpod.Init(font, fmt.Sprintf("%s", name))
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{2, 2, 2}, nil)
+	t.Init(offset, &mgl.Vec3{2, 2, 2}, nil, true)
 	gd.object.Init(gpod, t, shaderID, mgl.Vec3{float32(229) / 255, float32(145) / 255, float32(50) / 255}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
 

@@ -28,7 +28,7 @@ func (gd *GIngress) Create(parent *GCluster, name string, namespace string, offs
 	gingress := &entity.WavefrontOBJ{FileName: "ingress.obj"}
 	gingress.Init(font, "")
 	t := &camera.Transform3D{}
-	t.Init(offset, &mgl.Vec3{1, 1, 1}, nil)
+	t.Init(offset, &mgl.Vec3{1, 1, 1}, nil, true)
 	gd.object.Init(gingress, t, shaderID, mgl.Vec3{float32(50) / 255, float32(211) / 255, float32(229) / 255}, mgl.Vec3{1, 1, 1})
 	gd.object.AddOnClickHandler(gd.OnClick)
 
