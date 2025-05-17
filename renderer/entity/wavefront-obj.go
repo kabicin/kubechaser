@@ -52,6 +52,11 @@ func (entity *WavefrontOBJ) Init(font *v41.Font, text string) {
 
 	entity.VAO = createVAOWithNormals(points)
 	// log.Printf("created cube at VAO: %d\n", entity.VAO)
+
+	// convert NTris into Tris to generate AABB
+	trianglePoints := ConvertNTrisToTris(triangles)
+	wavefrontLeaf := BuildLeafAABB(trianglePoints...)
+	entity.BoundingBox = BuildAABB(wavefrontLeaf)
 }
 
 func (entity *WavefrontOBJ) Draw() {
@@ -77,7 +82,6 @@ func (entity *WavefrontOBJ) Intersect(cam *camera.Camera, camTransform *camera.T
 	if debug {
 		log.Printf("Check %s intersect\n", entity.GetName())
 	}
-	// localToWorld := cam.GetModel(camTransform)
-	// return RayAABB(&localToWorld, entity.BoundingBox, ray)
-	return -1, false
+	localToWorld := cam.GetModel(camTransform)
+	return RayAABB(&localToWorld, entity.BoundingBox, ray)
 }

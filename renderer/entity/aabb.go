@@ -8,6 +8,7 @@ import (
 	"github.com/kabicin/kubechaser/renderer/utils"
 )
 
+// axis aligned bounding box
 type AABB struct {
 	x0       float64
 	x1       float64
@@ -40,58 +41,34 @@ func BuildAABB(children ...*AABB) *AABB {
 }
 
 func (a *AABB) SetMinMaxFromMesh() {
-	x0 := float64(math.MaxFloat64)
-	x1 := float64(0)
-	y0 := float64(math.MaxFloat64)
-	y1 := float64(0)
-	z0 := float64(math.MaxFloat64)
-	z1 := float64(0)
+	x0, x1 := float64(math.MaxFloat64), float64(0)
+	y0, y1 := float64(math.MaxFloat64), float64(0)
+	z0, z1 := float64(math.MaxFloat64), float64(0)
 	for _, tri := range a.Mesh {
-		t0x := float64((*tri.P)[0].X())
-		t0y := float64((*tri.P)[0].Y())
-		t0z := float64((*tri.P)[0].Z())
-		t1x := float64((*tri.P)[1].X())
-		t1y := float64((*tri.P)[1].Y())
-		t1z := float64((*tri.P)[1].Z())
-		t2x := float64((*tri.P)[2].X())
-		t2y := float64((*tri.P)[2].Y())
-		t2z := float64((*tri.P)[2].Z())
-		x0 = min(min(min(x0, t0x), t1x), t2x)
-		x1 = max(max(max(x1, t0x), t1x), t2x)
-		y0 = min(min(min(y0, t0y), t1y), t2y)
-		y1 = max(max(max(y1, t0y), t1y), t2y)
-		z0 = min(min(min(z0, t0z), t1z), t2z)
-		z1 = max(max(max(z1, t0z), t1z), t2z)
+		t0x, t0y, t0z := float64((*tri.P)[0].X()), float64((*tri.P)[0].Y()), float64((*tri.P)[0].Z())
+		t1x, t1y, t1z := float64((*tri.P)[1].X()), float64((*tri.P)[1].Y()), float64((*tri.P)[1].Z())
+		t2x, t2y, t2z := float64((*tri.P)[2].X()), float64((*tri.P)[2].Y()), float64((*tri.P)[2].Z())
+		x0, x1 = min(min(min(x0, t0x), t1x), t2x), max(max(max(x1, t0x), t1x), t2x)
+		y0, y1 = min(min(min(y0, t0y), t1y), t2y), max(max(max(y1, t0y), t1y), t2y)
+		z0, z1 = min(min(min(z0, t0z), t1z), t2z), max(max(max(z1, t0z), t1z), t2z)
 	}
-	a.x0 = x0
-	a.x1 = x1
-	a.y0 = y0
-	a.y1 = y1
-	a.z0 = z0
-	a.z1 = z1
+	a.x0, a.x1 = x0, x1
+	a.y0, a.y1 = y0, y1
+	a.z0, a.z1 = z0, z1
 }
 
 func (a *AABB) SetMinMaxFromChildren() {
-	x0 := float64(math.MaxFloat64)
-	x1 := float64(-math.MaxFloat64)
-	y0 := float64(math.MaxFloat64)
-	y1 := float64(-math.MaxFloat64)
-	z0 := float64(math.MaxFloat64)
-	z1 := float64(-math.MaxFloat64)
+	x0, x1 := float64(math.MaxFloat64), float64(-math.MaxFloat64)
+	y0, y1 := float64(math.MaxFloat64), float64(-math.MaxFloat64)
+	z0, z1 := float64(math.MaxFloat64), float64(-math.MaxFloat64)
 	for _, bb := range a.Children {
-		x0 = min(bb.x0, x0)
-		x1 = max(bb.x1, x1)
-		y0 = min(bb.y0, y0)
-		y1 = max(bb.y1, y1)
-		z0 = min(bb.z0, z0)
-		z1 = max(bb.z1, z1)
+		x0, x1 = min(bb.x0, x0), max(bb.x1, x1)
+		y0, y1 = min(bb.y0, y0), max(bb.y1, y1)
+		z0, z1 = min(bb.z0, z0), max(bb.z1, z1)
 	}
-	a.x0 = x0
-	a.x1 = x1
-	a.y0 = y0
-	a.y1 = y1
-	a.z0 = z0
-	a.z1 = z1
+	a.x0, a.x1 = x0, x1
+	a.y0, a.y1 = y0, y1
+	a.z0, a.z1 = z0, z1
 }
 
 func (a *AABB) GetMinMax() (float64, float64, float64, float64, float64, float64) {
@@ -103,19 +80,13 @@ func (a *AABB) GetVec3() (*mgl.Vec3, *mgl.Vec3) {
 }
 
 func GetAABBMinMax(children ...*AABB) (float64, float64, float64, float64, float64, float64) {
-	x0 := float64(math.MaxFloat64)
-	x1 := float64(-math.MaxFloat64)
-	y0 := float64(math.MaxFloat64)
-	y1 := float64(-math.MaxFloat64)
-	z0 := float64(math.MaxFloat64)
-	z1 := float64(-math.MaxFloat64)
+	x0, x1 := float64(math.MaxFloat64), float64(-math.MaxFloat64)
+	y0, y1 := float64(math.MaxFloat64), float64(-math.MaxFloat64)
+	z0, z1 := float64(math.MaxFloat64), float64(-math.MaxFloat64)
 	for _, aabb := range children {
-		x0 = min(aabb.x0, x0)
-		x1 = max(aabb.x1, x1)
-		y0 = min(aabb.y0, y0)
-		y1 = max(aabb.y1, y1)
-		z0 = min(aabb.z0, z0)
-		z1 = max(aabb.z1, z1)
+		x0, x1 = min(aabb.x0, x0), max(aabb.x1, x1)
+		y0, y1 = min(aabb.y0, y0), max(aabb.y1, y1)
+		z0, z1 = min(aabb.z0, z0), max(aabb.z1, z1)
 		// log.Printf("(%f,%f), (%f,%f), (%f, %f)", x0, x1, y0, y1, z0, z1)
 	}
 	return x0, x1, y0, y1, z0, z1

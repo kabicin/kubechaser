@@ -32,6 +32,16 @@ type NTri struct {
 	N *[]mgl.Vec3
 }
 
+func ConvertNTrisToTris(inputTriangles []*NTri) []*Tri {
+	out := []*Tri{}
+	for _, triangle := range inputTriangles {
+		out = append(out, &Tri{
+			P: triangle.P,
+		})
+	}
+	return out
+}
+
 func (t *NTri) GetPoints() []float32 {
 	points := []float32{}
 	for i := 0; i < 3; i++ {
