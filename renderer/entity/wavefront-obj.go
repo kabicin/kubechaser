@@ -55,8 +55,7 @@ func (entity *WavefrontOBJ) Init(font *v41.Font, text string) {
 
 	// convert NTris into Tris to generate AABB
 	trianglePoints := ConvertNTrisToTris(triangles)
-	wavefrontLeaf := BuildLeafAABB(trianglePoints...)
-	entity.BoundingBox = BuildAABB(wavefrontLeaf)
+	entity.BoundingBox = GenerateAABB(trianglePoints...)
 }
 
 func (entity *WavefrontOBJ) Draw() {

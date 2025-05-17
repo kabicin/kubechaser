@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"log"
 	"math"
 
 	mgl "github.com/go-gl/mathgl/mgl32"
@@ -22,6 +23,9 @@ type AABB struct {
 }
 
 func BuildLeafAABB(triangles ...*Tri) *AABB {
+	if len(triangles) == 0 {
+		return nil
+	}
 	aabb := &AABB{}
 	aabb.Mesh = triangles
 	aabb.IsLeaf = true
@@ -37,6 +41,67 @@ func BuildAABB(children ...*AABB) *AABB {
 	aabb.IsLeaf = false
 	aabb.Children = children
 	aabb.SetMinMaxFromChildren()
+	return aabb
+}
+
+// Returns an axis aligned bounding box surrounding triangles in Tri
+func GenerateAABB(triangles ...*Tri) *AABB {
+	debug := false
+	numTriangles := len(triangles)
+	if numTriangles == 0 {
+		return nil
+	}
+	// Build a leaf at one triangle
+	if numTriangles == 1 {
+		return BuildLeafAABB(triangles[0])
+	}
+	// Distribute triangles into halfs
+	halfs := [][]*Tri{}
+	halfs = append(halfs, []*Tri{})
+	halfs = append(halfs, []*Tri{})
+
+	// Find min/max based on centroids
+	centroids := []*mgl.Vec3{}
+	minX, maxX := float64(math.MaxFloat64), float64(-math.MaxFloat64)
+	for _, tri := range triangles {
+		centroid := tri.GetCentroid()
+		centroids = append(centroids, centroid)
+		centroidX := float64(centroid.X())
+		if centroidX < minX {
+			minX = centroidX
+		}
+		if centroidX > maxX {
+			maxX = centroidX
+		}
+	}
+	midX := (minX + maxX) / 2.0
+	// Sort into halfs based on midpoint
+	for i, centroid := range centroids {
+		centroidX := float64(centroid.X())
+		if centroidX < midX {
+			halfs[0] = append(halfs[0], triangles[i])
+		} else {
+			halfs[1] = append(halfs[1], triangles[i])
+		}
+	}
+	if debug {
+		log.Printf("len(halfs[0]): %d, len(halfs[1]): %d\n", len(halfs[0]), len(halfs[1]))
+	}
+
+	aabb := &AABB{}
+	aabb.Children = []*AABB{}
+	// populate AABB children by generating a new AABBs from the triangles distributed into each half
+	// if one half is empty, create a leaf instead
+	if len(halfs[0]) == 0 {
+		aabb.Children = append(aabb.Children, BuildLeafAABB(halfs[1]...))
+	} else if len(halfs[1]) == 0 {
+		aabb.Children = append(aabb.Children, BuildLeafAABB(halfs[0]...))
+	} else {
+		aabb.Children = append(aabb.Children, GenerateAABB(halfs[0]...))
+		aabb.Children = append(aabb.Children, GenerateAABB(halfs[1]...))
+	}
+	aabb.IsLeaf = false
+	aabb.SetMinMaxFromChildren() // calculate min/max bounds by comparing sizes of children AABBs
 	return aabb
 }
 

@@ -32,6 +32,17 @@ type NTri struct {
 	N *[]mgl.Vec3
 }
 
+func (triangle *Tri) GetCentroid() *mgl.Vec3 {
+	if triangle == nil {
+		return nil
+	}
+	return &mgl.Vec3{
+		((*triangle.P)[0].X() + (*triangle.P)[1].X() + (*triangle.P)[2].X()) / 3.0,
+		((*triangle.P)[0].Y() + (*triangle.P)[1].Y() + (*triangle.P)[2].Y()) / 3.0,
+		((*triangle.P)[0].Z() + (*triangle.P)[1].Z() + (*triangle.P)[2].Z()) / 3.0,
+	}
+}
+
 func ConvertNTrisToTris(inputTriangles []*NTri) []*Tri {
 	out := []*Tri{}
 	for _, triangle := range inputTriangles {
