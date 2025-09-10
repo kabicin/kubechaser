@@ -201,70 +201,51 @@ type GCluster struct {
 	namespaceSlots []string
 }
 
-func getGResourceName(resource GResource) string {
-	if resource == GWIRE {
-		return "GWIRE"
+var GOBJECTFRAME_FILTER_SAME_NAMESPACE = func(gobjectFrame GObjectFrame) func(obj GObject) bool {
+	return func(obj GObject) bool {
+		if gobjectFrame == nil {
+			return false
+		}
+		_, ns := obj.GetIdentifier()
+		frameNs, _ := gobjectFrame.GetIdentifier()
+		return ns == frameNs
 	}
-	if resource == GDEPLOYMENT {
-		return "GDEPLOYMENT"
+}
+
+var GOBJECTFRAME_FILTER_ALL = func(gobjectFrame GObjectFrame) func(obj GObject) bool {
+	return func(obj GObject) bool {
+		return true
 	}
-	if resource == GSTATEFULSET {
-		return "GSTATEFULSET"
-	}
-	if resource == GREPLICASET {
-		return "GREPLICASET"
-	}
-	if resource == GPOD {
-		return "GPOD"
-	}
-	if resource == GPOD {
-		return "GSERVICE"
-	}
-	if resource == GINGRESS {
-		return "GINGRESS"
-	}
-	if resource == GSERVICEACCOUNT {
-		return "GSERVICEACCOUNT"
-	}
-	if resource == GROLE {
-		return "GROLE"
-	}
-	if resource == GROLEBINDING {
-		return "GROLEBINDING"
-	}
-	if resource == GCLUSTERROLE {
-		return "GCLUSTERROLE"
-	}
-	if resource == GCLUSTERROLEBINDING {
-		return "GCLUSTERROLEBINDING"
-	}
-	if resource == GJOB {
-		return "GJOB"
-	}
-	if resource == GCRONJOB {
-		return "GCRONJOB"
-	}
-	if resource == GDAEMONSET {
-		return "GDAEMONSET"
-	}
-	if resource == GSECRET {
-		return "GSECRET"
-	}
-	if resource == GCONFIGMAP {
-		return "GCONFIGMAP"
-	}
-	if resource == GPERSISTENTVOLUME {
-		return "GPERSISTENTVOLUME"
-	}
-	if resource == GPERSISTENTVOLUMECLAIM {
-		return "GPERSISTENTVOLUMECLAIM"
-	}
+}
+
+var GResourceNames map[GResource]string = map[GResource]string{
+	GWIRE:                  "GWIRE",
+	GDEPLOYMENT:            "GDEPLOYMENT",
+	GSTATEFULSET:           "GSTATEFULSET",
+	GREPLICASET:            "GREPLICASET",
+	GPOD:                   "GPOD",
+	GSERVICE:               "GSERVICE",
+	GINGRESS:               "GINGRESS",
+	GSERVICEACCOUNT:        "GSERVICEACCOUNT",
+	GROLE:                  "GROLE",
+	GROLEBINDING:           "GROLEBINDING",
+	GCLUSTERROLE:           "GCLUSTERROLE",
+	GCLUSTERROLEBINDING:    "GCLUSTERROLEBINDING",
+	GJOB:                   "GJOB",
+	GCRONJOB:               "GCRONJOB",
+	GDAEMONSET:             "GDAEMONSET",
+	GSECRET:                "GSECRET",
+	GCONFIGMAP:             "GCONFIGMAP",
+	GPERSISTENTVOLUME:      "GPERSISTENTVOLUME",
+	GPERSISTENTVOLUMECLAIM: "GPERSISTENTVOLUMECLAIM",
 	// object frames
-	if resource == GCLUSTEROBJECTFRAME {
-		return "GCLUSTEROBJECTFRAME"
-	}
-	if resource == GNAMESPACEOBJECTFRAME {
-		return "GNAMESPACEOBJECTFRAME"
+	GCLUSTEROBJECTFRAME:   "GCLUSTEROBJECTFRAME",
+	GNAMESPACEOBJECTFRAME: "GNAMESPACEOBJECTFRAME",
+}
+
+func getGResourceName(resource GResource) string {
+	if resourceName, found := GResourceNames[resource]; found {
+		return resourceName
 	}
 	return "N/A"
 }
@@ -494,12 +475,9 @@ func (gc *GCluster) UpdateGObjectFrames(debug bool) {
 	defer gc.gobjectMutex.Unlock()
 
 	for _, gobjectFrame := range gc.gobjectFrames {
-		gobjectFrameNamespace, _ := gobjectFrame.GetIdentifier() // identifier for ObjectFrame uses name attrib as the namespace
 		if gobjectFrame.GetResource() == GNAMESPACEOBJECTFRAME {
-			hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 1, 10}, func(obj GObject) bool {
-				_, ns := obj.GetIdentifier()
-				return ns != gobjectFrameNamespace // skip filter: don't consider GObjects where namespace is not the same
-			})
+			boundaryPadding := mgl.Vec3{10, 1, 10}
+			hasPoints, center, bounds := gc.getBounds(boundaryPadding, GOBJECTFRAME_FILTER_SAME_NAMESPACE(gobjectFrame))
 			if hasPoints {
 				if debug {
 					fmt.Printf("gobjectframe has points: \n")
@@ -683,9 +661,8 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 	if resource == GCLUSTEROBJECTFRAME {
 		gof := &GClusterObjectFrame{}
 		gof.Create(gc, name, namespace, randomDisplacement, gc.font, shader.ID, settings, true)
-		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, 0, 5}, func(obj GObject) bool {
-			return false // skip filter: return false to skip no objects (gets all GObjects)
-		})
+		boundaryPadding := mgl.Vec3{5, 0, 5}
+		hasPoints, center, bounds := gc.getBounds(boundaryPadding, GOBJECTFRAME_FILTER_ALL(nil))
 		if hasPoints {
 			gof.SetObjectFrame(center, bounds, entity.FrameStyleBorder, func() {
 				gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
@@ -696,11 +673,10 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 	}
 	if resource == GNAMESPACEOBJECTFRAME {
 		gof := &GNamespaceObjectFrame{}
-		gof.Create(gc, name, namespace, &mgl.Vec3{0, 0, 0}, gc.font, shader.ID, settings, false)
-		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, -3, 5}, func(obj GObject) bool {
-			_, ns := obj.GetIdentifier()
-			return ns != namespace // skip filter: don't consider GObjects where namespace is not the same
-		})
+		offset := &mgl.Vec3{0, 0, 0}
+		gof.Create(gc, name, namespace, offset, gc.font, shader.ID, settings, false)
+		boundaryPadding := mgl.Vec3{5, -3, 5}
+		hasPoints, center, bounds := gc.getBounds(boundaryPadding, GOBJECTFRAME_FILTER_SAME_NAMESPACE(gof))
 		if hasPoints {
 			gof.SetObjectFrame(center, bounds, entity.FrameStyleBottomBorder, func() {
 				gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
@@ -727,7 +703,7 @@ func (cluster *GCluster) expandBound(bound, target *mgl.Vec3, dir mgl.Vec3) {
 }
 
 // from 6 points of a cube, expand out all the 6 points to form a bounding box around all objects from cluster.gobjects then return the center and bounds
-func (cluster *GCluster) getBounds(padding mgl.Vec3, skipFilter func(GObject) bool) (bool, mgl.Vec3, mgl.Vec3) {
+func (cluster *GCluster) getBounds(padding mgl.Vec3, includeFilter func(GObject) bool) (bool, mgl.Vec3, mgl.Vec3) {
 	count := 0
 	minFloat := float32(-math.MaxFloat32)
 	maxFloat := float32(math.MaxFloat32)
@@ -741,7 +717,7 @@ func (cluster *GCluster) getBounds(padding mgl.Vec3, skipFilter func(GObject) bo
 	backBottomRight := mgl.Vec3{minFloat, maxFloat, maxFloat}  // push to (x, -y, -z)
 	maxScale := mgl.Vec3{0, 0, 0}
 	for _, obj := range cluster.gobjects {
-		if skipFilter(obj) {
+		if !includeFilter(obj) {
 			continue
 		}
 		if obj.GetObject() != nil && obj.GetObject().Transform != nil && obj.GetObject().Transform.PositionAnimator.X_final != nil {
