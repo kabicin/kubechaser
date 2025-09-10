@@ -394,27 +394,9 @@ func (gc *GCluster) Create(ctrl *controller.Controller, cam *camera.Camera, font
 	gc.shaders = &sync.Map{}
 
 	defaultShaderProgram := shaderPrograms[1]
-	gc.shaders.Store(GDEPLOYMENT, defaultShaderProgram)
-	gc.shaders.Store(GSTATEFULSET, defaultShaderProgram)
-	gc.shaders.Store(GREPLICASET, defaultShaderProgram)
-	gc.shaders.Store(GWIRE, defaultShaderProgram)
-	gc.shaders.Store(GPOD, defaultShaderProgram)
-	gc.shaders.Store(GSERVICE, defaultShaderProgram)
-	gc.shaders.Store(GINGRESS, defaultShaderProgram)
-	gc.shaders.Store(GSERVICEACCOUNT, defaultShaderProgram)
-	gc.shaders.Store(GROLE, defaultShaderProgram)
-	gc.shaders.Store(GROLEBINDING, defaultShaderProgram)
-	gc.shaders.Store(GCLUSTERROLE, defaultShaderProgram)
-	gc.shaders.Store(GCLUSTERROLEBINDING, defaultShaderProgram)
-	gc.shaders.Store(GJOB, defaultShaderProgram)
-	gc.shaders.Store(GCRONJOB, defaultShaderProgram)
-	gc.shaders.Store(GDAEMONSET, defaultShaderProgram)
-	gc.shaders.Store(GSECRET, defaultShaderProgram)
-	gc.shaders.Store(GCONFIGMAP, defaultShaderProgram)
-	gc.shaders.Store(GPERSISTENTVOLUME, defaultShaderProgram)
-	gc.shaders.Store(GPERSISTENTVOLUMECLAIM, defaultShaderProgram)
-	gc.shaders.Store(GCLUSTEROBJECTFRAME, defaultShaderProgram)
-	gc.shaders.Store(GNAMESPACEOBJECTFRAME, defaultShaderProgram)
+	for name := range GResourceNames {
+		gc.shaders.Store(name, defaultShaderProgram)
+	}
 
 	ctrl.AddClickHandler(gc.mainScene.Click)
 }
