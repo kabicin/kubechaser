@@ -31,6 +31,7 @@ func (gd *GClusterObjectFrame) Create(parent *GCluster, name string, namespace s
 	gd.parent = parent
 
 	gd.object = &scene.SceneObject{}
+	gd.object.Color = mgl.Vec3{1, 1, 1}
 	gd.object.OnClickColor = mgl.Vec3{0, 1, 1}
 
 	gd.font = font
@@ -62,7 +63,7 @@ func (gd *GClusterObjectFrame) SetObjectFrame(center, bounds mgl.Vec3, onPostIni
 	objFrame.Init(gd.font, gd.name)
 	t := &camera.Transform3D{}
 	t.Init(&center, &mgl.Vec3{1, 1, 1}, nil, false)
-	gd.object.Init(objFrame, t, gd.shaderID, mgl.Vec3{0, 0, 0}, mgl.Vec3{111, 111, 111})
+	gd.object.Init(objFrame, t, gd.shaderID, gd.object.Color, gd.object.OnClickColor)
 	gd.object.AddOnClickHandler(gd.OnClick)
 	gd.isObjectFrameCreated = true
 }
@@ -72,7 +73,7 @@ func (gd *GClusterObjectFrame) UpdateObjectFrame(center, bounds mgl.Vec3, onPost
 	if !gd.isObjectFrameCreated {
 		gd.SetObjectFrame(center, bounds, func() {})
 	} else {
-		gd.object.Object.(*entity.ObjectFrame).UpdateObjectFrameBounds(bounds.X(), bounds.Y(), bounds.Z(), 0.5)
+		gd.object.Object.(*entity.ObjectFrame).UpdateObjectFrameBounds(bounds.X(), bounds.Y(), bounds.Z(), 0.1)
 		gd.object.Transform.SetTranslate(&center, false)
 	}
 }

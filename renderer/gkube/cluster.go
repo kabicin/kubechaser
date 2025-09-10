@@ -495,7 +495,7 @@ func (gc *GCluster) UpdateGObjectFrames(debug bool) {
 	for _, gobjectFrame := range gc.gobjectFrames {
 		gobjectFrameNamespace, _ := gobjectFrame.GetIdentifier() // identifier for ObjectFrame uses name attrib as the namespace
 		if gobjectFrame.GetResource() == GNAMESPACEOBJECTFRAME {
-			hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, 3, 5}, func(obj GObject) bool {
+			hasPoints, center, bounds := gc.getBounds(mgl.Vec3{10, 1, 10}, func(obj GObject) bool {
 				_, ns := obj.GetIdentifier()
 				return ns != gobjectFrameNamespace // skip filter: don't consider GObjects where namespace is not the same
 			})
@@ -682,7 +682,7 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 	if resource == GCLUSTEROBJECTFRAME {
 		gof := &GClusterObjectFrame{}
 		gof.Create(gc, name, namespace, randomDisplacement, gc.font, shader.ID, settings, true)
-		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, 3, 5}, func(obj GObject) bool {
+		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, 0, 5}, func(obj GObject) bool {
 			return false // skip filter: return false to skip no objects (gets all GObjects)
 		})
 		if hasPoints {
@@ -696,7 +696,7 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 	if resource == GNAMESPACEOBJECTFRAME {
 		gof := &GNamespaceObjectFrame{}
 		gof.Create(gc, name, namespace, &mgl.Vec3{0, 0, 0}, gc.font, shader.ID, settings, false)
-		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, 3, 5}, func(obj GObject) bool {
+		hasPoints, center, bounds := gc.getBounds(mgl.Vec3{5, -3, 5}, func(obj GObject) bool {
 			_, ns := obj.GetIdentifier()
 			return ns != namespace // skip filter: don't consider GObjects where namespace is not the same
 		})

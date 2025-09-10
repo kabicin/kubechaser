@@ -30,6 +30,7 @@ func (gd *GNamespaceObjectFrame) Create(parent *GCluster, name string, namespace
 	gd.parent = parent
 
 	gd.object = &scene.SceneObject{}
+	gd.object.Color = mgl.Vec3{1, 1, 1}
 	gd.object.OnClickColor = mgl.Vec3{0, 1, 1}
 
 	gd.font = font
@@ -58,7 +59,7 @@ func (gd *GNamespaceObjectFrame) SetObjectFrame(center, bounds mgl.Vec3, onPostI
 	objFrame.Init(gd.font, gd.name)
 	t := &camera.Transform3D{}
 	t.Init(&center, &mgl.Vec3{1, 1, 1}, nil, false)
-	gd.object.Init(objFrame, t, gd.shaderID, mgl.Vec3{111, 111, 111}, mgl.Vec3{1, 1, 1})
+	gd.object.Init(objFrame, t, gd.shaderID, gd.object.Color, gd.object.OnClickColor)
 	gd.object.AddOnClickHandler(gd.OnClick)
 	gd.isObjectFrameCreated = true
 }

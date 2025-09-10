@@ -161,10 +161,10 @@ func main() {
 	// mainWindow.AddCluster(cluster)
 	mainWindow.AddScenes([]*scene.Scene{cluster.GetMainScene()})
 
-	debug := true
+	debug := false
 
 	i := 0
-	gl.ClearColor(0, 0, 0, 0)
+	gl.ClearColor(221/256.0, 244/256.0, 231/256.0, 0)
 	for !glfwWindow.ShouldClose() {
 		gl.Enable(gl.DEPTH_TEST)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)

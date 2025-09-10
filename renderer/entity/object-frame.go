@@ -8,7 +8,6 @@ import (
 	mgl "github.com/go-gl/mathgl/mgl32"
 	"github.com/kabicin/kubechaser/fonts"
 	"github.com/kabicin/kubechaser/renderer/camera"
-	"github.com/kabicin/kubechaser/renderer/logg"
 	"github.com/kabicin/kubechaser/renderer/shader"
 	"github.com/kabicin/kubechaser/renderer/utils"
 )
@@ -44,7 +43,6 @@ func (entity *ObjectFrame) SetObjectFrameBounds(width, height, depth, barLength 
 }
 
 func (entity *ObjectFrame) UpdateObjectFrameBounds(width, height, depth, barLength float32) {
-	log.Printf("Update object frame bounds: %f, %f, %f\n", width, height, depth)
 	updateFragmentsFromBounds(&entity.objects, width, height, depth, barLength)
 }
 
@@ -64,48 +62,69 @@ func generateFragments(font *v41.Font) []*TEntity {
 	return fragments
 }
 
+func getBoxFrameFragments(height, width, depth, barLength float32) [][]*mgl.Vec3 {
+	hheight := (height / 2)
+	hwidth := (width / 2)
+	hdepth := (depth / 2)
+	return [][]*mgl.Vec3{
+		// translate
+		{
+			{0, hheight, hdepth},   // front up bar (0, +y, +z)
+			{0, -hheight, hdepth},  // front down bar (0, -y, +z)
+			{-hwidth, 0, hdepth},   // front left bar (-x, 0, +z)
+			{hwidth, 0, hdepth},    // front right bar (x, 0, +z)
+			{-hwidth, hheight, 0},  // top left bar (-x, y, 0)
+			{hwidth, hheight, 0},   // top right bar (x, y, 0)
+			{-hwidth, -hheight, 0}, // bottom left bar (-x, -y, 0)
+			{hwidth, -hheight, 0},  // bottom right bar (x, -y, 0)
+			{0, hheight, -hdepth},  // back up bar (0, +y, -z)
+			{0, -hheight, -hdepth}, // back down bar (0, -y, -z)
+			{-hwidth, 0, -hdepth},  // back left bar (-x, 0, -z)
+			{hwidth, 0, -hdepth},   // back right bar (x, 0, -z)
+		},
+		// scale
+		{
+			{width + barLength, barLength, barLength}, // front up bar (0, +y, +z)
+			{width + barLength, barLength, barLength}, // front down bar (0, -y, +z)
+			{barLength, height, barLength},            // front left bar (-x, 0, +z)
+			{barLength, height, barLength},            // front right bar (x, 0, +z)
+			{barLength, barLength, depth},             // top left bar (-x, y, 0)
+			{barLength, barLength, depth},             // top right bar (x, y, 0)
+			{barLength, barLength, depth},             // bottom left bar (-x, -y, 0)
+			{barLength, barLength, depth},             // bottom right bar (x, -y, 0)
+			{width + barLength, barLength, barLength}, // back up bar (0, +y, -z)
+			{width + barLength, barLength, barLength}, // back down bar (0, -y, -z)
+			{barLength, height, barLength},            // back left bar (-x, 0, -z)
+			{barLength, height, barLength},            // back right bar (x, 0, -z)
+		},
+		// rotate
+		{
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+			{0, 0, 0},
+		},
+	}
+}
+
 func updateFragmentsFromBounds(fragments *[]*TEntity, width, height, depth, barLength float32) {
 	if fragments == nil {
 		return
 	}
-	hheight := (height / 2)
-	hwidth := (width / 2)
-	hdepth := (depth / 2)
-	translateFragments := []*mgl.Vec3{
-		&mgl.Vec3{0, hheight, hdepth},
-		&mgl.Vec3{0, -hheight, hdepth},
-		&mgl.Vec3{-hwidth, 0, hdepth},
-		&mgl.Vec3{hwidth, 0, hdepth},
-		&mgl.Vec3{-hwidth, hheight, 0},
-		&mgl.Vec3{hwidth, hheight, 0},
-		&mgl.Vec3{-hwidth, -hheight, 0},
-		&mgl.Vec3{hwidth, -hheight, 0},
-		&mgl.Vec3{0, hheight, -hdepth},
-		&mgl.Vec3{0, -hheight, -hdepth},
-		&mgl.Vec3{-hwidth, 0, -hdepth},
-		&mgl.Vec3{hwidth, 0, -hdepth},
-	}
-	scaleFragments := []*mgl.Vec3{
-		&mgl.Vec3{width + barLength, barLength, barLength}, // front up bar (0, +y, +z)
-		&mgl.Vec3{width + barLength, barLength, barLength}, // front down bar (0, -y, +z)
-		&mgl.Vec3{barLength, height, barLength},            // front left bar (-x, 0, +z)
-		&mgl.Vec3{barLength, height, barLength},            // front right bar (x, 0, +z)
-		&mgl.Vec3{barLength, barLength, depth},             // top left bar (-x, y, 0)
-		&mgl.Vec3{barLength, barLength, depth},             // top right bar (x, y, 0)
-		&mgl.Vec3{barLength, barLength, depth},             // bottom left bar (-x, -y, 0)
-		&mgl.Vec3{barLength, barLength, depth},             // bottom right bar (x, -y, 0)
-		&mgl.Vec3{width + barLength, barLength, barLength}, // back up bar (0, +y, -z)
-		&mgl.Vec3{width + barLength, barLength, barLength}, // back down bar (0, -y, -z)
-		&mgl.Vec3{barLength, height, barLength},            // back left bar (-x, 0, -z)
-		&mgl.Vec3{barLength, height, barLength},            // back right bar (x, 0, -z)
-	}
-
-	for i := range *fragments {
-		(*fragments)[i].transform.PositionAnimator.X_init = translateFragments[i]
-		// log.Printf("Setting translate frag[%d]: \n")
-		// logg.PrintVec3(*translateFragments[i])
-		(*fragments)[i].transform.Scale = scaleFragments[i]
-		(*fragments)[i].transform.Rotate = &mgl.Vec3{0, 0, 0}
+	loadedFragments := getBoxFrameFragments(height, width, depth, barLength)
+	// loadedFragments := getBottomBoxFrameFragments(height, width, depth, barLength)
+	for i := range loadedFragments[0] {
+		(*fragments)[i].transform.PositionAnimator.X_init = loadedFragments[0][i]
+		(*fragments)[i].transform.Scale = loadedFragments[1][i]
+		(*fragments)[i].transform.Rotate = loadedFragments[2][i]
 	}
 }
 
@@ -120,7 +139,6 @@ func (entity *ObjectFrame) Init(font *v41.Font, text string) {
 }
 
 func (entity *ObjectFrame) DrawMultiple(deltaT float32, camTransform *camera.Transform3D, program *shader.Program, cam *camera.Camera, lightPos *mgl.Vec3, cameraPos *mgl.Vec3, color mgl.Vec3, onClick bool, onClickColor mgl.Vec3) {
-	log.Printf("DrawMultiple: len(entity.objects): %d\n", len(entity.objects))
 	for _, tentity := range entity.objects {
 		gl.UseProgram(program.ID)
 		cam.Update(deltaT)
@@ -136,8 +154,6 @@ func (entity *ObjectFrame) DrawMultiple(deltaT float32, camTransform *camera.Tra
 		if camTransform.PositionAnimator.X_init != nil {
 			trans = *camTransform.PositionAnimator.X_init
 		}
-		log.Printf("tentity: \n")
-		logg.PrintVec3(trans)
 		tscale := mgl.Vec3{scale.X() * (*tentity).transform.Scale.X(),
 			scale.Y() * (*tentity).transform.Scale.Y(),
 			scale.Z() * (*tentity).transform.Scale.Z()}
@@ -147,7 +163,6 @@ func (entity *ObjectFrame) DrawMultiple(deltaT float32, camTransform *camera.Tra
 			PositionAnimator: camera.PatchNewAnimator(camTransform.PositionAnimator, camera.InitAnimator(&ttrans, &ttrans)),
 			Scale:            &tscale,
 			Rotate:           &trot}
-		logg.PrintVec3(tscale)
 		cam.SetMVP(&tt)
 		tentity.object.BindTextures()
 		program.SetUniforms(cam, lightPos, cameraPos, color, onClick, onClickColor)
