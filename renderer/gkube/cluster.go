@@ -13,6 +13,7 @@ import (
 	mgl "github.com/go-gl/mathgl/mgl32"
 	"github.com/kabicin/kubechaser/renderer/camera"
 	"github.com/kabicin/kubechaser/renderer/controller"
+	"github.com/kabicin/kubechaser/renderer/entity"
 	"github.com/kabicin/kubechaser/renderer/logg"
 	"github.com/kabicin/kubechaser/renderer/scene"
 	"github.com/kabicin/kubechaser/renderer/shader"
@@ -172,8 +173,8 @@ type GObject interface {
 
 type GObjectFrame interface {
 	GObject
-	SetObjectFrame(center, bounds mgl.Vec3, onPostInitCallback func())
-	UpdateObjectFrame(center, bounds mgl.Vec3, onPostInitCallback func())
+	SetObjectFrame(center, bounds mgl.Vec3, frameStyle entity.FrameStyle, onPostInitCallback func())
+	UpdateObjectFrame(center, bounds mgl.Vec3, frameStyle entity.FrameStyle, onPostInitCallback func())
 }
 
 type GCluster struct {
@@ -505,7 +506,7 @@ func (gc *GCluster) UpdateGObjectFrames(debug bool) {
 					logg.PrintVec3(center)
 					logg.PrintVec3(bounds)
 				}
-				gobjectFrame.UpdateObjectFrame(center, bounds, func() {
+				gobjectFrame.UpdateObjectFrame(center, bounds, entity.FrameStyleBottomBorder, func() {
 					gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
 					if debug {
 						fmt.Println("gobjectframe: shaders updated")
@@ -686,7 +687,7 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 			return false // skip filter: return false to skip no objects (gets all GObjects)
 		})
 		if hasPoints {
-			gof.SetObjectFrame(center, bounds, func() {
+			gof.SetObjectFrame(center, bounds, entity.FrameStyleBorder, func() {
 				gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
 			})
 		}
@@ -701,7 +702,7 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 			return ns != namespace // skip filter: don't consider GObjects where namespace is not the same
 		})
 		if hasPoints {
-			gof.SetObjectFrame(center, bounds, func() {
+			gof.SetObjectFrame(center, bounds, entity.FrameStyleBottomBorder, func() {
 				gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
 			})
 		}

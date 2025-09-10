@@ -18,6 +18,105 @@ type TEntity struct {
 	BoundingBox *AABB
 }
 
+type FrameStyle int
+type FrameFragmentGetter func(height, width, depth, barLength float32) [][]*mgl.Vec3
+
+const (
+	FrameStyleBorder       FrameStyle = iota
+	FrameStyleBottomBorder FrameStyle = iota
+)
+
+var FrameStyleSizes map[FrameStyle]int
+var FrameStyleFragments map[FrameStyle]FrameFragmentGetter
+
+func init() {
+	FrameStyleSizes = make(map[FrameStyle]int)
+	FrameStyleSizes[FrameStyleBorder] = 12
+	FrameStyleSizes[FrameStyleBottomBorder] = 4
+
+	FrameStyleFragments = make(map[FrameStyle]FrameFragmentGetter)
+	FrameStyleFragments[FrameStyleBorder] = func(width, height, depth, barLength float32) [][]*mgl.Vec3 {
+		hheight := (height / 2)
+		hwidth := (width / 2)
+		hdepth := (depth / 2)
+		return [][]*mgl.Vec3{
+			// translate
+			{
+				{0, hheight, hdepth},   // front up bar (0, +y, +z)
+				{0, -hheight, hdepth},  // front down bar (0, -y, +z)
+				{-hwidth, 0, hdepth},   // front left bar (-x, 0, +z)
+				{hwidth, 0, hdepth},    // front right bar (x, 0, +z)
+				{-hwidth, hheight, 0},  // top left bar (-x, y, 0)
+				{hwidth, hheight, 0},   // top right bar (x, y, 0)
+				{-hwidth, -hheight, 0}, // bottom left bar (-x, -y, 0)
+				{hwidth, -hheight, 0},  // bottom right bar (x, -y, 0)
+				{0, hheight, -hdepth},  // back up bar (0, +y, -z)
+				{0, -hheight, -hdepth}, // back down bar (0, -y, -z)
+				{-hwidth, 0, -hdepth},  // back left bar (-x, 0, -z)
+				{hwidth, 0, -hdepth},   // back right bar (x, 0, -z)
+			},
+			// scale
+			{
+				{width + barLength, barLength, barLength}, // front up bar (0, +y, +z)
+				{width + barLength, barLength, barLength}, // front down bar (0, -y, +z)
+				{barLength, height, barLength},            // front left bar (-x, 0, +z)
+				{barLength, height, barLength},            // front right bar (x, 0, +z)
+				{barLength, barLength, depth},             // top left bar (-x, y, 0)
+				{barLength, barLength, depth},             // top right bar (x, y, 0)
+				{barLength, barLength, depth},             // bottom left bar (-x, -y, 0)
+				{barLength, barLength, depth},             // bottom right bar (x, -y, 0)
+				{width + barLength, barLength, barLength}, // back up bar (0, +y, -z)
+				{width + barLength, barLength, barLength}, // back down bar (0, -y, -z)
+				{barLength, height, barLength},            // back left bar (-x, 0, -z)
+				{barLength, height, barLength},            // back right bar (x, 0, -z)
+			},
+			// rotate
+			{
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+		}
+	}
+	FrameStyleFragments[FrameStyleBottomBorder] = func(width, height, depth, barLength float32) [][]*mgl.Vec3 {
+		hheight := (height / 2)
+		hwidth := (width / 2)
+		hdepth := (depth / 2)
+		return [][]*mgl.Vec3{
+			// translate
+			{
+				{0, -hheight, hdepth},  // front down bar (0, -y, +z)
+				{-hwidth, -hheight, 0}, // bottom left bar (-x, -y, 0)
+				{hwidth, -hheight, 0},  // bottom right bar (x, -y, 0)
+				{0, -hheight, -hdepth}, // back down bar (0, -y, -z)
+			},
+			// scale
+			{
+				{width + barLength, barLength, barLength}, // front down bar (0, -y, +z)
+				{barLength, barLength, depth},             // bottom left bar (-x, -y, 0)
+				{barLength, barLength, depth},             // bottom right bar (x, -y, 0)
+				{width + barLength, barLength, barLength}, // back down bar (0, -y, -z)
+			},
+			// rotate
+			{
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+				{0, 0, 0},
+			},
+		}
+	}
+}
+
 type ObjectFrame struct {
 	objects []*TEntity
 
@@ -31,9 +130,19 @@ type ObjectFrame struct {
 	height    float32
 	depth     float32
 	barLength float32
+
+	frameStyle FrameStyle
 }
 
 func (entity *ObjectFrame) BindTextures() {}
+
+func (entity *ObjectFrame) SetFrameStyle(fs FrameStyle) {
+	entity.frameStyle = fs
+}
+
+func (entity *ObjectFrame) GetFrameStyle() FrameStyle {
+	return entity.frameStyle
+}
 
 func (entity *ObjectFrame) SetObjectFrameBounds(width, height, depth, barLength float32) {
 	entity.width = width
@@ -43,15 +152,15 @@ func (entity *ObjectFrame) SetObjectFrameBounds(width, height, depth, barLength 
 }
 
 func (entity *ObjectFrame) UpdateObjectFrameBounds(width, height, depth, barLength float32) {
-	updateFragmentsFromBounds(&entity.objects, width, height, depth, barLength)
+	updateFragmentsFromBounds(&entity.objects, width, height, depth, barLength, entity.frameStyle)
 }
 
-func generateFragments(font *v41.Font) []*TEntity {
+func generateFragments(font *v41.Font, frameStyle FrameStyle) []*TEntity {
 	fragments := []*TEntity{}
 	trans := &mgl.Vec3{}
 	rot := &mgl.Vec3{}
 	scale := &mgl.Vec3{}
-	for range 12 {
+	for range FrameStyleSizes[frameStyle] {
 		c1 := &Cube{}
 		c1.Init(font, "")
 		c1t := &camera.Transform3D{PositionAnimator: camera.InitAnimator(trans, trans), Rotate: rot, Scale: scale}
@@ -62,65 +171,11 @@ func generateFragments(font *v41.Font) []*TEntity {
 	return fragments
 }
 
-func getBoxFrameFragments(height, width, depth, barLength float32) [][]*mgl.Vec3 {
-	hheight := (height / 2)
-	hwidth := (width / 2)
-	hdepth := (depth / 2)
-	return [][]*mgl.Vec3{
-		// translate
-		{
-			{0, hheight, hdepth},   // front up bar (0, +y, +z)
-			{0, -hheight, hdepth},  // front down bar (0, -y, +z)
-			{-hwidth, 0, hdepth},   // front left bar (-x, 0, +z)
-			{hwidth, 0, hdepth},    // front right bar (x, 0, +z)
-			{-hwidth, hheight, 0},  // top left bar (-x, y, 0)
-			{hwidth, hheight, 0},   // top right bar (x, y, 0)
-			{-hwidth, -hheight, 0}, // bottom left bar (-x, -y, 0)
-			{hwidth, -hheight, 0},  // bottom right bar (x, -y, 0)
-			{0, hheight, -hdepth},  // back up bar (0, +y, -z)
-			{0, -hheight, -hdepth}, // back down bar (0, -y, -z)
-			{-hwidth, 0, -hdepth},  // back left bar (-x, 0, -z)
-			{hwidth, 0, -hdepth},   // back right bar (x, 0, -z)
-		},
-		// scale
-		{
-			{width + barLength, barLength, barLength}, // front up bar (0, +y, +z)
-			{width + barLength, barLength, barLength}, // front down bar (0, -y, +z)
-			{barLength, height, barLength},            // front left bar (-x, 0, +z)
-			{barLength, height, barLength},            // front right bar (x, 0, +z)
-			{barLength, barLength, depth},             // top left bar (-x, y, 0)
-			{barLength, barLength, depth},             // top right bar (x, y, 0)
-			{barLength, barLength, depth},             // bottom left bar (-x, -y, 0)
-			{barLength, barLength, depth},             // bottom right bar (x, -y, 0)
-			{width + barLength, barLength, barLength}, // back up bar (0, +y, -z)
-			{width + barLength, barLength, barLength}, // back down bar (0, -y, -z)
-			{barLength, height, barLength},            // back left bar (-x, 0, -z)
-			{barLength, height, barLength},            // back right bar (x, 0, -z)
-		},
-		// rotate
-		{
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-			{0, 0, 0},
-		},
-	}
-}
-
-func updateFragmentsFromBounds(fragments *[]*TEntity, width, height, depth, barLength float32) {
+func updateFragmentsFromBounds(fragments *[]*TEntity, width, height, depth, barLength float32, frameStyle FrameStyle) {
 	if fragments == nil {
 		return
 	}
-	loadedFragments := getBoxFrameFragments(height, width, depth, barLength)
-	// loadedFragments := getBottomBoxFrameFragments(height, width, depth, barLength)
+	loadedFragments := FrameStyleFragments[frameStyle](width, height, depth, barLength)
 	for i := range loadedFragments[0] {
 		(*fragments)[i].transform.PositionAnimator.X_init = loadedFragments[0][i]
 		(*fragments)[i].transform.Scale = loadedFragments[1][i]
@@ -133,8 +188,8 @@ func (entity *ObjectFrame) Init(font *v41.Font, text string) {
 	entity.text = fonts.CreateText(text, font, &mgl.Vec3{0.35546875, 0.56640625, 0.23046875}, 0.5)
 
 	entity.thicknessRatio = 10
-	entity.objects = generateFragments(font)
-	updateFragmentsFromBounds(&entity.objects, entity.width, entity.height, entity.depth, entity.barLength)
+	entity.objects = generateFragments(font, entity.frameStyle)
+	updateFragmentsFromBounds(&entity.objects, entity.width, entity.height, entity.depth, entity.barLength, entity.frameStyle)
 	log.Printf("created object frame\n")
 }
 
