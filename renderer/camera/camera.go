@@ -209,9 +209,10 @@ func (c *Camera) GetModel(transforms *Transform3D) mgl.Mat4 {
 	if transforms != nil {
 		translateMat4, scaleMat4, rotateMat4, ipRotateMat4 := mgl.Ident4(), mgl.Ident4(), mgl.Ident4(), mgl.Ident4()
 		if transforms.PositionAnimator.X_init != nil {
-			// fmt.Println("setting last translate:")
-			// logg.PrintVec3(*transforms.PositionAnimator.X_init)
-			translateMat4 = mgl.Translate3D(transforms.PositionAnimator.X_init.X(), transforms.PositionAnimator.X_init.Y(), transforms.PositionAnimator.X_init.Z())
+			translateMat4 = mgl.Translate3D(
+				transforms.PositionAnimator.X_init.X(),
+				transforms.PositionAnimator.X_init.Y(),
+				transforms.PositionAnimator.X_init.Z())
 		}
 		if transforms.Scale != nil {
 			scaleMat4 = mgl.Scale3D(transforms.Scale.X(), transforms.Scale.Y(), transforms.Scale.Z())

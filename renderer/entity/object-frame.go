@@ -24,6 +24,7 @@ type FrameFragmentGetter func(height, width, depth, barLength float32) [][]*mgl.
 const (
 	FrameStyleBorder       FrameStyle = iota
 	FrameStyleBottomBorder FrameStyle = iota
+	FrameStyleBottomPlane  FrameStyle = iota
 )
 
 var FrameStyleSizes map[FrameStyle]int
@@ -33,6 +34,7 @@ func init() {
 	FrameStyleSizes = make(map[FrameStyle]int)
 	FrameStyleSizes[FrameStyleBorder] = 12
 	FrameStyleSizes[FrameStyleBottomBorder] = 4
+	FrameStyleSizes[FrameStyleBottomPlane] = 1
 
 	FrameStyleFragments = make(map[FrameStyle]FrameFragmentGetter)
 	FrameStyleFragments[FrameStyleBorder] = func(width, height, depth, barLength float32) [][]*mgl.Vec3 {
@@ -111,6 +113,22 @@ func init() {
 				{0, 0, 0},
 				{0, 0, 0},
 				{0, 0, 0},
+				{0, 0, 0},
+			},
+		}
+	}
+	FrameStyleFragments[FrameStyleBottomPlane] = func(width, height, depth, barLength float32) [][]*mgl.Vec3 {
+		return [][]*mgl.Vec3{
+			// translate
+			{
+				{0, -height / 2.0, 0}, // front down bar (0, -y, +z)
+			},
+			// scale
+			{
+				{width + barLength, barLength, depth + barLength}, // front down bar (0, -y, +z)
+			},
+			// rotate
+			{
 				{0, 0, 0},
 			},
 		}

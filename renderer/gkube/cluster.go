@@ -466,7 +466,7 @@ func (gc *GCluster) UpdateGObjectFrames(debug bool) {
 					logg.PrintVec3(center)
 					logg.PrintVec3(bounds)
 				}
-				gobjectFrame.UpdateObjectFrame(center, bounds, entity.FrameStyleBottomBorder, func() {
+				gobjectFrame.UpdateObjectFrame(center, bounds, entity.FrameStyleBottomPlane, func() {
 					gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
 					if debug {
 						fmt.Println("gobjectframe: shaders updated")
@@ -660,7 +660,7 @@ func (gc *GCluster) AddGObject(event GObjectEvent) {
 		boundaryPadding := mgl.Vec3{5, -3, 5}
 		hasPoints, center, bounds := gc.getBounds(boundaryPadding, GOBJECTFRAME_FILTER_SAME_NAMESPACE(gof))
 		if hasPoints {
-			gof.SetObjectFrame(center, bounds, entity.FrameStyleBottomBorder, func() {
+			gof.SetObjectFrame(center, bounds, entity.FrameStyleBottomPlane, func() {
 				gc.GetMainScene().Update() // refresh shader after unsync between gd.Create and gd.SetFrame change
 			})
 		}
