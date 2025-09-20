@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"fmt"
+	"log"
 
 	mgl "github.com/go-gl/mathgl/mgl32"
 )
@@ -33,7 +33,7 @@ func initFrameStyle(frameStyle FrameStyle, getterFn func(width, height, depth, b
 		FrameStyleSizes[frameStyle] = size
 		FrameStyleFragments[frameStyle] = getterFn
 	} else {
-		fmt.Printf("initFrameStyle: Failed to initialize frame style for enum %d\n", frameStyle)
+		log.Printf("initFrameStyle: Failed to initialize frame style for enum %d\n", frameStyle)
 	}
 }
 
@@ -42,13 +42,13 @@ func validateFrameStyleSize(getterFn func(width, height, depth, barLength float3
 	arr := getterFn(0, 0, 0, 0)
 	if len(arr) != 3 {
 		// return false if translate/scale/rotate properties don't exist
-		fmt.Println("validateFrameStyleSize: Failed. TSR array does not have length 3.")
+		log.Println("validateFrameStyleSize: Failed. TSR array does not have length 3.")
 		return 0, false
 	}
 	currSize := len(arr[0])
 	for i := 1; i < 3; i++ {
 		if currSize != len(arr[i]) {
-			fmt.Printf("validateFrameStyleSize: Failed. TSR array at index %d does not match the prior TSR array vertices. Expected %d but got %d.\n", i, currSize, len(arr[i]))
+			log.Printf("validateFrameStyleSize: Failed. TSR array at index %d does not match the prior TSR array vertices. Expected %d but got %d.\n", i, currSize, len(arr[i]))
 			return 0, false
 		}
 	}
