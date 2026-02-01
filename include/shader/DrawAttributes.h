@@ -34,5 +34,11 @@ struct DrawAttributes
 	// light attributes
 	unsigned int lightSwitch;
 	bool lightBlinn;
+	
+	friend std::ostream& operator<<(std::ostream& os, const DrawAttributes& da);
+	
+	void serialize(std::ostream& os) const;
+	static DrawAttributes deserialize(std::istream& is);
 };
+
 #endif

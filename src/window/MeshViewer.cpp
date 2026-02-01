@@ -1,5 +1,6 @@
 #include "window/MeshViewer.h"
 #include <algorithm>
+#include <iostream>
 
 MeshViewer::MeshViewer(int x, int y, int width, int height) 
     : BaseWindow(x, y, width, height)
@@ -99,6 +100,41 @@ void MeshViewer::showGUI()
         ImGui::Text("lightSwitch: %u texture: %d",
             mesh->da.lightSwitch,
             mesh->da.texture ? 1 : 0);
+
+        if (ImGui::Button("Print State")) {
+            std::cout << mesh->da << std::endl;
+        }
+        if (ImGui::Button("Save State")) {
+            std::cout << "Saving state as: " << std::endl;
+            std::ofstream meshOut("../output/mesh.txt");
+            if (!meshOut)
+            return;
+            mesh->da.serialize(meshOut);
+            std::cout << "Successfully saved!" << std::endl;
+        }
+        if (ImGui::Button("Load State")) {
+            std::cout << "Loading state: " << std::endl;
+            std::ifstream meshIn("../output/mesh.txt");
+            if (!meshIn)
+            return;
+            DrawAttributes loadedDrawAttribs = DrawAttributes::deserialize(meshIn);
+            std::cout << loadedDrawAttribs << std::endl;
+            mesh->da = loadedDrawAttribs;
+            wireframe = loadedDrawAttribs.wireframe;
+            tesselate = loadedDrawAttribs.tesselate;
+            normal = loadedDrawAttribs.normal;
+            texture = loadedDrawAttribs.texture;
+            lighting = !loadedDrawAttribs.color;
+            blinn = loadedDrawAttribs.lightBlinn;
+            main_rgb[0] = loadedDrawAttribs.solidColor.x;
+            main_rgb[1] = loadedDrawAttribs.solidColor.y;
+            main_rgb[2] = loadedDrawAttribs.solidColor.z;
+            wireframe = loadedDrawAttribs.wireframe;
+
+            dir_light = (loadedDrawAttribs.lightSwitch & 1) != 0;
+            point_light = (loadedDrawAttribs.lightSwitch & (1 << 1)) != 0;
+            spot_light = (loadedDrawAttribs.lightSwitch & (1 << 2)) != 0;
+        }
         ImGui::End();
 
         // apply configs
@@ -110,7 +146,6 @@ void MeshViewer::showGUI()
         mesh->da.solidColor = glm::vec3(main_rgb[0], main_rgb[1], main_rgb[2]);
         mesh->da.materialAttributes.diffuse = mesh->da.solidColor;
         mesh->da.useVertexColor = false;
-        mesh->da.wireframe = wireframe;
         if (!lighting)
         {
             mesh->da.lightSwitch = 0;
