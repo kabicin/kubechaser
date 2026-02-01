@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib storageclass.mtl
 o sc-solid
 v 0.000000 -0.200841 -1.259685
 v 0.000000 0.413390 -1.259685

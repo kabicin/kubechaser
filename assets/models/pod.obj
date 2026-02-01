@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib pod.mtl
 o pod
 v 0.000000 -0.468977 0.904219
 v 0.000000 0.468977 0.904219

@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib k8sreplicaset4.mtl
 o replicaset
 v -1.445296 -1.129975 1.427834
 v -1.445296 0.342442 1.427834

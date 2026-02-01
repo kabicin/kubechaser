@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib daemonset.mtl
 o daemonset
 v -1.445296 -1.000731 1.427833
 v -1.444989 -1.225128 1.425690

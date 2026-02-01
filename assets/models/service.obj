@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib service.mtl
 o Cube
 v -0.652228 0.553721 0.652228
 v 0.689736 -1.114965 0.418270

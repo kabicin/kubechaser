@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib deploy.mtl
 o deployment
 v 0.000000 1.433309 1.260323
 v 0.245877 1.409093 1.260324

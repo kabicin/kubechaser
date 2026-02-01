@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib cronjob.mtl
 o cronjob
 v -0.584682 -0.929648 -0.414180
 v -1.454625 -0.929648 -0.414180

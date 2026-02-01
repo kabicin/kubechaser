@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib configmap.mtl
 o configmap
 v -1.182852 -1.013472 0.124872
 v -1.182852 1.013472 0.124872

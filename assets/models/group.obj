@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib group.mtl
 o group
 v -1.288531 -1.288531 0.359865
 v -1.288531 1.288531 0.359865

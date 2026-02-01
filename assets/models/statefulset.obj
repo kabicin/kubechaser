@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib statefulset.mtl
 o statefulset
 v -1.445296 -1.129975 1.427834
 v -0.556008 1.135907 0.567818
