@@ -67,9 +67,6 @@ void MeshViewer::showGUI()
         static bool tesselate = false;
         ImGui::Checkbox("tesselate", &tesselate);
         ImGui::SameLine();
-        static bool phong_tesselate = false;
-        ImGui::Checkbox("phong_tesselate", &phong_tesselate);
-        ImGui::SameLine();
         static bool normal = false;
         ImGui::Checkbox("normal", &normal);
         ImGui::SameLine();
@@ -104,21 +101,9 @@ void MeshViewer::showGUI()
             mesh->da.texture ? 1 : 0);
         ImGui::End();
 
-        // when tesselate is on and phong_tesselate is enabled, turn off tesselate
-        if (mesh->da.tesselate && phong_tesselate)
-        {
-            tesselate = false;
-        }
-        // when phong tesselate is on and tesselate is enabled, turn off phong_tesselate
-        if (mesh->da.phong_tesselate && tesselate)
-        {
-            phong_tesselate = false;
-        }
-
         // apply configs
         mesh->da.wireframe = wireframe;
         mesh->da.tesselate = tesselate;
-        mesh->da.phong_tesselate = phong_tesselate;
         mesh->da.normal = normal;
         mesh->da.texture = false;
         mesh->da.color = !lighting;

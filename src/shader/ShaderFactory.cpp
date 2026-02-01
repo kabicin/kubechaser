@@ -12,7 +12,6 @@ ShaderType ShaderType_NONE = 16;
 ShaderArgs ShaderArgs_Texture = 1;
 ShaderArgs ShaderArgs_Normal = 2;
 ShaderArgs ShaderArgs_Tesselate_5 = 4;
-ShaderArgs ShaderArgs_Tesselate_Phong_5 = 8;
 ShaderArgs ShaderArgs_Lighting = 16;
 ShaderArgs ShaderArgs_Color = 32; 
 
@@ -59,7 +58,7 @@ int ShaderFactory::isShaderCached(const ShaderArgs& shaderArgs)
 ShaderType ShaderFactory::convertExtraShaderArgsToType(const ShaderArgs& extraShaderArgs)
 {
     ShaderType shaderType = ShaderType_Vertex | ShaderType_Fragment;
-    if (extraShaderArgs & (ShaderArgs_Tesselate_5 | ShaderArgs_Tesselate_Phong_5))
+    if (extraShaderArgs & ShaderArgs_Tesselate_5)
     {
         shaderType |= ShaderType_TCS | ShaderType_TES;
         // this is used for calls to IsTesselationEnabled()
@@ -232,12 +231,6 @@ void ShaderFactory::populateShader(MutableShader& shader)
                 shader.object.AddBody("normal_cs_in = mat3(transpose(inverse(model))) * normal_vs_in;");
             }
         }
-        else if (shader.args & ShaderArgs_Tesselate_Phong_5)
-        {
-            shader.object.AddVariable(VarType::VertexAttributeInput, "vec3", "normal_vs_in", 1);
-            shader.object.AddVariable(VarType::Output, "vec3", "normal_cs_in");
-            shader.object.AddBody("normal_cs_in = mat3(transpose(inverse(model))) * normal_vs_in;");
-        }
         else if (shader.args & ShaderArgs_Normal)
         {
             shader.object.AddVariable(VarType::VertexAttributeInput, "vec3", "normal_vs_in", 1);
@@ -248,7 +241,7 @@ void ShaderFactory::populateShader(MutableShader& shader)
         // lighting shader needs fragment shader to have position variable
         if (shader.args & ShaderArgs_Lighting)
         {
-            if (shader.args & (ShaderArgs_Tesselate_5 | ShaderArgs_Tesselate_Phong_5))
+            if (shader.args & ShaderArgs_Tesselate_5)
             {
                 shader.object.AddVariable(VarType::Output, "vec3", "pos_cs_in");
                 shader.object.AddBody("pos_cs_in = vec3(model * vec4(pos_vs_in, 1.0));");
@@ -261,7 +254,7 @@ void ShaderFactory::populateShader(MutableShader& shader)
         if (shader.args & ShaderArgs_Texture)
         {
             shader.object.AddVariable(VarType::VertexAttributeInput, "vec2", "uv_vs_in", 2);
-            if (shader.args & (ShaderArgs_Tesselate_5 | ShaderArgs_Tesselate_Phong_5))
+            if (shader.args & ShaderArgs_Tesselate_5)
             {
                 shader.object.AddVariable(VarType::Output, "vec2", "uv_cs_in");
                 shader.object.AddBody("uv_cs_in = uv_vs_in;");
@@ -276,7 +269,7 @@ void ShaderFactory::populateShader(MutableShader& shader)
         if (shader.args & ShaderArgs_Color) 
         {
             shader.object.AddVariable(VarType::VertexAttributeInput, "vec3", "color_vs_in", 3);
-            if (shader.args & (ShaderArgs_Tesselate_5 | ShaderArgs_Tesselate_Phong_5))
+            if (shader.args & ShaderArgs_Tesselate_5)
             {
                 shader.object.AddVariable(VarType::Output, "vec3", "color_cs_in");
                 shader.object.AddBody("color_cs_in = color_vs_in;");
@@ -300,7 +293,7 @@ void ShaderFactory::populateShader(MutableShader& shader)
             shader.object.AddVariable(VarType::Input, "vec2", "uv_fs_in");
             shader.object.AddVariable(VarType::Uniform, "sampler2D", "Texture");
         }
-        if (shader.args & (ShaderArgs_Tesselate_Phong_5 | ShaderArgs_Normal))
+        if (shader.args & ShaderArgs_Normal)
         {
             shader.object.AddVariable(VarType::Input, "vec3", "normal_fs_in");
         }
@@ -356,7 +349,7 @@ void ShaderFactory::populateShader(MutableShader& shader)
      */
     else if (shader.type & ShaderType_TCS)
     {
-        if (shader.args & (ShaderArgs_Tesselate_5 | ShaderArgs_Tesselate_Phong_5))
+        if (shader.args & ShaderArgs_Tesselate_5)
         {
             shader.object.AddCustomVariable("layout (vertices = 3) out;");
             shader.object.AddBody("\
@@ -374,7 +367,7 @@ gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n");
                 shader.object.AddCustomVariable("out vec2 uv_es_in[];");
                 shader.object.AddBody("uv_es_in[gl_InvocationID] = uv_cs_in[gl_InvocationID];\n");
             }
-            if (shader.args & (ShaderArgs_Tesselate_Phong_5 | ShaderArgs_Normal))
+            if (shader.args & ShaderArgs_Normal)
             {  
                 shader.object.AddCustomVariable("in vec3 normal_cs_in[];");
                 shader.object.AddCustomVariable("out vec3 normal_es_in[];");
@@ -394,7 +387,7 @@ gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n");
      */
     else if (shader.type & ShaderType_TES)
     {
-        if (shader.args & (ShaderArgs_Tesselate_5 | ShaderArgs_Tesselate_Phong_5))
+        if (shader.args & ShaderArgs_Tesselate_5)
         {
             shader.object.AddCustomVariable("layout(triangles, equal_spacing, ccw) in;");
             if (shader.args & ShaderArgs_Tesselate_5)
@@ -414,45 +407,6 @@ gl_Position = u * gl_in[0].gl_Position + v * gl_in[1].gl_Position + w * gl_in[2]
                     shader.object.AddCustomVariable("in vec3 normal_es_in[];");
                     shader.object.AddCustomVariable("out vec3 normal_fs_in;");
                     shader.object.AddBody("normal_fs_in = u * normal_es_in[0] + v * normal_es_in[1] + w * normal_es_in[2];\n");
-                }
-            }
-            else if (shader.args & (ShaderArgs_Tesselate_Phong_5 | ShaderArgs_Normal))
-            {
-                // impl from http://www.klayge.org/material/4_0/PhongTess/PhongTessellation.pdf
-                shader.object.AddCustomVariable("in vec3 normal_es_in[];");
-                shader.object.AddCustomVariable("out vec3 normal_fs_in;");
-                shader.object.AddBody("float u = gl_TessCoord.x;\n\
-float v = gl_TessCoord.y;\n\
-float w = gl_TessCoord.z;\n\
-\n\
-vec4 v0 = gl_in[0].gl_Position;\n\
-vec4 v1 = gl_in[1].gl_Position;\n\
-vec4 v2 = gl_in[2].gl_Position;\n\
-\n\
-vec4 n0 = vec4(normal_es_in[0], 1);\n\
-vec4 n1 = vec4(normal_es_in[1], 1);\n\
-vec4 n2 = vec4(normal_es_in[2], 1);\n\
-\n\
-vec4 pos = u * v0 + v * v1 + w * v2;\n\
-\n\
-float t0 = (dot(v0, n0) - dot(pos, n0)) / (dot(n0, n0));\n\
-vec4 pv0 = pos + t0 * n0;\n\
-\n\
-float t1 = (dot(v1, n1) - dot(pos, n1)) / (dot(n1, n1));\n\
-vec4 pv1 = pos + t1 * n1;\n\
-\n\
-float t2 = (dot(v2, n2) - dot(pos, n2)) / (dot(n2, n2));\n\
-vec4 pv2 = pos + t2 * n2;\n\
-\n\
-vec4 newpos = u * pv0 + v * pv1 + w * pv2;\n\
-\n\
-gl_Position = newpos;\n\
-normal_fs_in = u * normal_es_in[0] + v * normal_es_in[1] + w * normal_es_in[2];\n");
-                if (shader.args & ShaderArgs_Texture)
-                {
-                    shader.object.AddCustomVariable("in vec2 uv_es_in[];");
-                    shader.object.AddCustomVariable("out vec2 uv_fs_in;");
-                    shader.object.AddBody("uv_fs_in = u * uv_es_in[0] + v * uv_es_in[1] + w * uv_es_in[2];\n");
                 }
             }
             // lighting needs fragment shader to have vertex position
@@ -626,8 +580,6 @@ void ShaderFactory::Use(const DrawAttributes& da, const glm::vec3& cameraPos) {
     ShaderArgs args = 0;
     // add draw attribute configs here
     if (da.tesselate) args |= ShaderArgs_Tesselate_5;
-    else if (da.phong_tesselate) args |= ShaderArgs_Tesselate_Phong_5;
-
     if (da.normal) args |= ShaderArgs_Normal;
     if (da.texture) args |= ShaderArgs_Texture;
     if (da.lightBlinn || da.lightSwitch) {

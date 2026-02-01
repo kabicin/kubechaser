@@ -22,7 +22,6 @@ extern ShaderType ShaderType_NONE;
 extern ShaderArgs ShaderArgs_Texture;
 extern ShaderArgs ShaderArgs_Normal;
 extern ShaderArgs ShaderArgs_Tesselate_5;
-extern ShaderArgs ShaderArgs_Tesselate_Phong_5;
 extern ShaderArgs ShaderArgs_Lighting;
 extern ShaderArgs ShaderArgs_Color;
 

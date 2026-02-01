@@ -249,7 +249,7 @@ void Mesh::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
 
     if (da.wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     
-    if (da.tesselate || da.phong_tesselate)
+    if (da.tesselate)
     {
         glPatchParameteri(GL_PATCH_VERTICES, 3);
         glDrawArrays(GL_PATCHES, 0, num_vertices);

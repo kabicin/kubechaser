@@ -8,7 +8,6 @@ struct DrawAttributes
 	{
 		wireframe = false;
 		tesselate = false;
-		phong_tesselate = false;
 		normal = false;
 		texture = false;
 		passthrough = false;
@@ -23,7 +22,6 @@ struct DrawAttributes
 	}
 	bool wireframe;
 	bool tesselate;
-	bool phong_tesselate;
 	bool normal;
 	bool texture;
 	bool passthrough;
