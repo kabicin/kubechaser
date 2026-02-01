@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib quota.mtl
 o quota
 v 0.000000 0.973844 -0.417630
 v -0.920208 -0.363082 0.417769

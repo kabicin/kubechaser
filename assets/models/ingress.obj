@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib ingress.mtl
 o ingress
 v -1.632443 0.594997 0.273016
 v -1.632443 1.147135 0.273016

@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib crd.mtl
 o crd
 v -1.194345 -1.335307 0.431631
 v 1.155110 0.090366 -0.236916

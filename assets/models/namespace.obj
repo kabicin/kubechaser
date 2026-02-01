@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib namespace.mtl
 o namespace
 v -1.120894 -0.998118 1.127480
 v -1.120894 0.998118 1.127480

@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib job.mtl
 o job
 v -0.305580 -1.175523 0.316800
 v -1.175523 -1.175523 0.316800

@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib networkpolicy.mtl
 o network-policy
 v -0.160270 1.311360 -0.305397
 v -0.160270 1.311360 0.305397

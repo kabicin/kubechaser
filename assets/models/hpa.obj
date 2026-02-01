@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib hpa.mtl
 o hpa
 v 0.299448 -0.104654 -1.369213
 v -1.187285 -1.148978 1.194262

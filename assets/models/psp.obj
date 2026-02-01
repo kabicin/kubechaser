@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib psp.mtl
 o psp
 v -0.301313 0.075951 0.160552
 v -0.301313 1.013906 0.160552
