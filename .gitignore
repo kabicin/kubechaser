@@ -1,4 +1,4 @@
-dev.sh
-fontconfigs/**
 .vscode
 .DS_Store
+src/shader/mutable_shader_*.*
+build/
