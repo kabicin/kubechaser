@@ -11,7 +11,7 @@
 ## Install
 You will need `cmake`  and to install run 
 ```
-git clone https://github.com/kabicin/kubechaser.git; cd kubechaser; ./scripts/build_and_run.sh
+git clone --recurse-submodules https://github.com/kabicin/kubechaser.git; cd kubechaser; ./scripts/build_and_run.sh
 ```
 
 ## Dependencies
