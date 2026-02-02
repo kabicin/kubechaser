@@ -3,10 +3,10 @@
 struct PCVertex
 {
 	PCVertex() {}
-	PCVertex(float x, float y, float z, float cx, float cy, float cz)
-		: Pos{ x,y,z }, Color{ cx, cy, cz } {}
+	PCVertex(float x, float y, float z, float cx, float cy, float cz, float ca)
+		: Pos{ x,y,z }, Color{ cx, cy, cz, ca } {}
 	float Pos[3];
-	float Color[3];
+	float Color[4];
 };
 
 struct UVVertex

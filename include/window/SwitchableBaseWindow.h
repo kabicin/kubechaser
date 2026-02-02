@@ -10,7 +10,8 @@
 #include <memory>
 #include "window/BaseFrame.h"
 #include "window/BaseWindow.h"
-#include "window/SceneControl.h"
+class SceneControl;
+class SceneWorld;
 #include "window/MeshViewer.h"
 
 class SwitchableBaseWindow : public BaseFrame
@@ -27,6 +28,7 @@ public:
     void AddWindow(std::shared_ptr<BaseWindow> window);
     void Resize(int x, int y, int width, int height);
     std::shared_ptr<MeshViewer> GetMeshViewer();
+    std::shared_ptr<SceneWorld> GetSceneWorld();
     void SetActiveMeshViewer(int meshViewerIndex);
 };
 

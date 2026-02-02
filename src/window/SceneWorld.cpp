@@ -36,7 +36,7 @@ void SceneWorld::Resize(int x, int y, int width, int height)
 
 void SceneWorld::Render()
 {
-    ClearBackground(0.3f, 0.3f, 0.3f, 1.0f);
+    ClearBackground(0.1f, 0.2f, 0.65f, 1.0f);
     ImGuiIO& io = ImGui::GetIO();
     int fbWidth = static_cast<int>(GetWidth() * io.DisplayFramebufferScale.x);
     int fbHeight = static_cast<int>(GetHeight() * io.DisplayFramebufferScale.y);
@@ -46,7 +46,12 @@ void SceneWorld::Render()
     if (camera) {
         camera->UpdateFrame(GetTime()->GetLastDeltaFrames());
     }
-    if (scene) scene->Render(GetShaderFactory(), camera);
+    if (manager) {
+        manager->UpdateActiveScenes(camera ? camera->GetCameraPos() : glm::vec3(0.0f));
+        manager->RenderActive(GetShaderFactory(), camera);
+    } else if (scene) {
+        scene->Render(GetShaderFactory(), camera);
+    }
 }
 
 void SceneWorld::AddCamera(std::shared_ptr<Camera> playerCamera)
@@ -57,6 +62,20 @@ void SceneWorld::AddCamera(std::shared_ptr<Camera> playerCamera)
 void SceneWorld::AddScene(std::shared_ptr<Scene> scene)
 {
     this->scene = scene;
+}
+
+void SceneWorld::AddSceneManager(std::shared_ptr<SceneManager> manager)
+{
+    this->manager = manager;
+}
+
+void SceneWorld::SetShowGrid(bool enabled)
+{
+    if (manager) {
+        manager->SetShowGrid(enabled, camera);
+    } else if (scene) {
+        scene->SetShowGrid(enabled, camera);
+    }
 }
 
 void SceneWorld::handleInput()

@@ -2,6 +2,7 @@
 #define SCENEWORLD_H
 #include "BaseWindow.h"
 #include "scene/Scene.h"
+#include "scene/SceneManager.h"
 #include "utility/Camera.h"
 #include <unordered_map>
 #include <vector>
@@ -13,6 +14,7 @@ class SceneWorld : public BaseWindow
 private:
     std::shared_ptr<Camera> camera;
     std::shared_ptr<Scene> scene;
+    std::shared_ptr<SceneManager> manager;
     void handleInput();
     static std::bitset<GLFW_KEY_LAST + 1> pressed;
     static bool look_active;
@@ -33,5 +35,7 @@ public:
 
     void AddCamera(std::shared_ptr<Camera> playerCamera);
     void AddScene(std::shared_ptr<Scene> scene);
+    void AddSceneManager(std::shared_ptr<SceneManager> manager);
+    void SetShowGrid(bool enabled);
 };
 #endif

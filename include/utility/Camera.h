@@ -35,7 +35,7 @@ private:
 	int m_width, m_height;
 
 	const float n = 0.1;
-	const float f = 100;
+	const float f = 500;
 	const float cameraSpeed = 0.1;
 
 	const glm::vec3 initialCameraPos = glm::vec3(0.0f, 0.0f, 5.0f);

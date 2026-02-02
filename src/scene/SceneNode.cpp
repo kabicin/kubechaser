@@ -41,13 +41,3 @@ void SceneNode::Render(const std::shared_ptr<ShaderFactory>& factory, const std:
         dynamicObjects[i]->Draw(factory, camera);
     }
 }
-
-std::array<std::shared_ptr<SceneNode>, 8> SceneNode::GetBoundary()
-{
-    return boundary;
-}
-
-void SceneNode::SetBoundary(const std::array<std::shared_ptr<SceneNode>, 8>&  boundary)
-{
-    this->boundary = boundary;
-}

@@ -50,14 +50,14 @@ void SceneControl::Render()
         ImGui::PushStyleColor(ImGuiCol_Text, imColorWhite);
         ImGui::Text("Scene World");
         ImGui::PopStyleColor();
-        if (ImGui::Button("Open"))
+        if (ImGui::Button("Open##SceneWorld"))
         {
             changeWindow(1);
         }
         ImGui::PushStyleColor(ImGuiCol_Text, imColorWhite);
         ImGui::Text("Mesh Viewer");
         ImGui::PopStyleColor();
-        if (ImGui::Button("Open"))
+        if (ImGui::Button("Open##MeshViewer"))
         {
             changeWindow(0);
         }
@@ -145,6 +145,11 @@ void SceneControl::Render()
 
         ImGui::PushStyleColor(ImGuiCol_Text, imColorGrey);
         ImGui::Checkbox("Grid", &SceneBuilder::showGrid);
+        if (auto switcher = sbWindow.lock()) {
+            if (auto sceneWorld = switcher->GetSceneWorld()) {
+                sceneWorld->SetShowGrid(SceneBuilder::showGrid);
+            }
+        }
         ImGui::PopStyleColor();
 
         ImGui::End();

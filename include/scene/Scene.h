@@ -9,8 +9,6 @@ class Scene
 {
 private:
     std::shared_ptr<SceneNode> root;
-    int nodeRadius = 2;
-    glm::vec3 getModelTranslate(int direction);
     bool showGrid = false;
     std::shared_ptr<Grid> grid;
 

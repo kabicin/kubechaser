@@ -115,37 +115,49 @@ glm::vec3 Camera::GetCameraPos()
 void Camera::SetForward()
 {
 	cameraDirection -= cameraFront;
-	cameraDirection = glm::normalize(cameraDirection);
+	if (glm::length(cameraDirection) > 0.0f) {
+		cameraDirection = glm::normalize(cameraDirection);
+	}
 }
 
 void Camera::SetBackward()
 {
 	cameraDirection += cameraFront;
-	cameraDirection = glm::normalize(cameraDirection);
+	if (glm::length(cameraDirection) > 0.0f) {
+		cameraDirection = glm::normalize(cameraDirection);
+	}
 }
 
 void Camera::SetRight()
 {
 	cameraDirection -= glm::normalize(glm::cross(cameraFront, cameraUp));
-	cameraDirection = glm::normalize(cameraDirection);
+	if (glm::length(cameraDirection) > 0.0f) {
+		cameraDirection = glm::normalize(cameraDirection);
+	}
 }
 
 void Camera::SetLeft()
 {
 	cameraDirection += glm::normalize(glm::cross(cameraFront, cameraUp));
-	cameraDirection = glm::normalize(cameraDirection);
+	if (glm::length(cameraDirection) > 0.0f) {
+		cameraDirection = glm::normalize(cameraDirection);
+	}
 }
 
 void Camera::SetUp()
 {
 	cameraDirection += cameraUp;
-	cameraDirection = glm::normalize(cameraDirection);
+	if (glm::length(cameraDirection) > 0.0f) {
+		cameraDirection = glm::normalize(cameraDirection);
+	}
 }
 
 void Camera::SetDown()
 {
 	cameraDirection -= cameraUp;
-	cameraDirection = glm::normalize(cameraDirection);
+	if (glm::length(cameraDirection) > 0.0f) {
+		cameraDirection = glm::normalize(cameraDirection);
+	}
 }
 
 void Camera::SetCenter()

@@ -268,15 +268,15 @@ void ShaderFactory::populateShader(MutableShader& shader)
 
         if (shader.args & ShaderArgs_Color) 
         {
-            shader.object.AddVariable(VarType::VertexAttributeInput, "vec3", "color_vs_in", 3);
+            shader.object.AddVariable(VarType::VertexAttributeInput, "vec4", "color_vs_in", 3);
             if (shader.args & ShaderArgs_Tesselate_5)
             {
-                shader.object.AddVariable(VarType::Output, "vec3", "color_cs_in");
+                shader.object.AddVariable(VarType::Output, "vec4", "color_cs_in");
                 shader.object.AddBody("color_cs_in = color_vs_in;");
             }
             else
             {
-                shader.object.AddVariable(VarType::Output, "vec3", "color_fs_in");
+                shader.object.AddVariable(VarType::Output, "vec4", "color_fs_in");
                 shader.object.AddBody("color_fs_in = color_vs_in;");
             }
         }
@@ -299,7 +299,7 @@ void ShaderFactory::populateShader(MutableShader& shader)
         }
         if (shader.args & ShaderArgs_Color)
         {
-            shader.object.AddVariable(VarType::Input, "vec3", "color_fs_in");
+            shader.object.AddVariable(VarType::Input, "vec4", "color_fs_in");
             shader.object.AddVariable(VarType::Uniform, "vec3", "solidColor");
             shader.object.AddVariable(VarType::Uniform, "int", "useVertexColor");
         }
@@ -333,7 +333,7 @@ void ShaderFactory::populateShader(MutableShader& shader)
             }
             else if (shader.args & ShaderArgs_Color)
             {
-                colorVector = "(useVertexColor != 0 ? vec4(color_fs_in, 1.0f) : vec4(solidColor, 1.0f));";
+                colorVector = "(useVertexColor != 0 ? color_fs_in : vec4(solidColor, 1.0f));";
             }
             else
             {

@@ -18,17 +18,6 @@ SceneBuilder::SceneBuilder(int x, int y, int width, int height)
         root->AddDynamicObject(entity);
     }
 
-    // repeat for each node on boundary to test..
-    std::array<std::shared_ptr<SceneNode>, 8> boundary;
-    for (int i = 0; i < 8; i++) {
-        std::shared_ptr<SceneNode> node = std::make_shared<SceneNode>();
-        for (std::shared_ptr<Entity> entity : entities) {
-            node->AddDynamicObject(entity);
-        }
-        boundary[i] = node;
-    }
-    root->SetBoundary(boundary);
-
     // initialize scene based on root
     scene = std::make_shared<Scene>(root);
 }

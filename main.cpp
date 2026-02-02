@@ -4,6 +4,7 @@
 #include "window/BaseFrame.h"
 #include "window/BaseWindow.h"
 #include "window/SwitchableBaseWindow.h"
+#include "scene/SceneManager.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "dearimgui.h"
@@ -170,17 +171,18 @@ int main()
 
 
     std::shared_ptr<SceneNode> root = std::make_shared<SceneNode>();
-    root->AddStaticObject(std::make_shared<Mesh>("statefulset.obj"));
-
-    std::array<std::shared_ptr<SceneNode>, 8> boundary = {};
-    root->SetBoundary(boundary);
+    std::shared_ptr<Mesh> rootMesh = std::make_shared<Mesh>("statefulset.obj");
+    rootMesh->Translate(glm::vec3(0.0f, 1.0f, 0.0f));
+    root->AddStaticObject(rootMesh);
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>(root);
     std::shared_ptr<Camera> worldCamera = std::make_shared<Camera>(screenWidth, screenHeight);
-
     std::shared_ptr<SceneWorld> sceneWorld = std::make_shared<SceneWorld>(0, 0, screenWidth, screenHeight);
     sceneWorld->AddCamera(worldCamera);
-    sceneWorld->AddScene(scene);
+    std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
+    sceneManager->AddScene(SceneCoord{0, 0, 0}, scene);
+    sceneManager->SetShowGrid(true, worldCamera);
+    sceneWorld->AddSceneManager(sceneManager);
 
 
     // switch

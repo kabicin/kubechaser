@@ -1,4 +1,6 @@
 #include "window/SwitchableBaseWindow.h"
+#include "window/SceneControl.h"
+#include "window/SceneWorld.h"
 
 SwitchableBaseWindow::SwitchableBaseWindow(int x, int y, int width, int height)
     : BaseFrame(x, y, width, height)
@@ -61,4 +63,15 @@ void SwitchableBaseWindow::SetActiveMeshViewer(int meshViewerIndex) {
 
 std::shared_ptr<MeshViewer> SwitchableBaseWindow::GetMeshViewer() {
     return std::dynamic_pointer_cast<MeshViewer>(windows[selectedMeshViewer]);
+}
+
+std::shared_ptr<SceneWorld> SwitchableBaseWindow::GetSceneWorld()
+{
+    for (const auto& window : windows) {
+        auto sceneWorld = std::dynamic_pointer_cast<SceneWorld>(window);
+        if (sceneWorld) {
+            return sceneWorld;
+        }
+    }
+    return nullptr;
 }
