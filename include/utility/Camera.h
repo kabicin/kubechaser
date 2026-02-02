@@ -85,6 +85,7 @@ public:
 	void UpdateFrame(double multiplier = 1);
 	void GenerateView();
 	void ResetCamPos();
+	void SetLookDirection(const glm::vec3& direction);
 
 	glm::vec3 GetCameraPos();
 

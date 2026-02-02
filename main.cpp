@@ -65,6 +65,7 @@ void notifyMousePositionHandlers(int x, int y)
 {
     SceneBuilder::SetDownClickPosition(x, y);
     MeshViewer::SetDownClickPosition(x, y);
+    SceneWorld::SetMousePosition(x, y);
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
@@ -87,6 +88,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
             notifyClickReleaseHandlers();
         }
     }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        SceneWorld::SetLookActive(action == GLFW_PRESS || action == GLFW_REPEAT);
+    }
 }
 
 void window_size_callback(GLFWwindow* window, int width, int height)
@@ -102,6 +107,7 @@ void window_size_callback(GLFWwindow* window, int width, int height)
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     MeshViewer::KeyCallback(action, key);
+    SceneWorld::KeyCallback(action, key);
 }
 
 int main()
@@ -162,13 +168,29 @@ int main()
     std::shared_ptr<SceneControl> sceneControl = std::make_shared<SceneControl>(0, 0, 250, screenHeight / 2);
     windows.push_back(sceneControl);
 
+
+    std::shared_ptr<SceneNode> root = std::make_shared<SceneNode>();
+    root->AddStaticObject(std::make_shared<Mesh>("statefulset.obj"));
+
+    std::array<std::shared_ptr<SceneNode>, 8> boundary = {};
+    root->SetBoundary(boundary);
+
+    std::shared_ptr<Scene> scene = std::make_shared<Scene>(root);
+    std::shared_ptr<Camera> worldCamera = std::make_shared<Camera>(screenWidth, screenHeight);
+
+    std::shared_ptr<SceneWorld> sceneWorld = std::make_shared<SceneWorld>(0, 0, screenWidth, screenHeight);
+    sceneWorld->AddCamera(worldCamera);
+    sceneWorld->AddScene(scene);
+
+
     // switch
     std::shared_ptr<SwitchableBaseWindow> windowSwitch = std::make_shared<SwitchableBaseWindow>(0, 0, screenWidth, screenHeight);
     windowSwitch->AddWindow(std::make_shared<MeshViewer>(0, 0, screenWidth, screenHeight));
     windowSwitch->SetActiveMeshViewer(0);
+    windowSwitch->AddWindow(sceneWorld);
     windowSwitch->AttachSceneController(sceneControl);
     sceneControl->AttachSwitchableBaseWindow(windowSwitch);
-    
+
     windows.push_back(windowSwitch);
     windows.push_back(std::make_shared<AssetPanel>(screenWidth - 250, screenHeight / 4, 250, screenHeight / 2));
     windows.push_back(std::make_shared<ConsolePanel>(screenWidth - 250, screenHeight / 2, 250, screenHeight / 2));

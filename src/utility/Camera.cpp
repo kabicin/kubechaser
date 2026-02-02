@@ -171,3 +171,12 @@ void Camera::ResetCamPos()
 	cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	GenerateView();
 }
+
+void Camera::SetLookDirection(const glm::vec3& direction)
+{
+	if (glm::length(direction) <= 0.0f) {
+		return;
+	}
+	cameraFront = -glm::normalize(direction);
+	GenerateView();
+}

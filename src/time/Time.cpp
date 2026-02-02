@@ -34,5 +34,10 @@ double Time::GetDeltaMilliseconds()
 // returns the number of frames elapsed since the last window update
 double Time::GetDeltaFrames()
 {
-    return fps * GetDelta();
+    return fps * lastDelta;
+}
+
+double Time::GetLastDeltaFrames() const
+{
+    return fps * lastDelta;
 }

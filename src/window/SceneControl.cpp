@@ -59,7 +59,7 @@ void SceneControl::Render()
         ImGui::PopStyleColor();
         if (ImGui::Button("Open"))
         {
-            changeWindow(2);
+            changeWindow(0);
         }
         ImGui::PushStyleColor(ImGuiCol_Text, imColorWhite);
         ImGui::Text("Object");

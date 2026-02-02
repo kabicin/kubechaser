@@ -18,5 +18,6 @@ public:
     double GetLastDelta() const;
     double GetDeltaMilliseconds();
     double GetDeltaFrames();
+    double GetLastDeltaFrames() const;
 };
 #endif

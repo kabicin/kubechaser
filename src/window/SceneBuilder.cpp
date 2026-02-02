@@ -148,7 +148,7 @@ void SceneBuilder::Render()
     glViewport(0, 0, GetWidth(), GetHeight());
 
     // update camera position per frame
-    GetCamera()->UpdateFrame(GetTime()->GetDeltaFrames());
+    GetCamera()->UpdateFrame(GetTime()->GetLastDeltaFrames());
     
     // Picking Code
     if (GetMouseClicked()) {

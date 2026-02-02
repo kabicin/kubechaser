@@ -14,15 +14,26 @@ void SwitchableBaseWindow::Render()
 {
     if (controller->HasChanged())
     {
-        // hide previous window
-        windows[selectedWindow]->Hide();
+        if (!windows.empty() && selectedWindow >= 0 && selectedWindow < static_cast<int>(windows.size()))
+        {
+            // hide previous window
+            windows[selectedWindow]->Hide();
+        }
         int mode = controller->GetWindowMode();
-        if (mode >= 0 && mode < windows.size()) selectedWindow = mode;
+        if (mode >= 0 && mode < static_cast<int>(windows.size())) {
+            selectedWindow = mode;
+        } else {
+            std::cout << "SwitchableBaseWindow: invalid window index " << mode
+                      << " (size " << windows.size() << ")" << std::endl;
+        }
         // then show the new window
-        windows[selectedWindow]->Show();
+        if (!windows.empty() && selectedWindow >= 0 && selectedWindow < static_cast<int>(windows.size()))
+        {
+            windows[selectedWindow]->Show();
+        }
     }
 
-    if (selectedWindow < windows.size())
+    if (selectedWindow >= 0 && selectedWindow < static_cast<int>(windows.size()))
     {
         windows[selectedWindow]->Render();
     }
@@ -51,6 +62,3 @@ void SwitchableBaseWindow::SetActiveMeshViewer(int meshViewerIndex) {
 std::shared_ptr<MeshViewer> SwitchableBaseWindow::GetMeshViewer() {
     return std::dynamic_pointer_cast<MeshViewer>(windows[selectedMeshViewer]);
 }
-
-
-

@@ -20,9 +20,14 @@ void BaseFrame::Resize(int x, int y, int width, int height)
 
 void BaseFrame::ClearBackground(float r, float g, float b, float a)
 {
-    glViewport(m_x, m_y, m_width, m_height);
+    ImGuiIO& io = ImGui::GetIO();
+    int fbX = static_cast<int>(m_x * io.DisplayFramebufferScale.x);
+    int fbY = static_cast<int>(m_y * io.DisplayFramebufferScale.y);
+    int fbW = static_cast<int>(m_width * io.DisplayFramebufferScale.x);
+    int fbH = static_cast<int>(m_height * io.DisplayFramebufferScale.y);
+    glViewport(0, 0, fbW, fbH);
     glEnable(GL_SCISSOR_TEST);
-    glScissor(m_x, m_y, m_width, m_height);
+    glScissor(fbX, fbY, fbW, fbH);
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_SCISSOR_TEST);
