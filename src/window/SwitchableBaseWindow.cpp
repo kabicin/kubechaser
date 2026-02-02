@@ -44,5 +44,13 @@ void SwitchableBaseWindow::Resize(int x, int y, int width, int height)
     }
 }
 
+void SwitchableBaseWindow::SetActiveMeshViewer(int meshViewerIndex) {
+    selectedMeshViewer = meshViewerIndex;
+}
+
+std::shared_ptr<MeshViewer> SwitchableBaseWindow::GetMeshViewer() {
+    return std::dynamic_pointer_cast<MeshViewer>(windows[selectedMeshViewer]);
+}
+
 
 

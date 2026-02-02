@@ -1,4 +1,6 @@
 #include "window/SceneControl.h"
+#include "window/SwitchableBaseWindow.h"
+#include <filesystem>
 
 SceneControl::SceneControl(int x, int y, int width, int height)
     : BaseWindow(x, y, width, height)
@@ -7,6 +9,28 @@ SceneControl::SceneControl(int x, int y, int width, int height)
 
 SceneControl::~SceneControl()
 {
+}
+
+namespace fs = std::filesystem;
+static std::vector<std::string> traverseDirectory() {
+    fs::path meshPath = std::string(ASSET_DIR) + "/models/";
+
+    if (!fs::exists(meshPath)) {
+        std::cerr << "Mesh path doesn't exist" << std::endl;
+        return {};
+    }
+
+    std::vector<std::string> files;
+
+    for (const fs::directory_entry& entry : fs::directory_iterator(meshPath)) {
+        if (entry.is_regular_file()) {
+            std::cout << entry.path().filename().string() << std::endl;
+            std::string fileName = entry.path().filename().string();
+            files.push_back(fileName);
+        }
+    }
+
+    return files;
 }
 
 void SceneControl::Render()
@@ -47,24 +71,31 @@ void SceneControl::Render()
         }
        
         // Add Modal
+        static bool firstFrame = true;
+        static std::vector<std::string> items;
         bool addOpen = true;
         ImGui::PushStyleColor(ImGuiCol_Text, imColorWhite);
         if (ImGui::BeginPopupModal("Add Object", &addOpen))
         {
             ImGui::PopStyleColor();
             ImGui::Text("Select an asset to add to the scene.");
-            const char* items[] = { "Triangle", "Quad" };
-            static const char* shape = NULL;
-            ImGui::Text("Shape: ");
+
+            if (firstFrame) {
+                items = traverseDirectory();
+                firstFrame = false;
+            }
+            static std::string obj;
+            ImGui::Text("Object: ");
             ImGui::SameLine();
-            if (ImGui::BeginCombo("##combo", shape))
+            const char* preview = obj.empty() ? "<select>" : obj.c_str();
+            if (ImGui::BeginCombo("##combo", preview))
             {
-                for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+                for (int n = 0; n < static_cast<int>(items.size()); n++)
                 {
-                    bool is_selected = (shape == items[n]);
-                    if (ImGui::Selectable(items[n], is_selected))
+                    bool is_selected = (obj == items[n]);
+                    if (ImGui::Selectable(items[n].c_str(), is_selected))
                     {
-                        shape = items[n];
+                        obj = items[n];
                         if (is_selected)
                             ImGui::SetItemDefaultFocus();
                     }
@@ -72,10 +103,16 @@ void SceneControl::Render()
                 ImGui::EndCombo();
             }
 
-            if (ImGui::Button("Add") && shape != NULL)
+            if (ImGui::Button("Add") && !obj.empty())
             {
-                SceneBuilder::AddEntity(shape, glm::vec3(0.0f, 0.5f, 0.0f));
-                logger->LogMessage("Added " + std::string(shape));
+                SceneBuilder::AddEntity(obj, glm::vec3(0.0f, 0.5f, 0.0f));
+                logger->LogMessage("Added " + obj);
+
+                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(obj);
+                mesh->Scale(glm::vec3(1, 1, 1));
+                mesh->Translate(glm::vec3(0, 0, 0));
+                this->sbWindow.lock()->GetMeshViewer()->SetMesh(mesh);
+
                 ImGui::CloseCurrentPopup();
             }
 
@@ -173,4 +210,9 @@ bool SceneControl::HasChanged()
 int SceneControl::GetWindowMode()
 {
     return windowMode;
+}
+
+void SceneControl::AttachSwitchableBaseWindow(const std::shared_ptr<SwitchableBaseWindow>& sbWindow)
+{
+    this->sbWindow = sbWindow;
 }

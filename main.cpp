@@ -165,7 +165,10 @@ int main()
     // switch
     std::shared_ptr<SwitchableBaseWindow> windowSwitch = std::make_shared<SwitchableBaseWindow>(0, 0, screenWidth, screenHeight);
     windowSwitch->AddWindow(std::make_shared<MeshViewer>(0, 0, screenWidth, screenHeight));
+    windowSwitch->SetActiveMeshViewer(0);
     windowSwitch->AttachSceneController(sceneControl);
+    sceneControl->AttachSwitchableBaseWindow(windowSwitch);
+    
     windows.push_back(windowSwitch);
     windows.push_back(std::make_shared<AssetPanel>(screenWidth - 250, screenHeight / 4, 250, screenHeight / 2));
     windows.push_back(std::make_shared<ConsolePanel>(screenWidth - 250, screenHeight / 2, 250, screenHeight / 2));
