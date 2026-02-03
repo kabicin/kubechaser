@@ -182,6 +182,7 @@ int main()
     std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
     sceneManager->AddScene(SceneCoord{0, 0, 0}, scene);
     sceneManager->SetShowGrid(true, worldCamera);
+    sceneManager->SetActiveRadius(40);
     sceneWorld->AddSceneManager(sceneManager);
 
 

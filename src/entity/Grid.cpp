@@ -96,15 +96,17 @@ void Grid::initializeLines(const glm::vec3& cartesianScale, int axis)
     {
         for (int i = 0; i < max_lines; i++)
         {
+            int sign = (i % 2 == 0 ? 1 : -1);
+            float offset = static_cast<float>((sign * (i / 2)) / 25.0f);
             if (axis == 0)
             {
-                vertices[2 * i] = PCVertex(-x, 0, 0, gridColors[0], gridColors[1], gridColors[2], gridColors[3]);
-                vertices[2 * i + 1] = PCVertex(x, 0, 0, gridColors[0], gridColors[1], gridColors[2], gridColors[3]);
+                vertices[2 * i] = PCVertex(-x, 0, offset, gridColors[0], gridColors[1], gridColors[2], gridColors[3]);
+                vertices[2 * i + 1] = PCVertex(x, 0, offset, gridColors[0], gridColors[1], gridColors[2], gridColors[3]);
             }
             else
             {
-                vertices[2 * i] = PCVertex(0, 0, -z, gridColors[0], gridColors[1], gridColors[2], gridColors[3]);
-                vertices[2 * i + 1] = PCVertex(0, 0, z, gridColors[0], gridColors[1], gridColors[2], gridColors[3]);
+                vertices[2 * i] = PCVertex(offset, 0, -z, gridColors[0], gridColors[1], gridColors[2], gridColors[3]);
+                vertices[2 * i + 1] = PCVertex(offset, 0, z, gridColors[0], gridColors[1], gridColors[2], gridColors[3]);
             }
         }
     }
@@ -160,21 +162,8 @@ void Grid::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
             // draw lines
             glBindVertexArray(lines_VAO[axis]);
             int lineCount = withCross ? num_lines[axis] - 2 : num_lines[axis];
-            for (int i = 0; i < lineCount; i++)
-            {
-                int shiftIndex = withCross ? i + 2 : i;
-                int sign = (i % 2 == 0 ? 1 : -1);
-                float offset = static_cast<float>((sign * (shiftIndex / 2)) / 25.0f);
-                ca.translate = glm::vec3(
-                    axis == 2 ? offset : 0, 
-                    0, 
-                    axis == 0 ? offset : 0);
-           
-                // update camera attributes to shaders
-                camera->Render(factory->GetShaderProgram(), ca);
-                // draw at a stride of 2 indexes
-                glDrawArrays(GL_LINES, i * 2, 2);
-            }
+            int firstVertex = withCross ? 4 : 0;
+            glDrawArrays(GL_LINES, firstVertex, lineCount * 2);
         }
         ca.scale = glm::vec3(gridScale, gridScale, gridScale);
         ca.translate = glm::vec3(0, 0, 0);
@@ -182,6 +171,50 @@ void Grid::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
         ca.rotateYdeg = 0;
     }
     glDisable(GL_BLEND);
+}
+
+void Grid::DrawLinesInstanced(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera, const std::vector<glm::vec3>& offsets)
+{
+    if (offsets.empty()) {
+        return;
+    }
+
+    if (instance_VBO == 0) {
+        glGenBuffers(1, &instance_VBO);
+    }
+
+    bool prevInstanced = da.instanced;
+    da.instanced = true;
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    ca.scale = glm::vec3(gridScale, gridScale, gridScale);
+    ca.translate = glm::vec3(0, 0, 0);
+    ca.rotateXdeg = 0;
+    ca.rotateYdeg = 0;
+
+    factory->Use(da, camera->GetCameraPos());
+    camera->Render(factory->GetShaderProgram(), ca);
+
+    glBindBuffer(GL_ARRAY_BUFFER, instance_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * offsets.size(), offsets.data(), GL_DYNAMIC_DRAW);
+
+    for (int axis = 0; axis < 3; axis++)
+    {
+        if (num_lines[axis] == 0) {
+            continue;
+        }
+        glBindVertexArray(lines_VAO[axis]);
+        glBindBuffer(GL_ARRAY_BUFFER, instance_VBO);
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+        glVertexAttribDivisor(4, 1);
+        glDrawArraysInstanced(GL_LINES, 0, num_lines[axis] * 2, static_cast<GLsizei>(offsets.size()));
+    }
+
+    glDisable(GL_BLEND);
+    da.instanced = prevInstanced;
 }
 
 void Grid::SetScale(float scale)

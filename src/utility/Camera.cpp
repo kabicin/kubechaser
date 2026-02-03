@@ -192,3 +192,11 @@ void Camera::SetLookDirection(const glm::vec3& direction)
 	cameraFront = -glm::normalize(direction);
 	GenerateView();
 }
+
+void Camera::ClampMinY(float minY)
+{
+	if (cameraPos->y < minY) {
+		cameraPos->y = minY;
+		GenerateView();
+	}
+}

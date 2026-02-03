@@ -24,6 +24,7 @@ extern ShaderArgs ShaderArgs_Normal;
 extern ShaderArgs ShaderArgs_Tesselate_5;
 extern ShaderArgs ShaderArgs_Lighting;
 extern ShaderArgs ShaderArgs_Color;
+extern ShaderArgs ShaderArgs_Instanced;
 
 struct MutableVar {
     int attribIndex;

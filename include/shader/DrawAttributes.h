@@ -19,6 +19,7 @@ struct DrawAttributes
 		// light attributes
 		lightSwitch = 0x7;
 		lightBlinn = false;
+		instanced = false;
 	}
 	bool wireframe;
 	bool tesselate;
@@ -34,6 +35,7 @@ struct DrawAttributes
 	// light attributes
 	unsigned int lightSwitch;
 	bool lightBlinn;
+	bool instanced;
 	
 	friend std::ostream& operator<<(std::ostream& os, const DrawAttributes& da);
 	

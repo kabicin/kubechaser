@@ -12,8 +12,9 @@ ShaderType ShaderType_NONE = 16;
 ShaderArgs ShaderArgs_Texture = 1;
 ShaderArgs ShaderArgs_Normal = 2;
 ShaderArgs ShaderArgs_Tesselate_5 = 4;
-ShaderArgs ShaderArgs_Lighting = 16;
-ShaderArgs ShaderArgs_Color = 32; 
+ShaderArgs ShaderArgs_Lighting = 8;
+ShaderArgs ShaderArgs_Color = 16; 
+ShaderArgs ShaderArgs_Instanced = 32;
 
 ShaderFactory::ShaderFactory()
 {
@@ -217,10 +218,21 @@ void ShaderFactory::populateShader(MutableShader& shader)
     if (shader.type & ShaderType_Vertex) {
         // add mvp and position
         shader.object.AddVariable(VarType::VertexAttributeInput, "vec3", "pos_vs_in", 0);
+        if (shader.args & ShaderArgs_Instanced)
+        {
+            shader.object.AddVariable(VarType::VertexAttributeInput, "vec3", "instance_offset", 4);
+        }
         shader.object.AddVariable(VarType::Uniform, "mat4", "projection");
         shader.object.AddVariable(VarType::Uniform, "mat4", "view");
         shader.object.AddVariable(VarType::Uniform, "mat4", "model");
-        shader.object.AddBody("gl_Position = projection * view * model * vec4(pos_vs_in, 1.0f);");
+        if (shader.args & ShaderArgs_Instanced)
+        {
+            shader.object.AddBody("gl_Position = projection * view * model * vec4(pos_vs_in + instance_offset, 1.0f);");
+        }
+        else
+        {
+            shader.object.AddBody("gl_Position = projection * view * model * vec4(pos_vs_in, 1.0f);");
+        }
         // extras
         if (shader.args & ShaderArgs_Tesselate_5)
         {
@@ -244,10 +256,24 @@ void ShaderFactory::populateShader(MutableShader& shader)
             if (shader.args & ShaderArgs_Tesselate_5)
             {
                 shader.object.AddVariable(VarType::Output, "vec3", "pos_cs_in");
-                shader.object.AddBody("pos_cs_in = vec3(model * vec4(pos_vs_in, 1.0));");
+                if (shader.args & ShaderArgs_Instanced)
+                {
+                    shader.object.AddBody("pos_cs_in = vec3(model * vec4(pos_vs_in + instance_offset, 1.0));");
+                }
+                else
+                {
+                    shader.object.AddBody("pos_cs_in = vec3(model * vec4(pos_vs_in, 1.0));");
+                }
             } else {
                 shader.object.AddVariable(VarType::Output, "vec3", "pos_fs_in");
-                shader.object.AddBody("pos_fs_in = vec3(model * vec4(pos_vs_in, 1.0));");
+                if (shader.args & ShaderArgs_Instanced)
+                {
+                    shader.object.AddBody("pos_fs_in = vec3(model * vec4(pos_vs_in + instance_offset, 1.0));");
+                }
+                else
+                {
+                    shader.object.AddBody("pos_fs_in = vec3(model * vec4(pos_vs_in, 1.0));");
+                }
             }
         }
 
@@ -590,6 +616,7 @@ void ShaderFactory::Use(const DrawAttributes& da, const glm::vec3& cameraPos) {
         args |= ShaderArgs_Texture;
     }
     if (da.color) args |= ShaderArgs_Color;
+    if (da.instanced) args |= ShaderArgs_Instanced;
 
     // end draw attribute configs
     ReloadShader(args);

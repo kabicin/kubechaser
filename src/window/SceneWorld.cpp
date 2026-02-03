@@ -45,6 +45,7 @@ void SceneWorld::Render()
     handleInput();
     if (camera) {
         camera->UpdateFrame(GetTime()->GetLastDeltaFrames());
+        camera->ClampMinY(1.0f);
     }
     if (manager) {
         manager->UpdateActiveScenes(camera ? camera->GetCameraPos() : glm::vec3(0.0f));

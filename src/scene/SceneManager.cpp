@@ -43,15 +43,13 @@ void SceneManager::UpdateActiveScenes(const glm::vec3& cameraPos)
     activeCoords.clear();
     activeCoords.reserve((2 * activeRadius + 1) * (2 * activeRadius + 1));
 
-    for (int dy = -activeRadius; dy <= activeRadius; dy++)
+    int dy = 0;
+    for (int dz = -activeRadius; dz <= activeRadius; dz++)
     {
-        for (int dz = -activeRadius; dz <= activeRadius; dz++)
+        for (int dx = -activeRadius; dx <= activeRadius; dx++)
         {
-            for (int dx = -activeRadius; dx <= activeRadius; dx++)
-            {
-                SceneCoord coord{baseX + dx, baseY + dy, baseZ + dz};
-                activeCoords.push_back(coord);
-            }
+            SceneCoord coord{baseX + dx, dy, baseZ + dz};
+            activeCoords.push_back(coord);
         }
     }
 }
@@ -68,6 +66,7 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
     if (glm::length(viewDir) > 0.0f) {
         viewDir = glm::normalize(viewDir);
     }
+    const float viewCosThreshold = 0.0f;
 
     if (dummyScene == nullptr) {
         dummyScene = std::make_shared<Scene>();
@@ -83,6 +82,8 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
     }
 
     glm::vec3 oldTranslate = camera->cma.translate;
+    std::vector<glm::vec3> gridLineOffsets;
+    gridLineOffsets.reserve(activeCoords.size());
     for (const auto& coord : activeCoords)
     {
         auto scene = GetScene(coord);
@@ -91,20 +92,25 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
         }
         glm::vec3 tileOffset = glm::vec3(coord.x * sceneSize, coord.y * sceneSize, coord.z * sceneSize);
         glm::vec3 toTile = tileOffset - cameraPos;
-        bool inFront = true;
+        bool inView = true;
         if (glm::length(viewDir) > 0.0f && glm::length(toTile) > 0.0f) {
-            inFront = glm::dot(glm::normalize(toTile), viewDir) >= 0.0f;
+            inView = glm::dot(glm::normalize(toTile), viewDir) >= viewCosThreshold;
         }
+        bool renderScene = inView;
         camera->cma.translate = glm::vec3(0.0f);
         floorQuad->Scale(glm::vec3(sceneSize, sceneSize, sceneSize));
         float invScale = sceneSize != 0.0f ? 1.0f / sceneSize : 0.0f;
         floorQuad->SetTranslate(glm::vec3(tileOffset.x * invScale, (tileOffset.y - 0.01f) * invScale, tileOffset.z * invScale));
         float shade = 0.65f + 0.05f * static_cast<float>(std::abs((coord.x + coord.y + coord.z) % 6));
         floorQuad->da.solidColor = glm::vec3(0.1f, 0.2f, shade);
-        if (coord.y == 0) {
+        bool drawFloor = (coord.y == 0);
+        if (drawFloor) {
             floorQuad->Draw(factory, camera);
         }
         camera->cma.translate = tileOffset;
+        if (scene != dummyScene && renderScene) {
+            scene->Render(factory, camera);
+        }
         if (showGrid && grid != nullptr) {
             grid->SetScale(sceneSize);
             int axisMask = 0;
@@ -112,17 +118,25 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
             if (coord.y == 0 && coord.x == 0) axisMask |= Grid::GridAxis_Z;
             if (coord.x == 0 && coord.z == 0) axisMask |= Grid::GridAxis_Y;
             bool onAxisLine = (axisMask != 0);
-            bool onXZPlane = (coord.y == 0);
+            bool onXZPlane = drawFloor;
             bool verticalStack = (coord.x == 0 && coord.z == 0);
-            if (onXZPlane || verticalStack) {
-                bool drawLines = onXZPlane;
+            if (onXZPlane) {
+                float invScale = sceneSize != 0.0f ? 1.0f / sceneSize : 0.0f;
+                gridLineOffsets.push_back(glm::vec3(tileOffset.x * invScale, tileOffset.y * invScale, tileOffset.z * invScale));
+            }
+            if (onAxisLine || verticalStack) {
                 bool drawNeutralAxes = !verticalStack;
-                grid->Draw(factory, camera, onAxisLine, axisMask, drawLines, drawNeutralAxes);
+                glDisable(GL_DEPTH_TEST);
+                grid->Draw(factory, camera, onAxisLine, axisMask, false, drawNeutralAxes);
+                glEnable(GL_DEPTH_TEST);
             }
         }
-        if (scene != dummyScene) {
-            scene->Render(factory, camera);
-        }
+    }
+    if (showGrid && grid != nullptr && !gridLineOffsets.empty()) {
+        camera->cma.translate = oldTranslate;
+        glDisable(GL_DEPTH_TEST);
+        grid->DrawLinesInstanced(factory, camera, gridLineOffsets);
+        glEnable(GL_DEPTH_TEST);
     }
     camera->cma.translate = oldTranslate;
 }
