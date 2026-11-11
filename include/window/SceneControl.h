@@ -4,17 +4,19 @@
 #include "window/BaseWindow.h"
 #include "window/SceneWorld.h"
 #include "window/SwitchableBaseWindow.h"
+#include <functional>
 
 class SceneControl : public BaseWindow
 {
 public:
     using WindowMode = SwitchableBaseWindow::WindowMode;
+    using ModeChangeCallback = std::function<void(WindowMode)>;
 
 private:
     SceneDocument& sceneDocument;
-    bool propagateControl = false;
     bool showGrid = false;
     WindowMode windowMode = WindowMode::MeshViewer;
+    ModeChangeCallback modeChangeCallback;
     void changeWindow(WindowMode window);
 
     ImU32 imColorWhite = IM_COL32(255, 255, 255, 255);
@@ -31,8 +33,8 @@ public:
         int height);
     ~SceneControl();
     void Render();
-    bool HasChanged();
-    WindowMode GetWindowMode();
+    WindowMode GetWindowMode() const;
+    void SetModeChangeCallback(ModeChangeCallback callback);
 
     void AttachSwitchableBaseWindow(const std::shared_ptr<SwitchableBaseWindow>& sbWindow);
 };

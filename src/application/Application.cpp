@@ -168,7 +168,9 @@ void Application::InitializeWindows()
     meshViewer = std::make_shared<MeshViewer>(services, 0, 0, screenWidth, screenHeight);
     auto windowSwitch = std::make_shared<SwitchableBaseWindow>(
         0, 0, screenWidth, screenHeight, meshViewer, sceneWorld);
-    windowSwitch->AttachSceneController(sceneControl);
+    sceneControl->SetModeChangeCallback([windowSwitch](SwitchableBaseWindow::WindowMode mode) {
+        windowSwitch->SetActiveMode(mode);
+    });
     sceneControl->AttachSwitchableBaseWindow(windowSwitch);
 
     windows.push_back(windowSwitch);

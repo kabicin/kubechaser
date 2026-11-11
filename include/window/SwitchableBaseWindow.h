@@ -7,8 +7,6 @@
 #include "window/SceneWorld.h"
 #include <memory>
 
-class SceneControl;
-
 enum class WindowMode
 {
     MeshViewer,
@@ -27,7 +25,6 @@ public:
 
     void Render() override;
     void Resize(int x, int y, int width, int height) override;
-    void AttachSceneController(std::shared_ptr<SceneControl> controller);
 
     void SetMeshViewer(std::shared_ptr<MeshViewer> viewer);
     void SetSceneWorld(std::shared_ptr<SceneWorld> world);
@@ -44,7 +41,6 @@ private:
     std::shared_ptr<SceneWorld> sceneWorld;
     std::shared_ptr<BaseWindow> activeWindow;
     WindowMode activeMode = WindowMode::MeshViewer;
-    std::shared_ptr<SceneControl> controller;
 };
 
 #endif

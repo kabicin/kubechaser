@@ -211,23 +211,23 @@ void SceneControl::Render()
     }
 }
 
+void SceneControl::SetModeChangeCallback(ModeChangeCallback callback)
+{
+    modeChangeCallback = std::move(callback);
+}
+
 void SceneControl::changeWindow(WindowMode window)
 {
     windowMode = window;
-    propagateControl = true;
+    if (modeChangeCallback) {
+        modeChangeCallback(window);
+    }
     if (auto switcher = sbWindow.lock()) {
         switcher->SetActiveMode(window);
     }
 }
 
-bool SceneControl::HasChanged()
-{
-    bool prev = propagateControl;
-    propagateControl = false;
-    return prev;
-}
-
-SceneControl::WindowMode SceneControl::GetWindowMode()
+SceneControl::WindowMode SceneControl::GetWindowMode() const
 {
     return windowMode;
 }

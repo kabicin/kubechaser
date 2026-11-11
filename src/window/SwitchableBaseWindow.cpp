@@ -1,5 +1,4 @@
 #include "window/SwitchableBaseWindow.h"
-#include "window/SceneControl.h"
 #include "window/SceneWorld.h"
 #include "window/MeshViewer.h"
 
@@ -18,18 +17,8 @@ SwitchableBaseWindow::SwitchableBaseWindow(int x, int y, int width, int height,
     SetActiveMode(WindowMode::MeshViewer);
 }
 
-void SwitchableBaseWindow::AttachSceneController(std::shared_ptr<SceneControl> controller)
-{
-    this->controller = controller;
-}
-
 void SwitchableBaseWindow::Render()
 {
-    if (controller && controller->HasChanged())
-    {
-        SetActiveMode(controller->GetWindowMode());
-    }
-
     if (activeWindow)
     {
         activeWindow->Render();
