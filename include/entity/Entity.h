@@ -71,9 +71,10 @@ public:
 	virtual void SetTranslate(glm::vec3 trans);
 	virtual void MoveUp(glm::vec3 trans);
 	virtual void MoveBack(glm::vec3 trans);
-	glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
-	virtual void Scale(double scale);
+	// Scale multiplies the current scale; SetScale replaces it
+	virtual void Scale(double scaleFactor);
 	virtual void Scale(glm::vec3 givenScaleVector);
+	virtual void SetScale(glm::vec3 newScale);
 	void RotateX(float degrees);
 	void RotateY(float degrees);
 	void RotateZ(float degrees);

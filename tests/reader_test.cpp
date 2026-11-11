@@ -116,6 +116,53 @@ int main()
         return 1;
     }
 
+    // MTL: unindented and indented statements, map_Kd with options, usemtl selecting the primary material
+    const std::filesystem::path mtlDir = std::filesystem::temp_directory_path() / "kubechaser_reader_mtl";
+    std::filesystem::create_directories(mtlDir / "sub");
+    {
+        std::ofstream mtl(mtlDir / "sub" / "mats.mtl");
+        mtl << "# comment\n"
+            << "newmtl first\n"
+            << "Kd 0.1 0.2 0.3\n"
+            << "Ns 10\n"
+            << "\n"
+            << "newmtl second\n"
+            << "  Ka 0.4 0.5 0.6\n"
+            << "\tKd 0.7 0.8 0.9\n"
+            << "Ks 0.25\n"
+            << "Ns 96.5\n"
+            << "map_Kd -s 1 1 1 tex.png\r\n";
+        std::ofstream obj(mtlDir / "mats.obj");
+        obj << "mtllib sub/mats.mtl\n"
+            << "v 0 0 0\nv 1 0 0\nv 0 1 0\n"
+            << "usemtl first\nf 1 2 3\n"
+            << "usemtl second\nf 1 2 3\nf 3 2 1\n";
+    }
+    Reader::MESH_DIR = mtlDir.string() + "/";
+    materials.clear();
+    textureFile = "stale.png";
+    Reader::ReadOBJ("mats.obj", textureFile, vertices, faces, textureCoordinates,
+        textureFaces, normals, normalFaces, materials);
+    std::filesystem::remove_all(mtlDir);
+
+    if (materials.size() != 2
+        || materials[0].name != "first" || materials[1].name != "second"
+        || !approximatelyEqual(materials[0].Kd.z, 0.3f)
+        || !approximatelyEqual(materials[0].Ns, 10.0f)
+        || !approximatelyEqual(materials[1].Ka.y, 0.5f)
+        || !approximatelyEqual(materials[1].Kd.x, 0.7f)
+        || !approximatelyEqual(materials[1].Ks.z, 0.25f)
+        || !approximatelyEqual(materials[1].Ns, 96.5f)
+        || materials[0].faceCount != 1 || materials[1].faceCount != 2
+        || materials[0].map_Kd != "" || materials[1].map_Kd != "sub/tex.png") {
+        std::cerr << "Reader returned unexpected materials from the MTL file.\n";
+        return 1;
+    }
+    if (Reader::PrimaryMaterialIndex(materials) != 1 || textureFile != "sub/tex.png") {
+        std::cerr << "Reader did not select the most-used material and its texture: '" << textureFile << "'\n";
+        return 1;
+    }
+
     // larger than the old fixed 42,000-row buffers, with extra per-vertex color values
     const int largeVertexCount = 50000;
     const std::filesystem::path largeDir = std::filesystem::temp_directory_path() / "kubechaser_reader_test";

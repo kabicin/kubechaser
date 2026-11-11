@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include "utility/Material.h"
@@ -35,7 +36,10 @@ public:
     static bool findMaterialKeyAndPopulateValue(const std::string& line, const std::string& key, int& value);
     static bool findMaterialKeyAndPopulateValue(const std::string& line, const std::string& key, glm::vec3& value);
 
-    static bool startsWithTab(const std::string& line);
+    // Appends the materials in MESH_DIR + fileName; map_Kd paths are returned relative to MESH_DIR
+    static void ReadMTL(const std::string& fileName, std::vector<Material>& materials);
+    // Index of the material used by the most faces (see Material::faceCount), or -1 if there are none
+    static int PrimaryMaterialIndex(const std::vector<Material>& materials);
     static int resolveIndex(int index, size_t definedCount);
 
     static std::vector<std::string> split(const std::string& line, const std::string& delimiter);

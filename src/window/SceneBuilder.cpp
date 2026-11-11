@@ -15,7 +15,7 @@ SceneBuilder::SceneBuilder(
     this->SetCamera(std::make_shared<Camera>(width, height));
     
     std::shared_ptr<Entity> mesh = this->sceneDocument.AddEntity("Mesh", "statefulset.obj");
-    mesh->Scale(glm::vec3(0.005, 0.005, 0.005));
+    mesh->SetScale(glm::vec3(0.005, 0.005, 0.005));
     mesh->Translate(glm::vec3(0, -90, 250));
 
     // create scene node root

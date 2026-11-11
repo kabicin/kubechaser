@@ -1,4 +1,5 @@
 #include "entity/Mesh.h"
+#include <algorithm>
 
 Mesh::Mesh() {}
 
@@ -34,9 +35,17 @@ void Mesh::initialize(
     std::vector<Material> materials;
     Reader::ReadOBJ(fileNameOBJ, textureFile, V, F, UV, UF, NV, NF, materials);
     std::cout << "READ OBJ file with materials: " << materials.size() << " and texture: " << textureFile << " and name: " << textureName << std::endl;
-    if (materials.size() > 0) {
-        da.materialAttributes.LoadFromMaterial(materials[0]);
-        std::cout << "Loading " << materials[0].name << " into mesh " << fileNameOBJ << std::endl;
+    const int primaryMaterial = Reader::PrimaryMaterialIndex(materials);
+    if (primaryMaterial >= 0) {
+        const Material& material = materials[primaryMaterial];
+        da.materialAttributes.LoadFromMaterial(material);
+        std::cout << "Loading " << material.name << " into mesh " << fileNameOBJ << std::endl;
+        const auto usedMaterials = std::count_if(materials.begin(), materials.end(),
+            [](const Material& m) { return m.faceCount > 0; });
+        if (usedMaterials > 1) {
+            std::cout << "WARNING: " << fileNameOBJ << " uses " << usedMaterials
+                << " materials; only " << material.name << " is applied" << std::endl;
+        }
     } else {
         da.materialAttributes.diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
     }

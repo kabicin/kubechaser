@@ -147,9 +147,104 @@ int Reader::resolveIndex(int index, size_t definedCount)
     return static_cast<int>(resolved);
 }
 
-bool Reader::startsWithTab(const std::string& line)
+void Reader::ReadMTL(const std::string& fileName, std::vector<Material>& materials)
 {
-    return line.find("\t") == 0;
+    const std::string mtlFileName = MESH_DIR + fileName;
+    std::ifstream materialFile(mtlFileName);
+    if (!materialFile.is_open())
+    {
+        std::cout << "ERROR: Could not open file: " << mtlFileName << std::endl;
+        std::cout << "Error: " << strerror(errno) << std::endl;
+        return;
+    }
+
+    // texture paths in an MTL file are relative to the MTL file, but are loaded relative to MESH_DIR
+    const size_t slash = fileName.find_last_of("/\\");
+    const std::string mtlDir = slash == std::string::npos ? std::string() : fileName.substr(0, slash + 1);
+
+    const size_t firstNew = materials.size();
+    Material* material = nullptr;
+    std::string line;
+    int lineNumber = 0;
+    while (std::getline(materialFile, line))
+    {
+        lineNumber++;
+        // statements may be indented or not; the first token is the keyword
+        std::istringstream lineStream(line);
+        std::string keyword;
+        if (!(lineStream >> keyword) || keyword[0] == '#')
+        {
+            continue;
+        }
+
+        if (keyword == "newmtl")
+        {
+            materials.emplace_back();
+            material = &materials.back();
+            lineStream >> material->name;
+            continue;
+        }
+        if (material == nullptr)
+        {
+            continue;
+        }
+
+        try
+        {
+            std::vector<std::string> args;
+            std::string arg;
+            while (lineStream >> arg)
+            {
+                args.push_back(arg);
+            }
+            auto readColor = [&args](glm::vec3& color) {
+                // "Kd r g b", or "Kd r" meaning r r r; spectral/xyz forms are ignored
+                if (args.empty() || args[0] == "spectral" || args[0] == "xyz") return;
+                const float r = std::stof(args[0]);
+                color = args.size() >= 3 ? glm::vec3(r, std::stof(args[1]), std::stof(args[2])) : glm::vec3(r);
+            };
+
+            if (keyword == "Ka") readColor(material->Ka);
+            else if (keyword == "Kd") readColor(material->Kd);
+            else if (keyword == "Ks") readColor(material->Ks);
+            else if (keyword == "Ns" && !args.empty()) material->Ns = std::stof(args[0]);
+            else if (keyword == "map_Kd" && !args.empty())
+            {
+                // options such as "-s 1 1 1" precede the file name
+                material->map_Kd = mtlDir + args.back();
+            }
+        }
+        catch (const std::exception& error)
+        {
+            std::cout << "WARNING: skipping malformed line " << lineNumber << " in " << mtlFileName
+                << ": " << error.what() << std::endl;
+        }
+    }
+
+    for (size_t i = firstNew; i < materials.size(); ++i)
+    {
+        std::cout << "ADDING TO MATERIALS" << std::endl;
+        std::cout << materials[i] << std::endl;
+    }
+}
+
+int Reader::PrimaryMaterialIndex(const std::vector<Material>& materials)
+{
+    // the renderer applies one material per mesh: use the one covering the most faces,
+    // falling back to the first material when the OBJ has no usemtl statements
+    if (materials.empty())
+    {
+        return -1;
+    }
+    int best = 0;
+    for (int i = 1; i < static_cast<int>(materials.size()); ++i)
+    {
+        if (materials[i].faceCount > materials[best].faceCount)
+        {
+            best = i;
+        }
+    }
+    return best;
 }
 
 void Reader::ReadOBJ(const std::string& fileName,
@@ -169,6 +264,9 @@ void Reader::ReadOBJ(const std::string& fileName,
     std::vector<int> counts(delimiters.size() + 2, 0);
     std::vector<T_int> vecF, vecUF, vecNF;
     std::vector<Eigen::RowVector3f> vecV, vecUV, vecNV;
+    std::string currentMaterial;
+    std::unordered_map<std::string, int> materialFaceCounts;
+    texture_file.clear();
 
     // get file name
     std::string objFileName = MESH_DIR + fileName;
@@ -188,61 +286,22 @@ void Reader::ReadOBJ(const std::string& fileName,
             }
 
             const std::string record = line.substr(recordStart);
-            const std::string materialLibraryPrefix = "mtllib ";
-            if (record.compare(0, materialLibraryPrefix.length(), materialLibraryPrefix) == 0)
+            std::istringstream recordStream(record);
+            std::string keyword;
+            recordStream >> keyword;
+            if (keyword == "mtllib")
             {
-                // get mtl file name
-                std::string fileName = record.substr(materialLibraryPrefix.length());
-                fileName = fileName.substr(0, fileName.find(".mtl") + strlen(".mtl"));
-                std::string mtlFileName = MESH_DIR + fileName;
-
-                std::ifstream material_file(mtlFileName);
-                if (material_file.is_open())
+                std::string libraryName;
+                while (recordStream >> libraryName)
                 {
-                    std::istringstream material_iss;
-                    std::string material_str;
-                    std::string material_line;
-
-                    // material file 
-                    Material material;
-                    bool materialLoading = false;
-
-                    while (std::getline(material_file, material_line))
-                    {
-                        if (materialLoading) {
-                            findMaterialKeyAndPopulateValue(material_line, "\tKa", material.Ka);
-                            findMaterialKeyAndPopulateValue(material_line, "\tKd", material.Kd);
-                            findMaterialKeyAndPopulateValue(material_line, "\tKs", material.Ks);
-                            findMaterialKeyAndPopulateValue(material_line, "\tNs", material.Ns);
-
-                            // if a line starting without \t is observed, we are done loading..
-                            if (!startsWithTab(material_line)) {
-                                materialLoading = false;
-                                materials.push_back(material);
-                                std::cout << "ADDING TO MATERIALS" << std::endl;
-                                std::cout << material << std::endl;
-                            }
-                        }
-
-                        // Get material values
-                        if (findMaterialKeyAndPopulateValue(material_line, "newmtl", material.name)) {
-                            materialLoading = true;
-                        }
-                        
-                        // find map_Kd
-                        findMaterialKeyAndPopulateValue(texture_file, "map_Kd", material_line);
-                    }
-
-                    if (materialLoading) {
-                        materialLoading = false;
-                        materials.push_back(material);
-                        std::cout << "ADDING TO MATERIALS" << std::endl;
-                        std::cout << material << std::endl;
-                    }
-                } else {
-                    std::cout << "ERROR: Could not open file: " << MESH_DIR + record.substr(materialLibraryPrefix.length()) << std::endl;
-                    std::cout << "Error: " << strerror(errno) << std::endl;
+                    ReadMTL(libraryName, materials);
                 }
+                continue;
+            }
+            if (keyword == "usemtl")
+            {
+                recordStream >> currentMaterial;
+                continue;
             }
 
             try
@@ -312,6 +371,10 @@ void Reader::ReadOBJ(const std::string& fileName,
                         counts[3]++;
                         counts[4]++;
                         counts[5]++;
+                        if (!currentMaterial.empty())
+                        {
+                            materialFaceCounts[currentMaterial]++;
+                        }
                     }
                 }
             }
@@ -339,6 +402,21 @@ void Reader::ReadOBJ(const std::string& fileName,
         F = Eigen::MatrixXi(sparseF);
         UF = Eigen::MatrixXi(sparseUF);
         NF = Eigen::MatrixXi(sparseNF);
+
+        for (Material& material : materials)
+        {
+            auto used = materialFaceCounts.find(material.name);
+            material.faceCount = used == materialFaceCounts.end() ? 0 : used->second;
+            if (used != materialFaceCounts.end())
+            {
+                materialFaceCounts.erase(used);  // duplicate names: the first definition wins
+            }
+        }
+        const int primary = PrimaryMaterialIndex(materials);
+        if (primary >= 0)
+        {
+            texture_file = materials[primary].map_Kd;
+        }
     } else {
         std::cout << "ERROR: Could not open file: " << objFileName << std::endl;
         std::cout << "Error: " << strerror(errno) << std::endl;

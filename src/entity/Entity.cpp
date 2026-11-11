@@ -52,12 +52,17 @@ void Entity::SetTranslate(glm::vec3 trans)
 
 void Entity::Scale(double scaleFactor)
 {
-    ca.scale = glm::vec3(scale.x * scaleFactor, scale.y * scaleFactor, scale.z * scaleFactor);
+    ca.scale *= static_cast<float>(scaleFactor);
 }
 
 void Entity::Scale(glm::vec3 givenScaleVector)
 {
-    ca.scale = glm::vec3(scale.x * givenScaleVector.x, scale.y * givenScaleVector.y, scale.z * givenScaleVector.z);
+    ca.scale *= givenScaleVector;
+}
+
+void Entity::SetScale(glm::vec3 newScale)
+{
+    ca.scale = newScale;
 }
 
 void Entity::RotateX(float degrees)

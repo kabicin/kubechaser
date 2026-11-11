@@ -118,7 +118,7 @@ void SceneControl::Render()
                 GetLogger()->LogMessage("Added " + obj);
 
                 std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(obj);
-                mesh->Scale(glm::vec3(1, 1, 1));
+                mesh->SetScale(glm::vec3(1, 1, 1));
                 mesh->Translate(glm::vec3(0, 0, 0));
                 if (meshAddedCallback) {
                     meshAddedCallback(mesh);

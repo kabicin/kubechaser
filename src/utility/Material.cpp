@@ -7,5 +7,8 @@ std::ostream& operator<<(std::ostream& o, const Material& m)
     o << "\tKd: (" << m.Kd.x <<  ", " << m.Kd.y << ", " << m.Kd.z << ")"<< std::endl;
     o << "\tKs: (" << m.Ks.x <<  ", " << m.Ks.y << ", " << m.Ks.z << ")" << std::endl;
     o << "\tNs: " << m.Ns << std::endl;
+    if (!m.map_Kd.empty()) {
+        o << "\tmap_Kd: " << m.map_Kd << std::endl;
+    }
     return o;
 }

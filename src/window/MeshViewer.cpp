@@ -10,7 +10,7 @@ MeshViewer::MeshViewer(const WindowServices& services, int x, int y, int width, 
     camera = std::make_shared<Camera>(width, height);
 
     mesh = std::make_shared<Mesh>("statefulset.obj");
-    mesh->Scale(glm::vec3(1, 1, 1));
+    mesh->SetScale(glm::vec3(1, 1, 1));
     mesh->Translate(glm::vec3(0, 0, 0));
 }
 

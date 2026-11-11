@@ -98,7 +98,7 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
         }
         bool renderScene = inView;
         camera->cma.translate = glm::vec3(0.0f);
-        floorQuad->Scale(glm::vec3(sceneSize, sceneSize, sceneSize));
+        floorQuad->SetScale(glm::vec3(sceneSize, sceneSize, sceneSize));
         float invScale = sceneSize != 0.0f ? 1.0f / sceneSize : 0.0f;
         floorQuad->SetTranslate(glm::vec3(tileOffset.x * invScale, (tileOffset.y - 0.01f) * invScale, tileOffset.z * invScale));
         float shade = 0.65f + 0.05f * static_cast<float>(std::abs((coord.x + coord.y + coord.z) % 6));
