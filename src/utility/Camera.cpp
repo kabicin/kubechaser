@@ -78,7 +78,9 @@ void Camera::Render(int program, const CameraAttributes& ca)
 
 glm::vec3 Camera::GetLookDirection()
 {
-	return cameraFront - *cameraPos;
+	// GenerateView() looks from cameraPos toward cameraPos - cameraFront,
+	// so the view direction is -cameraFront.
+	return -cameraFront;
 }
 
 glm::vec3 Camera::GetRawDirection(double xPos, double yPos)
