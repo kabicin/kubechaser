@@ -30,14 +30,12 @@ int Entity::GetId()
 
 void Entity::MoveUp(glm::vec3 trans)
 {
-    double x = ca.translate.x, y = ca.translate.y;
-    ca.translate = glm::vec3(x, y, trans.z);
+    ca.translate = glm::vec3(ca.translate.x, ca.translate.y, trans.z);
 }
 
 void Entity::MoveBack(glm::vec3 trans)
 {
-    double x = translate.x, y = translate.y;
-    ca.translate = glm::vec3(x, y, trans.z);
+    ca.translate = glm::vec3(ca.translate.x, ca.translate.y, trans.z);
 }
 
 void Entity::Translate(glm::vec3 trans)
@@ -48,6 +46,11 @@ void Entity::Translate(glm::vec3 trans)
 void Entity::SetTranslate(glm::vec3 trans)
 {
     ca.translate = trans;
+}
+
+glm::vec3 Entity::GetTranslate() const
+{
+    return ca.translate;
 }
 
 void Entity::Scale(double scaleFactor)

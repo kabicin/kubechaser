@@ -211,7 +211,7 @@ void MeshViewer::onClick(int x, int y)
         mesh->SetObjectPicked();
         Eigen::Vector3d newray(ray.eye + ray.direction * min_t);
         glm::vec3 gnewray = glm::vec3(newray(0), newray(1), newray(2));
-        SetClickOffset(gnewray - mesh->translate);
+        SetClickOffset(gnewray - mesh->GetTranslate());
         SetLastT(min_t);
         holding = true;
     }

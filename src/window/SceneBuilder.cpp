@@ -55,7 +55,7 @@ void SceneBuilder::onClick(int x, int y)
         sceneDocument.SetActiveEntity(opt_i);
         Eigen::Vector3d newray(ray.eye + ray.direction * min_t);
         glm::vec3 gnewray = glm::vec3(newray(0), newray(1), newray(2));
-        SetClickOffset(gnewray - entities[opt_i]->translate);
+        SetClickOffset(gnewray - entities[opt_i]->GetTranslate());
         SetLastT(min_t);
         holding = true;
     }

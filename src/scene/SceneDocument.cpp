@@ -118,8 +118,8 @@ double SceneDocument::GetMaxDepth() const
 {
     double maxDepth = 0.0;
     for (const auto& entity : entities) {
-        if (entity->translate.z >= maxDepth) {
-            maxDepth = entity->translate.z + 0.01;
+        if (entity->GetTranslate().z >= maxDepth) {
+            maxDepth = entity->GetTranslate().z + 0.01;
         }
     }
     return maxDepth;
@@ -129,8 +129,8 @@ double SceneDocument::GetMinDepth() const
 {
     double minDepth = 0.0;
     for (const auto& entity : entities) {
-        if (entity->translate.z <= minDepth) {
-            minDepth = entity->translate.z - 0.01;
+        if (entity->GetTranslate().z <= minDepth) {
+            minDepth = entity->GetTranslate().z - 0.01;
         }
     }
     return minDepth;

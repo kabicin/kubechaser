@@ -66,9 +66,9 @@ public:
 
 	// object changing
 	float ndcRatio = 1.0;
-	glm::vec3 translate = glm::vec3(0.0f, 0.0f, 0.0f);
 	virtual void Translate(glm::vec3 trans);
 	virtual void SetTranslate(glm::vec3 trans);
+	glm::vec3 GetTranslate() const;
 	virtual void MoveUp(glm::vec3 trans);
 	virtual void MoveBack(glm::vec3 trans);
 	// Scale multiplies the current scale; SetScale replaces it
