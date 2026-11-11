@@ -432,7 +432,7 @@ gl_Position = u * gl_in[0].gl_Position + v * gl_in[1].gl_Position + w * gl_in[2]
                 {
                     shader.object.AddCustomVariable("in vec2 uv_es_in[];");
                     shader.object.AddCustomVariable("out vec2 uv_fs_in;");
-                    shader.object.AddBody("uv_fs_in = u * uv_es_in[0] + v * uv_es_in[1];\n");
+                    shader.object.AddBody("uv_fs_in = u * uv_es_in[0] + v * uv_es_in[1] + w * uv_es_in[2];\n");
                 }
                 if (shader.args & ShaderArgs_Normal)
                 {
