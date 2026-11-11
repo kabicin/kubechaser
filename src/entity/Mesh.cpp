@@ -55,34 +55,23 @@ void Mesh::initialize(
 
 void Mesh::generateBoundingBox(const Eigen::MatrixXf& V)
 {
-    Eigen::RowVector3f eq1(0,0,0);
-    Eigen::RowVector3f eq2(0,0,0);
-    Eigen::RowVector3f eq3(0,0,0);
-    Eigen::RowVector3f eq4(0,0,0);
-    Eigen::RowVector3f eq5(0,0,0);
-    Eigen::RowVector3f eq6(0,0,0);
-    Eigen::RowVector3f eq7(0,0,0);
-    Eigen::RowVector3f eq8(0,0,0);
-    for (int i = 0; i < V.rows(); i++)
+    // Axis-aligned bounding box in model space: the per-axis min and max over
+    // every vertex. Its 8 corners are transformed into world space in Intersect.
+    Eigen::RowVector3f lo(0, 0, 0);
+    Eigen::RowVector3f hi(0, 0, 0);
+    if (V.rows() > 0 && V.cols() >= 3)
     {
-        Eigen::RowVector3f row = V.row(i);
-        if (row(0) >= 0 && row(1) >= 0 && row(2) < 0 && row.norm() > eq1.norm()) eq1 = row;
-        if (row(0) < 0 && row(1) >= 0 && row(2) < 0 && row.norm() > eq2.norm()) eq2 = row;
-        if (row(0) < 0 && row(1) >= 0 && row(2) >= 0 && row.norm() > eq3.norm()) eq3 = row;
-        if (row(0) >= 0 && row(1) >= 0 && row(2) >= 0 && row.norm() > eq4.norm()) eq4 = row;
-        if (row(0) >= 0 && row(1) < 0 && row(2) < 0 && row.norm() > eq5.norm()) eq5 = row;
-        if (row(0) < 0 && row(1) < 0 && row(2) < 0 && row.norm() > eq6.norm()) eq6 = row;
-        if (row(0) < 0 && row(1) < 0 && row(2) >= 0 && row.norm() > eq7.norm()) eq7 = row;
-        if (row(0) >= 0 && row(1) < 0 && row(2) >= 0 && row.norm() > eq8.norm()) eq8 = row;
+        lo = V.leftCols<3>().colwise().minCoeff();
+        hi = V.leftCols<3>().colwise().maxCoeff();
     }
-    v1 = glm::vec4(eq1(0), eq1(1), eq1(2), 1.0f);
-    v2 = glm::vec4(eq2(0), eq2(1), eq2(2), 1.0f);
-    v3 = glm::vec4(eq3(0), eq3(1), eq3(2), 1.0f);
-    v4 = glm::vec4(eq4(0), eq4(1), eq4(2), 1.0f);
-    v5 = glm::vec4(eq5(0), eq5(1), eq5(2), 1.0f);
-    v6 = glm::vec4(eq6(0), eq6(1), eq6(2), 1.0f);
-    v7 = glm::vec4(eq7(0), eq7(1), eq7(2), 1.0f);
-    v8 = glm::vec4(eq8(0), eq8(1), eq8(2), 1.0f);
+    v1 = glm::vec4(hi(0), hi(1), lo(2), 1.0f);
+    v2 = glm::vec4(lo(0), hi(1), lo(2), 1.0f);
+    v3 = glm::vec4(lo(0), hi(1), hi(2), 1.0f);
+    v4 = glm::vec4(hi(0), hi(1), hi(2), 1.0f);
+    v5 = glm::vec4(hi(0), lo(1), lo(2), 1.0f);
+    v6 = glm::vec4(lo(0), lo(1), lo(2), 1.0f);
+    v7 = glm::vec4(lo(0), lo(1), hi(2), 1.0f);
+    v8 = glm::vec4(hi(0), lo(1), hi(2), 1.0f);
 }
 
 void Mesh::addToMap(std::unordered_map<int, std::unordered_set<int>>& map, const int& key, const int& val)
