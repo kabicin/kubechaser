@@ -17,6 +17,7 @@ AssetPanel::~AssetPanel()
 {
     for (int i = 0; i < imageList.size(); i++)
     {
+        glDeleteTextures(1, &imageList[i]->TextureNum);
         delete imageList[i];
     }
     imageList.clear();
@@ -196,6 +197,7 @@ int AssetPanel::addAsset(char *filename, GLuint image, int imageWidth, int image
 
 std::vector<Asset*>::iterator AssetPanel::deleteAsset(std::vector<Asset*>::iterator it, int assetNum)
 {
+    glDeleteTextures(1, &(*it)->TextureNum);
     delete *it;
     GetLogger()->LogMessage("Deleted image: " + std::to_string(assetNum));
     clearBit(assetNum);

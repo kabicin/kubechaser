@@ -9,7 +9,18 @@ Entity::Entity()
 
 Entity::~Entity()
 {
+    releaseTexture();
     clearBit(_id);
+}
+
+void Entity::releaseTexture()
+{
+    if (ownsTexture && TEX != 0)
+    {
+        glDeleteTextures(1, &TEX);
+    }
+    TEX = 0;
+    ownsTexture = false;
 }
 
 int Entity::GetId()
@@ -108,7 +119,9 @@ void Entity::AddTexture(const std::string& imagePath)
 {
     usingTexture = true;
 
+    releaseTexture();
     glGenTextures(1, &TEX);
+    ownsTexture = true;
     glBindTexture(GL_TEXTURE_2D, TEX);
     
     // stb: load texture
@@ -141,7 +154,8 @@ void Entity::SetTexture(Asset asset)
 {
     textureName = asset.TextureName;
     usingTexture = true;
-    TEX = asset.TextureNum;
+    releaseTexture();
+    TEX = asset.TextureNum; // borrowed: AssetPanel owns this texture
 }
 
 GLuint Entity::GetTexture()

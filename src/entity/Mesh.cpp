@@ -2,6 +2,12 @@
 
 Mesh::Mesh() {}
 
+Mesh::~Mesh()
+{
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+}
+
 Mesh::Mesh(const std::string& fileNameOBJ, const std::string& fileNameMTL, const std::string& textureName)
 {
     Eigen::MatrixXf V;

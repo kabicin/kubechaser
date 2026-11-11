@@ -222,16 +222,29 @@ void Grid::SetScale(float scale)
     gridScale = scale;
 }
 
+Grid::~Grid()
+{
+    for (int axis = 0; axis < 3; axis++) {
+        releaseAxis(axis);
+    }
+    glDeleteBuffers(1, &instance_VBO);
+}
+
+void Grid::releaseAxis(int axis)
+{
+    glDeleteBuffers(1, &VBO[axis]);
+    glDeleteVertexArrays(1, &VAO[axis]);
+    glDeleteBuffers(1, &neutral_VBO[axis]);
+    glDeleteVertexArrays(1, &neutral_VAO[axis]);
+    glDeleteBuffers(1, &lines_VBO[axis]);
+    glDeleteVertexArrays(1, &lines_VAO[axis]);
+}
+
 void Grid::SetNeutralColor(const glm::vec4& color)
 {
     neutralColor = color;
     for (int axis = 0; axis < 3; axis++) {
-        glDeleteBuffers(1, &VBO[axis]);
-        glDeleteVertexArrays(1, &VAO[axis]);
-        glDeleteBuffers(1, &neutral_VBO[axis]);
-        glDeleteVertexArrays(1, &neutral_VAO[axis]);
-        glDeleteBuffers(1, &lines_VBO[axis]);
-        glDeleteVertexArrays(1, &lines_VAO[axis]);
+        releaseAxis(axis);
         initialize(axis);
         initializeLines(gridLinesScale, axis);
     }

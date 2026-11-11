@@ -11,12 +11,13 @@ class Grid
 {
 private:
 	static constexpr float GridColor = 0.7f;
-	GLuint VBO[3], VAO[3];              // cartesian cross section (RGB)
-	GLuint neutral_VBO[3], neutral_VAO[3]; // cartesian cross section (grid color)
-	GLuint lines_VBO[3], lines_VAO[3];  // gridColor colored lines
+	GLuint VBO[3] = {}, VAO[3] = {};              // cartesian cross section (RGB)
+	GLuint neutral_VBO[3] = {}, neutral_VAO[3] = {}; // cartesian cross section (grid color)
+	GLuint lines_VBO[3] = {}, lines_VAO[3] = {};  // gridColor colored lines
 	GLuint instance_VBO = 0;            // per-instance offsets
 	int num_lines[3];                   // number of lines per axis
 	void initialize(int axis);
+	void releaseAxis(int axis);
 	void initializeLines(const glm::vec3& cartesianScale, int axis);
 	CameraAttributes ca;
 	DrawAttributes da;
@@ -31,6 +32,9 @@ public:
 		GridAxis_Z = 1 << 2
 	};
 	Grid(const std::shared_ptr<Camera>& camera);
+	~Grid();
+	Grid(const Grid&) = delete;
+	Grid& operator=(const Grid&) = delete;
 	void Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera, bool withCross=false, int axisMask=GridAxis_X | GridAxis_Y | GridAxis_Z, bool drawLines=true, bool drawNeutralAxes=true);
 	void DrawLinesInstanced(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera, const std::vector<glm::vec3>& offsets);
 	void SetScale(float scale);

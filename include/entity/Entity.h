@@ -31,8 +31,13 @@ private:
 	static std::shared_ptr<Camera> camera;
 	CameraAttributes ca = CameraAttributes(glm::vec3(0,0,0), glm::vec3(1,1,1), 0, 0, 0);
 
+	// true when TEX was created by AddTexture (and must be deleted by this entity);
+	// false when TEX is borrowed from an Asset via SetTexture
+	bool ownsTexture = false;
+	void releaseTexture();
+
 public:
-	GLuint VBO, VAO, EBO, TEX;
+	GLuint VBO = 0, VAO = 0, EBO = 0, TEX = 0;
 	std::string textureName = "N/A";
 	bool usingTexture = false;
 
@@ -40,6 +45,10 @@ public:
 
 	Entity();
 	virtual ~Entity();
+
+	// owns GPU handles: non-copyable
+	Entity(const Entity&) = delete;
+	Entity& operator=(const Entity&) = delete;
 	int GetId();
 	
 	// subclasses must override
