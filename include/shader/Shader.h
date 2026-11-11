@@ -12,6 +12,7 @@ private:
     void addTesselationShader(const GLuint& shaderProgram, const std::string& tcsName, const std::string& tesName);
     std::string getFileContents(std::string fileName);
     void checkError(GLuint obj, std::string errorMessage);
+    void checkLinkError(GLuint program, std::string errorMessage);
 
 public:
     const std::string SHADER_DIR = std::string(SRC_DIR) + "/shader/";

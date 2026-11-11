@@ -123,6 +123,7 @@ private:
     void populateShader(MutableShader& shader);
     GLuint getShaderMacro(const ShaderType& type);
     void checkError(GLuint obj, std::string errorMessage);
+    void checkLinkError(GLuint program, std::string errorMessage);
     bool tesselationEnabled = false;
     ShaderType currentShaderArgs = 0;
     GLuint generateShaderProgram();

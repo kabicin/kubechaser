@@ -130,9 +130,9 @@ unsigned int ShaderFactory::InitShader(const ShaderArgs& extraShaderArgs)
 
             // check the shader type
             GLuint macro = getShaderMacro(shader.type);
-            if (macro < 0) {
-                std::cout << fileName << " did not compile..." << std::endl;
-                return false;
+            if (macro == 0) {
+                std::cout << fileName << " has an unknown shader type (" << shader.type << "), skipping..." << std::endl;
+                continue;
             }
 
             // load, compile and then attach shader to the program
@@ -140,9 +140,9 @@ unsigned int ShaderFactory::InitShader(const ShaderArgs& extraShaderArgs)
             GLchar* shaderFile = (GLchar*)objectString.c_str();
             glShaderSource(shaderId, 1, &shaderFile, NULL);
             glCompileShader(shaderId);
+            checkError(shaderId, fileName + " failed to compile...");
             glAttachShader(program, shaderId);
             glDeleteShader(shaderId);
-            checkError(shaderId, fileName + " failed...");
 
             // bundle metadata
             ShaderMetadata metadata;
@@ -156,7 +156,8 @@ unsigned int ShaderFactory::InitShader(const ShaderArgs& extraShaderArgs)
     shader.type = shaderType;
     // link shader program
     glLinkProgram(program);
-    return -1;
+    checkLinkError(program, "shader program " + std::to_string(shaderLocation) + " (args " + std::to_string(extraShaderArgs) + ") failed to link...");
+    return shaderLocation;
 }
 
 void ShaderFactory::LoadShader(const ShaderArgs& extraShaderArgs)
@@ -182,6 +183,17 @@ void ShaderFactory::checkError(GLuint obj, std::string errorMessage) {
     if (!success)
     {
         glGetShaderInfoLog(obj, 512, NULL, infoLog);
+        std::cout << errorMessage << "\n" << infoLog << std::endl;
+    }
+}
+
+void ShaderFactory::checkLinkError(GLuint program, std::string errorMessage) {
+    GLint  success;
+    GLchar infoLog[512];
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(program, 512, NULL, infoLog);
         std::cout << errorMessage << "\n" << infoLog << std::endl;
     }
 }

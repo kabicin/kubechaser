@@ -9,6 +9,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath, c
         addTesselationShader(shaderProgram, tcsName, tesName);
     }
     glLinkProgram(shaderProgram);
+    checkLinkError(shaderProgram, "Shader Program Link Failed (" + vertexPath + ", " + fragmentPath + ")");
 }
 
 void Shader::initialize(const GLuint& shaderProgram, const std::string& vertexPath, const std::string& fragmentPath)
@@ -33,7 +34,6 @@ void Shader::initialize(const GLuint& shaderProgram, const std::string& vertexPa
     // load global shader program
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
-    checkError(shaderProgram, "Shader Program Failed");
 
     // shaders are linked into the program, so we can delete shaders
     glDeleteShader(vertexShader);
@@ -78,6 +78,17 @@ void Shader::checkError(GLuint obj, std::string errorMessage) {
     if (!success)
     {
         glGetShaderInfoLog(obj, 512, NULL, infoLog);
+        std::cout << errorMessage << "\n" << infoLog << std::endl;
+    }
+}
+
+void Shader::checkLinkError(GLuint program, std::string errorMessage) {
+    GLint  success;
+    GLchar infoLog[512];
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(program, 512, NULL, infoLog);
         std::cout << errorMessage << "\n" << infoLog << std::endl;
     }
 }
