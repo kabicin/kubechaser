@@ -1,17 +1,6 @@
 #include "window/SceneWorld.h"
 #include <GLFW/glfw3.h>
 
-std::bitset<GLFW_KEY_LAST + 1> SceneWorld::pressed;
-bool SceneWorld::look_active = false;
-bool SceneWorld::mouse_initialized = false;
-int SceneWorld::mouse_x = 0;
-int SceneWorld::mouse_y = 0;
-int SceneWorld::prev_x = 0;
-int SceneWorld::prev_y = 0;
-float SceneWorld::yaw_deg = -90.0f;
-float SceneWorld::pitch_deg = 0.0f;
-float SceneWorld::look_sensitivity = 0.12f;
-
 SceneWorld::SceneWorld(const WindowServices& services, int x, int y, int width, int height)
     : BaseWindow(services, x, y, width, height)
 {

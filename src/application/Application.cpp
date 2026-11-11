@@ -156,7 +156,7 @@ void Application::InitializeWindows()
 
     auto scene = std::make_shared<Scene>(root);
     auto worldCamera = std::make_shared<Camera>(screenWidth, screenHeight);
-    auto sceneWorld = std::make_shared<SceneWorld>(services, 0, 0, screenWidth, screenHeight);
+    sceneWorld = std::make_shared<SceneWorld>(services, 0, 0, screenWidth, screenHeight);
     sceneWorld->AddCamera(worldCamera);
 
     auto sceneManager = std::make_shared<SceneManager>();
@@ -274,6 +274,7 @@ void Application::Shutdown()
 
     windows.clear();
     meshViewer.reset();
+    sceneWorld.reset();
 
     services.shaderFactory.reset();
     services.time.reset();
@@ -310,7 +311,9 @@ void Application::OnCursorPosition(double xpos, double ypos)
     if (meshViewer) {
         meshViewer->SetDownClickPosition(x, y);
     }
-    SceneWorld::SetMousePosition(x, y);
+    if (sceneWorld) {
+        sceneWorld->SetMousePosition(x, y);
+    }
 }
 
 void Application::OnKey(int key, int action)
@@ -318,7 +321,9 @@ void Application::OnKey(int key, int action)
     if (meshViewer) {
         meshViewer->KeyCallback(action, key);
     }
-    SceneWorld::KeyCallback(action, key);
+    if (sceneWorld) {
+        sceneWorld->KeyCallback(action, key);
+    }
 }
 
 void Application::OnMouseButton(int button, int action)
@@ -340,7 +345,9 @@ void Application::OnMouseButton(int button, int action)
         }
     }
     if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        SceneWorld::SetLookActive(action == GLFW_PRESS || action == GLFW_REPEAT);
+        if (sceneWorld) {
+            sceneWorld->SetLookActive(action == GLFW_PRESS || action == GLFW_REPEAT);
+        }
     }
 }
 

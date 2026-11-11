@@ -16,12 +16,16 @@ private:
     std::shared_ptr<Scene> scene;
     std::shared_ptr<SceneManager> manager;
     void handleInput();
-    static std::bitset<GLFW_KEY_LAST + 1> pressed;
-    static bool look_active;
-    static bool mouse_initialized;
-    static int mouse_x, mouse_y, prev_x, prev_y;
-    static float yaw_deg, pitch_deg;
-    static float look_sensitivity;
+    std::bitset<GLFW_KEY_LAST + 1> pressed;
+    bool look_active = false;
+    bool mouse_initialized = false;
+    int mouse_x = 0;
+    int mouse_y = 0;
+    int prev_x = 0;
+    int prev_y = 0;
+    float yaw_deg = -90.0f;
+    float pitch_deg = 0.0f;
+    float look_sensitivity = 0.12f;
     
 public:
     SceneWorld(const WindowServices& services, int x, int y, int width, int height);
@@ -29,9 +33,9 @@ public:
     ~SceneWorld();
     void Render() override;
     void Resize(int x, int y, int width, int height) override;
-    static void KeyCallback(int action, int key);
-    static void SetMousePosition(int x, int y);
-    static void SetLookActive(bool active);
+    void KeyCallback(int action, int key);
+    void SetMousePosition(int x, int y);
+    void SetLookActive(bool active);
 
     void AddCamera(std::shared_ptr<Camera> playerCamera);
     void AddScene(std::shared_ptr<Scene> scene);

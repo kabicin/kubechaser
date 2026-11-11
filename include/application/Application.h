@@ -12,6 +12,7 @@ struct GLFWwindow;
 
 class BaseFrame;
 class MeshViewer;
+class SceneWorld;
 
 class Application
 {
@@ -65,6 +66,7 @@ private:
 
     WindowServices services;
     std::shared_ptr<MeshViewer> meshViewer;
+    std::shared_ptr<SceneWorld> sceneWorld;
     std::vector<std::shared_ptr<BaseFrame>> windows;
     std::vector<ShowcaseItem> showcase;
 };
