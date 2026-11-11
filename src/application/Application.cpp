@@ -166,7 +166,8 @@ void Application::InitializeWindows()
     sceneWorld->AddSceneManager(sceneManager);
 
     auto windowSwitch = std::make_shared<SwitchableBaseWindow>(0, 0, screenWidth, screenHeight);
-    windowSwitch->AddWindow(std::make_shared<MeshViewer>(services, 0, 0, screenWidth, screenHeight));
+    meshViewer = std::make_shared<MeshViewer>(services, 0, 0, screenWidth, screenHeight);
+    windowSwitch->AddWindow(meshViewer);
     windowSwitch->SetActiveMeshViewer(0);
     windowSwitch->AddWindow(sceneWorld);
     windowSwitch->AttachSceneController(sceneControl);
@@ -181,7 +182,7 @@ void Application::InitializeWindows()
     initialPod->da.materialAttributes.diffuse = initialPod->da.solidColor;
     initialPod->da.color = true;
     initialPod->da.useVertexColor = false;
-    MeshViewer::SetMesh(initialPod);
+    meshViewer->SetMesh(initialPod);
 }
 
 bool Application::InitializeImGui()
@@ -255,7 +256,7 @@ void Application::RenderShowcase()
                 selectedMesh->da.materialAttributes.diffuse = showcase[i].color;
                 selectedMesh->da.color = true;
                 selectedMesh->da.useVertexColor = false;
-                MeshViewer::SetMesh(selectedMesh);
+                meshViewer->SetMesh(selectedMesh);
                 services.logger->LogMessage("Showcasing OBJ model: " + showcase[i].filename);
             }
             ImGui::PopStyleColor();
@@ -271,8 +272,8 @@ void Application::Shutdown()
         glfwMakeContextCurrent(window);
     }
 
-    MeshViewer::SetMesh(nullptr);
     windows.clear();
+    meshViewer.reset();
 
     services.shaderFactory.reset();
     services.time.reset();
@@ -306,13 +307,17 @@ void Application::OnCursorPosition(double xpos, double ypos)
     const int x = static_cast<int>(xpos);
     const int y = static_cast<int>(ypos);
     SceneBuilder::SetDownClickPosition(x, y);
-    MeshViewer::SetDownClickPosition(x, y);
+    if (meshViewer) {
+        meshViewer->SetDownClickPosition(x, y);
+    }
     SceneWorld::SetMousePosition(x, y);
 }
 
 void Application::OnKey(int key, int action)
 {
-    MeshViewer::KeyCallback(action, key);
+    if (meshViewer) {
+        meshViewer->KeyCallback(action, key);
+    }
     SceneWorld::KeyCallback(action, key);
 }
 
@@ -324,10 +329,14 @@ void Application::OnMouseButton(int button, int action)
             double ypos = 0.0;
             glfwGetCursorPos(window, &xpos, &ypos);
             SceneBuilder::SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
-            MeshViewer::SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
+            if (meshViewer) {
+                meshViewer->SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
+            }
         } else {
             SceneBuilder::SetReleaseClick();
-            MeshViewer::SetReleaseClick();
+            if (meshViewer) {
+                meshViewer->SetReleaseClick();
+            }
         }
     }
     if (button == GLFW_MOUSE_BUTTON_RIGHT) {
@@ -338,7 +347,9 @@ void Application::OnMouseButton(int button, int action)
 void Application::OnScroll(double yoffset)
 {
     SceneBuilder::OnScroll(SceneBuilder::GetActiveEntity(), yoffset);
-    MeshViewer::OnScroll(yoffset);
+    if (meshViewer) {
+        meshViewer->OnScroll(yoffset);
+    }
 }
 
 void Application::OnWindowSize(int width, int height)

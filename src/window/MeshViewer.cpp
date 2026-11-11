@@ -1,17 +1,16 @@
 #include "window/MeshViewer.h"
 #include <algorithm>
 #include <iostream>
+#include <utility>
 
 MeshViewer::MeshViewer(const WindowServices& services, int x, int y, int width, int height)
     : BaseWindow(services, x, y, width, height)
 {
     camera = std::make_shared<Camera>(width, height);
 
-    std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>("statefulset.obj");
+    mesh = std::make_shared<Mesh>("statefulset.obj");
     mesh->Scale(glm::vec3(1, 1, 1));
     mesh->Translate(glm::vec3(0, 0, 0));
-    
-    MeshViewer::SetMesh(mesh);
 }
 
 void MeshViewer::handleInput()
@@ -20,7 +19,7 @@ void MeshViewer::handleInput()
         onClick();
     }
 
-    if (MeshViewer::holding)
+    if (holding)
     {
         // handle mouse offset
         int xOffset = mouse_x - prev_x;
@@ -29,7 +28,7 @@ void MeshViewer::handleInput()
         if (xOffset != 0 || yOffset != 0)
         {
             // if shift button pressed - scale
-            if (MeshViewer::scaling)
+            if (scaling)
             {
                 double scaleFactor = 0.05;
                 if (xOffset > 0)
@@ -62,25 +61,15 @@ void MeshViewer::showGUI()
         ImGui::Begin("Mesh Viewer", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
         // checkboxes
-        static bool wireframe = true;
         ImGui::Checkbox("wireframe", &wireframe);
         ImGui::SameLine();
-        static bool tesselate = false;
         ImGui::Checkbox("tesselate", &tesselate);
         ImGui::SameLine();
-        static bool normal = false;
         ImGui::Checkbox("normal", &normal);
         ImGui::SameLine();
-        static bool texture = true;
         ImGui::SameLine();
-        static bool lighting = true;
         ImGui::SameLine();
         ImGui::Checkbox("lighting", &lighting);
-        static bool dir_light = true;
-        static bool point_light = true;
-        static bool spot_light = true;
-        static bool blinn = false;
-        static float main_rgb[3] = { 0.8f, 0.8f, 0.8f };
         ImGui::ColorEdit3("color", main_rgb);
         if (lighting)
         {
@@ -192,7 +181,7 @@ void MeshViewer::Render()
 
 void MeshViewer::SetMesh(std::shared_ptr<Mesh> mesh)
 {
-    MeshViewer::mesh = mesh;
+    this->mesh = std::move(mesh);
 }
 
 
@@ -312,9 +301,3 @@ void MeshViewer::SaveMeshJSON()
     std::cout << "Saving mesh.." << std::endl;
 
 }
-
-std::shared_ptr<Mesh> MeshViewer::mesh;
-int MeshViewer::mouse_x, MeshViewer::mouse_y, MeshViewer::prev_x, MeshViewer::prev_y;
-bool MeshViewer::clicked, MeshViewer::holding, MeshViewer::scaling, MeshViewer::rotating, MeshViewer::wireframe;
-double MeshViewer::scroll_offset = 0.0;
-float MeshViewer::scroll_speed = 3.0f;

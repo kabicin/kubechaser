@@ -11,6 +11,7 @@
 struct GLFWwindow;
 
 class BaseFrame;
+class MeshViewer;
 
 class Application
 {
@@ -63,6 +64,7 @@ private:
     bool imguiOpenGLInitialized = false;
 
     WindowServices services;
+    std::shared_ptr<MeshViewer> meshViewer;
     std::vector<std::shared_ptr<BaseFrame>> windows;
     std::vector<ShowcaseItem> showcase;
 };
