@@ -80,8 +80,12 @@ void Triangle::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::sh
     if (factory->IsTesselationEnabled() && da.tesselate)
     {
         glPatchParameteri(GL_PATCH_VERTICES, 3);
+        glDrawArrays(GL_PATCHES, 0, 3);
     }
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    else
+    {
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
 
     if (da.wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

@@ -80,8 +80,12 @@ void Quad::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
     if (factory->IsTesselationEnabled() && da.tesselate)
     {
         glPatchParameteri(GL_PATCH_VERTICES, 3);
+        glDrawElements(GL_PATCHES, 6, GL_UNSIGNED_INT, nullptr);
     }
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    else
+    {
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    }
 
     if (da.wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
