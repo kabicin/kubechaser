@@ -152,10 +152,10 @@ void SceneControl::Render()
         ImGui::PopStyleColor();
 
         ImGui::PushStyleColor(ImGuiCol_Text, imColorGrey);
-        ImGui::Checkbox("Grid", &SceneBuilder::showGrid);
+        ImGui::Checkbox("Grid", &showGrid);
         if (auto switcher = sbWindow.lock()) {
             if (auto sceneWorld = switcher->GetSceneWorld()) {
-                sceneWorld->SetShowGrid(SceneBuilder::showGrid);
+                sceneWorld->SetShowGrid(showGrid);
             }
         }
         ImGui::PopStyleColor();

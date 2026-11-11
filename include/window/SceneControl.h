@@ -2,7 +2,6 @@
 #define SCENECONTROL_H
 #include "scene/SceneDocument.h"
 #include "window/BaseWindow.h"
-#include "window/SceneBuilder.h"
 #include "window/SceneWorld.h"
 
 class SwitchableBaseWindow;
@@ -12,6 +11,7 @@ class SceneControl : public BaseWindow
 private:
     SceneDocument& sceneDocument;
     bool propagateControl = false;
+    bool showGrid = false;
     int windowMode = 0;
     void changeWindow(int window);
 

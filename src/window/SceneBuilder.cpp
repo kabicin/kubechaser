@@ -107,7 +107,7 @@ void SceneBuilder::Render()
     }
 
     // Holding Code
-    if (SceneBuilder::holding)
+    if (holding)
     {
         std::shared_ptr<Entity> activeEntity = sceneDocument.GetActiveEntity();
         if (!activeEntity) {
@@ -120,14 +120,14 @@ void SceneBuilder::Render()
             if (xOffset != 0 || yOffset != 0)
             {
                 // if shift button pressed - scale
-                if (SceneBuilder::scaling)
+                if (scaling)
                 {
                     double scaleFactor = 0.05;
                     if (xOffset > 0) activeEntity->Scale(1.0 + scaleFactor);
                     else activeEntity->Scale(1.0 - scaleFactor);
                 }
                 // if ctrl button pressed - rotate
-                else if (SceneBuilder::rotating)
+                else if (rotating)
                 {
                     float rotateFactor = 4.0f;
                     if (xOffset > 0) activeEntity->RotateZInc(rotateFactor);
@@ -160,7 +160,6 @@ void SceneBuilder::Render()
     }
 
     // draw scene
-    scene->SetShowGrid(SceneBuilder::showGrid, GetCamera());
     scene->Render(GetShaderFactory(), GetCamera());
 }
 
@@ -222,9 +221,3 @@ void SceneBuilder::KeyCallback(int key, int scancode, int action, int mods)
             for (const auto& entity : entities) entity->da.wireframe = false;
     }
 }
-
-int SceneBuilder::mouse_x, SceneBuilder::mouse_y, SceneBuilder::prev_x, SceneBuilder::prev_y;
-bool SceneBuilder::clicked, SceneBuilder::holding, SceneBuilder::scaling, SceneBuilder::rotating, SceneBuilder::wireframe;
-glm::vec3 SceneBuilder::prev, SceneBuilder::next;
-
-bool SceneBuilder::showGrid;

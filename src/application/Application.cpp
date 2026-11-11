@@ -23,7 +23,6 @@
 #include "window/BaseWindow.h"
 #include "window/ConsolePanel.h"
 #include "window/MeshViewer.h"
-#include "window/SceneBuilder.h"
 #include "window/SceneControl.h"
 #include "window/SceneWorld.h"
 #include "window/SwitchableBaseWindow.h"
@@ -309,7 +308,6 @@ void Application::OnCursorPosition(double xpos, double ypos)
 {
     const int x = static_cast<int>(xpos);
     const int y = static_cast<int>(ypos);
-    SceneBuilder::SetDownClickPosition(x, y);
     if (meshViewer) {
         meshViewer->SetDownClickPosition(x, y);
     }
@@ -335,12 +333,10 @@ void Application::OnMouseButton(int button, int action)
             double xpos = 0.0;
             double ypos = 0.0;
             glfwGetCursorPos(window, &xpos, &ypos);
-            SceneBuilder::SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
             if (meshViewer) {
                 meshViewer->SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
             }
         } else {
-            SceneBuilder::SetReleaseClick();
             if (meshViewer) {
                 meshViewer->SetReleaseClick();
             }
@@ -355,7 +351,6 @@ void Application::OnMouseButton(int button, int action)
 
 void Application::OnScroll(double yoffset)
 {
-    SceneBuilder::OnScroll(sceneDocument.GetActiveEntity(), yoffset);
     if (meshViewer) {
         meshViewer->OnScroll(yoffset);
     }
