@@ -38,6 +38,8 @@ private:
     glm::vec3 clickOffset;
     double lastT;
     void showGUI();
+    void saveState();
+    void loadState();
 
 public:
     MeshViewer(const WindowServices& services, int x, int y, int width, int height);

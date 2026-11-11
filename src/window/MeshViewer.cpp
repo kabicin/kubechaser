@@ -1,6 +1,9 @@
 #include "window/MeshViewer.h"
 #include "logger/Logger.h"
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <iostream>
 #include <utility>
 
@@ -103,39 +106,10 @@ void MeshViewer::showGUI()
             std::cout << mesh->da << std::endl;
         }
         if (ImGui::Button("Save State")) {
-            std::cout << "Saving state as: " << std::endl;
-            std::ofstream meshOut("../output/mesh.txt");
-            if (!meshOut) {
-                GetLogger()->LogMessage("Save State failed: could not open ../output/mesh.txt");
-            } else {
-                mesh->da.serialize(meshOut);
-                std::cout << "Successfully saved!" << std::endl;
-            }
+            saveState();
         }
         if (ImGui::Button("Load State")) {
-            std::cout << "Loading state: " << std::endl;
-            std::ifstream meshIn("../output/mesh.txt");
-            if (!meshIn) {
-                GetLogger()->LogMessage("Load State failed: could not open ../output/mesh.txt");
-            } else {
-                DrawAttributes loadedDrawAttribs = DrawAttributes::deserialize(meshIn);
-                std::cout << loadedDrawAttribs << std::endl;
-                mesh->da = loadedDrawAttribs;
-                wireframe = loadedDrawAttribs.wireframe;
-                tesselate = loadedDrawAttribs.tesselate;
-                normal = loadedDrawAttribs.normal;
-                texture = loadedDrawAttribs.texture;
-                lighting = !loadedDrawAttribs.color;
-                blinn = loadedDrawAttribs.lightBlinn;
-                main_rgb[0] = loadedDrawAttribs.solidColor.x;
-                main_rgb[1] = loadedDrawAttribs.solidColor.y;
-                main_rgb[2] = loadedDrawAttribs.solidColor.z;
-                wireframe = loadedDrawAttribs.wireframe;
-
-                dir_light = (loadedDrawAttribs.lightSwitch & 1) != 0;
-                point_light = (loadedDrawAttribs.lightSwitch & (1 << 1)) != 0;
-                spot_light = (loadedDrawAttribs.lightSwitch & (1 << 2)) != 0;
-            }
+            loadState();
         }
         ImGui::End();
 
@@ -335,6 +309,91 @@ void MeshViewer::OnKey(int key, int action)
 void MeshViewer::OnDeactivate()
 {
     SetReleaseClick();
+}
+
+namespace {
+
+std::filesystem::path meshStatePath()
+{
+    return std::filesystem::path(OUTPUT_DIR) / "mesh.txt";
+}
+
+} // namespace
+
+void MeshViewer::saveState()
+{
+    const std::filesystem::path path = meshStatePath();
+    std::error_code ec;
+    std::filesystem::create_directories(path.parent_path(), ec);
+    std::ofstream meshOut(path);
+    if (!meshOut) {
+        GetLogger()->LogMessage("Save State failed: could not open " + path.string());
+        return;
+    }
+
+    mesh->da.serialize(meshOut);
+    // The viewer's own toggles: lightSwitch is 0 whenever lighting is off,
+    // so the individual light checkboxes can't be recovered from it.
+    int light_mask = 0;
+    if (dir_light) light_mask |= 1;
+    if (point_light) light_mask |= 1 << 1;
+    if (spot_light) light_mask |= 1 << 2;
+    meshOut << "viewer.lighting " << lighting << '\n'
+            << "viewer.lights " << light_mask << '\n'
+            << "viewer.blinn " << blinn << '\n';
+
+    if (!meshOut) {
+        GetLogger()->LogMessage("Save State failed: could not write " + path.string());
+        return;
+    }
+    GetLogger()->LogMessage("Saved mesh state to " + path.string());
+}
+
+void MeshViewer::loadState()
+{
+    const std::filesystem::path path = meshStatePath();
+    std::ifstream meshIn(path);
+    if (!meshIn) {
+        GetLogger()->LogMessage("Load State failed: could not open " + path.string());
+        return;
+    }
+    std::stringstream contents;
+    contents << meshIn.rdbuf();
+
+    DrawAttributes loaded = DrawAttributes::deserialize(contents);
+    std::cout << loaded << std::endl;
+    mesh->da = loaded;
+
+    wireframe = loaded.wireframe;
+    tesselate = loaded.tesselate;
+    normal = loaded.normal;
+    texture = loaded.texture;
+    main_rgb[0] = loaded.solidColor.x;
+    main_rgb[1] = loaded.solidColor.y;
+    main_rgb[2] = loaded.solidColor.z;
+
+    // Defaults for files without viewer lines (fall back to DrawAttributes).
+    lighting = !loaded.color;
+    int light_mask = static_cast<int>(loaded.lightSwitch);
+    blinn = loaded.lightBlinn;
+
+    contents.clear();
+    contents.seekg(0);
+    std::string line;
+    while (std::getline(contents, line)) {
+        std::istringstream ls(line);
+        std::string key;
+        int value;
+        if (!(ls >> key >> value)) continue;
+        if (key == "viewer.lighting") lighting = value != 0;
+        else if (key == "viewer.lights") light_mask = value;
+        else if (key == "viewer.blinn") blinn = value != 0;
+    }
+
+    dir_light = (light_mask & 1) != 0;
+    point_light = (light_mask & (1 << 1)) != 0;
+    spot_light = (light_mask & (1 << 2)) != 0;
+    GetLogger()->LogMessage("Loaded mesh state from " + path.string());
 }
 
 void MeshViewer::SaveMeshJSON()

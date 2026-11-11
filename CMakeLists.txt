@@ -19,6 +19,7 @@ add_subdirectory("${KUBECHASER_THIRD_PARTY_DIR}/glm" glm EXCLUDE_FROM_ALL)
 
 add_library(kubechaser_core STATIC
     src/logger/Logger.cpp
+    src/shader/DrawAttributes.cpp
     src/utility/Linalg.cpp
     src/utility/Material.cpp
     src/utility/Reader.cpp
@@ -63,7 +64,6 @@ if(KUBECHASER_BUILD_APP)
         src/scene/SceneDocument.cpp
         src/scene/SceneManager.cpp
         src/scene/SceneNode.cpp
-        src/shader/DrawAttributes.cpp
         src/shader/MaterialAttributes.cpp
         src/shader/Shader.cpp
         src/shader/ShaderFactory.cpp
@@ -86,6 +86,7 @@ if(KUBECHASER_BUILD_APP)
     target_compile_definitions(kubechaser PRIVATE
         ASSET_DIR="${KUBECHASER_ROOT}/assets"
         SRC_DIR="${KUBECHASER_ROOT}/src"
+        OUTPUT_DIR="${KUBECHASER_ROOT}/output"
     )
     target_include_directories(kubechaser
         PRIVATE "${KUBECHASER_ROOT}/include"

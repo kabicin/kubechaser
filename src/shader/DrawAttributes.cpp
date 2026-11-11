@@ -1,82 +1,114 @@
 #include "shader/DrawAttributes.h"
+#include <istream>
 #include <ostream>
+#include <sstream>
+#include <string>
 
 struct DrawAttributes da;
 
-constexpr std::streamsize MAX_STREAMSIZE = std::numeric_limits<std::streamsize>::max();
+namespace {
+
+void writeVec3(std::ostream& os, const char* key, const glm::vec3& v)
+{
+    os << key << ' ' << v.x << ' ' << v.y << ' ' << v.z << '\n';
+}
+
+// Only assign on success so a malformed value keeps the default.
+template <typename T>
+bool readValue(std::istream& is, T& out)
+{
+    T value;
+    if (!(is >> value)) return false;
+    out = value;
+    return true;
+}
+
+bool readBool(std::istream& is, bool& out)
+{
+    int value;
+    if (!(is >> value)) return false;
+    out = value != 0;
+    return true;
+}
+
+bool readVec3(std::istream& is, glm::vec3& out)
+{
+    glm::vec3 v;
+    if (!(is >> v.x >> v.y >> v.z)) return false;
+    out = v;
+    return true;
+}
+
+} // namespace
 
 std::ostream& operator<<(std::ostream& os, const DrawAttributes& da)
 {
-    os << "DrawAttributes{\n" << 
+    const MaterialAttributes& ma = da.materialAttributes;
+    os << "DrawAttributes{\n" <<
         "\twireframe: " << da.wireframe << "\n" <<
         "\ttesselate: " << da.tesselate << "\n" <<
         "\tnormal: " << da.normal << "\n" <<
+        "\ttexture: " << da.texture << "\n" <<
         "\tpassthrough: " << da.passthrough << "\n" <<
         "\tcolor: " << da.color << "\n" <<
         "\tuseVertexColor: " << da.useVertexColor << "\n" <<
         "\tsolidColor: [" << da.solidColor.x << "," << da.solidColor.y << "," << da.solidColor.z << "]\n" <<
+        "\tmaterial.shininess: " << ma.shininess << "\n" <<
+        "\tmaterial.diffuseMap: " << ma.diffuseMap << "\n" <<
+        "\tmaterial.diffuse: [" << ma.diffuse.x << "," << ma.diffuse.y << "," << ma.diffuse.z << "]\n" <<
+        "\tmaterial.specular: [" << ma.specular.x << "," << ma.specular.y << "," << ma.specular.z << "]\n" <<
         "\tlightBlinn: " << da.lightBlinn << "\n" <<
-        "\tlightSwitch: " << da.lightSwitch << "\n}";
+        "\tlightSwitch: " << da.lightSwitch << "\n" <<
+        "\tinstanced: " << da.instanced << "\n}";
     return os;
 }
 
+// One "key value..." pair per line. Unknown keys are ignored by deserialize,
+// so callers may append their own lines to the same stream.
 void DrawAttributes::serialize(std::ostream& os) const
 {
-   os << this->wireframe << "\n" << this->tesselate << "\n" << this->normal << "\n" << this->passthrough << "\n"
-    << this->color << "\n" << this->useVertexColor << "\n" << this->solidColor.x << "\n" << this->solidColor.y << "\n" 
-    << this->solidColor.z << "\n" << this->lightBlinn << "\n" << this->lightSwitch << "\n";
+    os << "wireframe " << wireframe << '\n'
+       << "tesselate " << tesselate << '\n'
+       << "normal " << normal << '\n'
+       << "texture " << texture << '\n'
+       << "passthrough " << passthrough << '\n'
+       << "color " << color << '\n'
+       << "useVertexColor " << useVertexColor << '\n';
+    writeVec3(os, "solidColor", solidColor);
+    os << "material.shininess " << materialAttributes.shininess << '\n'
+       << "material.diffuseMap " << materialAttributes.diffuseMap << '\n';
+    writeVec3(os, "material.diffuse", materialAttributes.diffuse);
+    writeVec3(os, "material.specular", materialAttributes.specular);
+    os << "lightSwitch " << lightSwitch << '\n'
+       << "lightBlinn " << lightBlinn << '\n'
+       << "instanced " << instanced << '\n';
 }
 
+// Fields missing from the stream keep their default values.
 DrawAttributes DrawAttributes::deserialize(std::istream& is)
 {
-    DrawAttributes drawAttribs;
-    int intVal;
-    
-    is >> intVal;
-    drawAttribs.wireframe = intVal != 0;
-    is.ignore(MAX_STREAMSIZE, '\n');
-    
-    is >> intVal;
-    drawAttribs.tesselate = intVal != 0;
-    is.ignore(MAX_STREAMSIZE, '\n');
+    DrawAttributes da;
+    std::string line;
+    while (std::getline(is, line)) {
+        std::istringstream ls(line);
+        std::string key;
+        if (!(ls >> key)) continue;
 
-    is >> intVal;
-    drawAttribs.normal = intVal != 0;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    is >> intVal;
-    drawAttribs.passthrough = intVal != 0;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    is >> intVal;
-    drawAttribs.color = intVal != 0;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    is >> intVal;
-    drawAttribs.useVertexColor = intVal != 0;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    float fVal;
-    is >> fVal;
-    drawAttribs.solidColor.x = fVal;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    is >> fVal;
-    drawAttribs.solidColor.y = fVal;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    is >> fVal;
-    drawAttribs.solidColor.z = fVal;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    is >> intVal;
-    drawAttribs.lightBlinn = intVal != 0;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    unsigned int uIntVal;
-    is >> uIntVal;
-    drawAttribs.lightSwitch = uIntVal;
-    is.ignore(MAX_STREAMSIZE, '\n');
-
-    return drawAttribs;
+        if (key == "wireframe") readBool(ls, da.wireframe);
+        else if (key == "tesselate") readBool(ls, da.tesselate);
+        else if (key == "normal") readBool(ls, da.normal);
+        else if (key == "texture") readBool(ls, da.texture);
+        else if (key == "passthrough") readBool(ls, da.passthrough);
+        else if (key == "color") readBool(ls, da.color);
+        else if (key == "useVertexColor") readBool(ls, da.useVertexColor);
+        else if (key == "solidColor") readVec3(ls, da.solidColor);
+        else if (key == "material.shininess") readValue(ls, da.materialAttributes.shininess);
+        else if (key == "material.diffuseMap") readValue(ls, da.materialAttributes.diffuseMap);
+        else if (key == "material.diffuse") readVec3(ls, da.materialAttributes.diffuse);
+        else if (key == "material.specular") readVec3(ls, da.materialAttributes.specular);
+        else if (key == "lightSwitch") readValue(ls, da.lightSwitch);
+        else if (key == "lightBlinn") readBool(ls, da.lightBlinn);
+        else if (key == "instanced") readBool(ls, da.instanced);
+    }
+    return da;
 }
