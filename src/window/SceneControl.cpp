@@ -60,14 +60,14 @@ void SceneControl::Render()
         ImGui::PopStyleColor();
         if (ImGui::Button("Open##SceneWorld"))
         {
-            changeWindow(1);
+            changeWindow(WindowMode::SceneWorld);
         }
         ImGui::PushStyleColor(ImGuiCol_Text, imColorWhite);
         ImGui::Text("Mesh Viewer");
         ImGui::PopStyleColor();
         if (ImGui::Button("Open##MeshViewer"))
         {
-            changeWindow(0);
+            changeWindow(WindowMode::MeshViewer);
         }
         ImGui::PushStyleColor(ImGuiCol_Text, imColorWhite);
         ImGui::Text("Object");
@@ -119,7 +119,11 @@ void SceneControl::Render()
                 std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(obj);
                 mesh->Scale(glm::vec3(1, 1, 1));
                 mesh->Translate(glm::vec3(0, 0, 0));
-                this->sbWindow.lock()->GetMeshViewer()->SetMesh(mesh);
+                if (auto switcher = this->sbWindow.lock()) {
+                    if (auto viewer = switcher->GetMeshViewer()) {
+                        viewer->SetMesh(mesh);
+                    }
+                }
 
                 ImGui::CloseCurrentPopup();
             }
@@ -207,10 +211,13 @@ void SceneControl::Render()
     }
 }
 
-void SceneControl::changeWindow(int window)
+void SceneControl::changeWindow(WindowMode window)
 {
     windowMode = window;
     propagateControl = true;
+    if (auto switcher = sbWindow.lock()) {
+        switcher->SetActiveMode(window);
+    }
 }
 
 bool SceneControl::HasChanged()
@@ -220,7 +227,7 @@ bool SceneControl::HasChanged()
     return prev;
 }
 
-int SceneControl::GetWindowMode()
+SceneControl::WindowMode SceneControl::GetWindowMode()
 {
     return windowMode;
 }

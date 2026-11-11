@@ -165,11 +165,9 @@ void Application::InitializeWindows()
     sceneManager->SetActiveRadius(40);
     sceneWorld->AddSceneManager(sceneManager);
 
-    auto windowSwitch = std::make_shared<SwitchableBaseWindow>(0, 0, screenWidth, screenHeight);
     meshViewer = std::make_shared<MeshViewer>(services, 0, 0, screenWidth, screenHeight);
-    windowSwitch->AddWindow(meshViewer);
-    windowSwitch->SetActiveMeshViewer(0);
-    windowSwitch->AddWindow(sceneWorld);
+    auto windowSwitch = std::make_shared<SwitchableBaseWindow>(
+        0, 0, screenWidth, screenHeight, meshViewer, sceneWorld);
     windowSwitch->AttachSceneController(sceneControl);
     sceneControl->AttachSwitchableBaseWindow(windowSwitch);
 

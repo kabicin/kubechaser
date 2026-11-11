@@ -3,17 +3,19 @@
 #include "scene/SceneDocument.h"
 #include "window/BaseWindow.h"
 #include "window/SceneWorld.h"
-
-class SwitchableBaseWindow;
+#include "window/SwitchableBaseWindow.h"
 
 class SceneControl : public BaseWindow
 {
+public:
+    using WindowMode = SwitchableBaseWindow::WindowMode;
+
 private:
     SceneDocument& sceneDocument;
     bool propagateControl = false;
     bool showGrid = false;
-    int windowMode = 0;
-    void changeWindow(int window);
+    WindowMode windowMode = WindowMode::MeshViewer;
+    void changeWindow(WindowMode window);
 
     ImU32 imColorWhite = IM_COL32(255, 255, 255, 255);
     ImU32 imColorGrey = IM_COL32(111,111,111,255);
@@ -30,7 +32,7 @@ public:
     ~SceneControl();
     void Render();
     bool HasChanged();
-    int GetWindowMode();
+    WindowMode GetWindowMode();
 
     void AttachSwitchableBaseWindow(const std::shared_ptr<SwitchableBaseWindow>& sbWindow);
 };

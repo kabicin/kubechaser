@@ -1,35 +1,50 @@
 #ifndef SWITCHABLEBASEWINDOW_H
 #define SWITCHABLEBASEWINDOW_H
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include "dearimgui.h"
-#include "shader/Shader.h"
-#include "logger/Logger.h"
-#include "entity/Entity.h"
-#include "Asset.h"
-#include <memory>
+
 #include "window/BaseFrame.h"
 #include "window/BaseWindow.h"
-class SceneControl;
-class SceneWorld;
 #include "window/MeshViewer.h"
+#include "window/SceneWorld.h"
+#include <memory>
+
+class SceneControl;
+
+enum class WindowMode
+{
+    MeshViewer,
+    SceneWorld
+};
 
 class SwitchableBaseWindow : public BaseFrame
 {
-private:
-    std::vector<std::shared_ptr<BaseWindow>> windows;
-    std::shared_ptr<SceneControl> controller;
-    int selectedWindow = 0;
-    int selectedMeshViewer = -1;
 public:
+    using WindowMode = ::WindowMode;
+
     SwitchableBaseWindow(int x, int y, int width, int height);
-    void Render();
+    SwitchableBaseWindow(int x, int y, int width, int height,
+                         std::shared_ptr<MeshViewer> meshViewer,
+                         std::shared_ptr<SceneWorld> sceneWorld);
+
+    void Render() override;
+    void Resize(int x, int y, int width, int height) override;
     void AttachSceneController(std::shared_ptr<SceneControl> controller);
-    void AddWindow(std::shared_ptr<BaseWindow> window);
-    void Resize(int x, int y, int width, int height);
-    std::shared_ptr<MeshViewer> GetMeshViewer();
-    std::shared_ptr<SceneWorld> GetSceneWorld();
-    void SetActiveMeshViewer(int meshViewerIndex);
+
+    void SetMeshViewer(std::shared_ptr<MeshViewer> viewer);
+    void SetSceneWorld(std::shared_ptr<SceneWorld> world);
+
+    std::shared_ptr<MeshViewer> GetMeshViewer() const;
+    std::shared_ptr<SceneWorld> GetSceneWorld() const;
+
+    void SetActiveMode(WindowMode mode);
+    WindowMode GetActiveMode() const;
+    std::shared_ptr<BaseWindow> GetActiveWindow() const;
+
+private:
+    std::shared_ptr<MeshViewer> meshViewer;
+    std::shared_ptr<SceneWorld> sceneWorld;
+    std::shared_ptr<BaseWindow> activeWindow;
+    WindowMode activeMode = WindowMode::MeshViewer;
+    std::shared_ptr<SceneControl> controller;
 };
 
 #endif
