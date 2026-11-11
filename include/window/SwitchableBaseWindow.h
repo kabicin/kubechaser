@@ -36,6 +36,11 @@ public:
     WindowMode GetActiveMode() const;
     std::shared_ptr<BaseWindow> GetActiveWindow() const;
 
+    void OnCursorPosition(double xpos, double ypos);
+    void OnKey(int key, int action);
+    void OnMouseButton(int button, int action, double xpos, double ypos);
+    void OnScroll(double yoffset);
+
 private:
     std::shared_ptr<MeshViewer> meshViewer;
     std::shared_ptr<SceneWorld> sceneWorld;

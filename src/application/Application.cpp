@@ -166,10 +166,12 @@ void Application::InitializeWindows()
     sceneWorld->AddSceneManager(sceneManager);
 
     meshViewer = std::make_shared<MeshViewer>(services, 0, 0, screenWidth, screenHeight);
-    auto windowSwitch = std::make_shared<SwitchableBaseWindow>(
+    windowSwitch = std::make_shared<SwitchableBaseWindow>(
         0, 0, screenWidth, screenHeight, meshViewer, sceneWorld);
-    sceneControl->SetModeChangeCallback([windowSwitch](SwitchableBaseWindow::WindowMode mode) {
-        windowSwitch->SetActiveMode(mode);
+    sceneControl->SetModeChangeCallback([this](SwitchableBaseWindow::WindowMode mode) {
+        if (windowSwitch) {
+            windowSwitch->SetActiveMode(mode);
+        }
     });
     sceneControl->AttachSwitchableBaseWindow(windowSwitch);
 
@@ -273,6 +275,7 @@ void Application::Shutdown()
     }
 
     windows.clear();
+    windowSwitch.reset();
     meshViewer.reset();
     sceneWorld.reset();
     sceneDocument.Clear();
@@ -306,53 +309,41 @@ void Application::Shutdown()
 
 void Application::OnCursorPosition(double xpos, double ypos)
 {
-    const int x = static_cast<int>(xpos);
-    const int y = static_cast<int>(ypos);
-    if (meshViewer) {
-        meshViewer->SetDownClickPosition(x, y);
-    }
-    if (sceneWorld) {
-        sceneWorld->SetMousePosition(x, y);
+    if (windowSwitch) {
+        windowSwitch->OnCursorPosition(xpos, ypos);
     }
 }
 
 void Application::OnKey(int key, int action)
 {
-    if (meshViewer) {
-        meshViewer->KeyCallback(action, key);
+    if (imguiGlfwInitialized && ImGui::GetIO().WantCaptureKeyboard) {
+        return;
     }
-    if (sceneWorld) {
-        sceneWorld->KeyCallback(action, key);
+    if (windowSwitch) {
+        windowSwitch->OnKey(key, action);
     }
 }
 
 void Application::OnMouseButton(int button, int action)
 {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        if (action == GLFW_PRESS) {
-            double xpos = 0.0;
-            double ypos = 0.0;
-            glfwGetCursorPos(window, &xpos, &ypos);
-            if (meshViewer) {
-                meshViewer->SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
-            }
-        } else {
-            if (meshViewer) {
-                meshViewer->SetReleaseClick();
-            }
-        }
+    if (imguiGlfwInitialized && ImGui::GetIO().WantCaptureMouse) {
+        return;
     }
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        if (sceneWorld) {
-            sceneWorld->SetLookActive(action == GLFW_PRESS || action == GLFW_REPEAT);
-        }
+    if (windowSwitch) {
+        double xpos = 0.0;
+        double ypos = 0.0;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        windowSwitch->OnMouseButton(button, action, xpos, ypos);
     }
 }
 
 void Application::OnScroll(double yoffset)
 {
-    if (meshViewer) {
-        meshViewer->OnScroll(yoffset);
+    if (imguiGlfwInitialized && ImGui::GetIO().WantCaptureMouse) {
+        return;
+    }
+    if (windowSwitch) {
+        windowSwitch->OnScroll(yoffset);
     }
 }
 

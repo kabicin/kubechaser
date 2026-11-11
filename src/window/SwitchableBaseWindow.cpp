@@ -1,6 +1,7 @@
 #include "window/SwitchableBaseWindow.h"
 #include "window/SceneWorld.h"
 #include "window/MeshViewer.h"
+#include <GLFW/glfw3.h>
 
 SwitchableBaseWindow::SwitchableBaseWindow(int x, int y, int width, int height)
     : BaseFrame(x, y, width, height)
@@ -89,6 +90,16 @@ void SwitchableBaseWindow::SetActiveMode(WindowMode mode)
         activeWindow->Hide();
     }
 
+    // Reset interaction state on deactivate
+    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    {
+        meshViewer->SetReleaseClick();
+    }
+    else if (activeMode == WindowMode::SceneWorld && sceneWorld)
+    {
+        sceneWorld->SetLookActive(false);
+    }
+
     activeMode = mode;
     switch (activeMode)
     {
@@ -114,4 +125,63 @@ WindowMode SwitchableBaseWindow::GetActiveMode() const
 std::shared_ptr<BaseWindow> SwitchableBaseWindow::GetActiveWindow() const
 {
     return activeWindow;
+}
+
+void SwitchableBaseWindow::OnCursorPosition(double xpos, double ypos)
+{
+    const int x = static_cast<int>(xpos);
+    const int y = static_cast<int>(ypos);
+    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    {
+        meshViewer->SetDownClickPosition(x, y);
+    }
+    else if (activeMode == WindowMode::SceneWorld && sceneWorld)
+    {
+        sceneWorld->SetMousePosition(x, y);
+    }
+}
+
+void SwitchableBaseWindow::OnKey(int key, int action)
+{
+    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    {
+        meshViewer->KeyCallback(action, key);
+    }
+    else if (activeMode == WindowMode::SceneWorld && sceneWorld)
+    {
+        sceneWorld->KeyCallback(action, key);
+    }
+}
+
+void SwitchableBaseWindow::OnMouseButton(int button, int action, double xpos, double ypos)
+{
+    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    {
+        if (button == GLFW_MOUSE_BUTTON_LEFT)
+        {
+            if (action == GLFW_PRESS)
+            {
+                meshViewer->SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
+            }
+            else
+            {
+                meshViewer->SetReleaseClick();
+            }
+        }
+    }
+    else if (activeMode == WindowMode::SceneWorld && sceneWorld)
+    {
+        if (button == GLFW_MOUSE_BUTTON_RIGHT)
+        {
+            sceneWorld->SetLookActive(action == GLFW_PRESS || action == GLFW_REPEAT);
+        }
+    }
+}
+
+void SwitchableBaseWindow::OnScroll(double yoffset)
+{
+    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    {
+        meshViewer->OnScroll(yoffset);
+    }
 }
