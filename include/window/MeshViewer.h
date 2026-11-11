@@ -43,12 +43,17 @@ public:
     MeshViewer(const WindowServices& services, int x, int y, int width, int height);
 
     void SetMesh(std::shared_ptr<Mesh> mesh);
-    void Render();
+    void Render() override;
     void KeyCallback(int action, int key);
     void SetDownClick(int x, int y);
     void SetDownClickPosition(int x, int y);
     void SetReleaseClick();
-    void OnScroll(double yOffset);
+    void OnScroll(double yOffset) override;
+
+    void OnCursorPosition(double xpos, double ypos) override;
+    void OnMouseButton(int button, int action, double xpos, double ypos) override;
+    void OnKey(int key, int action) override;
+    void OnDeactivate() override;
 
     bool GetMouseClicked();
     glm::vec3 GetMouseLocation();

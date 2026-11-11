@@ -21,6 +21,26 @@ void BaseWindow::KeyCallback(int key, int scancode, int action, int mods)
     // do nothing, meant to be overriden in derived classes
 }
 
+void BaseWindow::OnCursorPosition(double, double)
+{
+}
+
+void BaseWindow::OnMouseButton(int, int, double, double)
+{
+}
+
+void BaseWindow::OnKey(int, int)
+{
+}
+
+void BaseWindow::OnScroll(double)
+{
+}
+
+void BaseWindow::OnDeactivate()
+{
+}
+
 std::shared_ptr<Logger> BaseWindow::GetLogger() const
 {
     return services.logger;
@@ -35,4 +55,3 @@ std::shared_ptr<Time> BaseWindow::GetTime() const
 {
     return services.time;
 }
-

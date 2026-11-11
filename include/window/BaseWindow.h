@@ -19,6 +19,12 @@ public:
     BaseWindow(const WindowServices& services, int x, int y, int width, int height);
 
     virtual void KeyCallback(int key, int scancode, int action, int mods);
+    virtual void OnCursorPosition(double xpos, double ypos);
+    virtual void OnMouseButton(int button, int action, double xpos, double ypos);
+    virtual void OnKey(int key, int action);
+    virtual void OnScroll(double yoffset);
+    virtual void OnDeactivate();
+
     void SetCamera(std::shared_ptr<Camera> camera);
     std::shared_ptr<Camera> GetCamera();
 

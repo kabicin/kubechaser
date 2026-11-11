@@ -1,7 +1,4 @@
 #include "window/SwitchableBaseWindow.h"
-#include "window/SceneWorld.h"
-#include "window/MeshViewer.h"
-#include <GLFW/glfw3.h>
 
 SwitchableBaseWindow::SwitchableBaseWindow(int x, int y, int width, int height)
     : BaseFrame(x, y, width, height)
@@ -9,12 +6,12 @@ SwitchableBaseWindow::SwitchableBaseWindow(int x, int y, int width, int height)
 }
 
 SwitchableBaseWindow::SwitchableBaseWindow(int x, int y, int width, int height,
-                                           std::shared_ptr<MeshViewer> meshViewer,
-                                           std::shared_ptr<SceneWorld> sceneWorld)
+                                           std::shared_ptr<BaseWindow> meshViewer,
+                                           std::shared_ptr<BaseWindow> sceneWorld)
     : BaseFrame(x, y, width, height)
 {
-    SetMeshViewer(meshViewer);
-    SetSceneWorld(sceneWorld);
+    RegisterWindow(WindowMode::MeshViewer, meshViewer);
+    RegisterWindow(WindowMode::SceneWorld, sceneWorld);
     SetActiveMode(WindowMode::MeshViewer);
 }
 
@@ -29,87 +26,52 @@ void SwitchableBaseWindow::Render()
 void SwitchableBaseWindow::Resize(int x, int y, int width, int height)
 {
     BaseFrame::Resize(x, y, width, height);
-    if (meshViewer)
+    for (const auto& [mode, window] : windows)
     {
-        meshViewer->Resize(x, y, width, height);
-    }
-    if (sceneWorld)
-    {
-        sceneWorld->Resize(x, y, width, height);
+        if (window)
+        {
+            window->Resize(x, y, width, height);
+        }
     }
 }
 
-void SwitchableBaseWindow::SetMeshViewer(std::shared_ptr<MeshViewer> viewer)
+void SwitchableBaseWindow::RegisterWindow(WindowMode mode, std::shared_ptr<BaseWindow> window)
 {
-    meshViewer = viewer;
-    if (activeMode == WindowMode::MeshViewer)
+    windows[mode] = window;
+    if (activeMode == mode)
     {
-        activeWindow = meshViewer;
+        activeWindow = window;
         if (activeWindow)
         {
             activeWindow->Show();
         }
     }
-    else if (meshViewer)
+    else if (window)
     {
-        meshViewer->Hide();
+        window->Hide();
     }
 }
 
-void SwitchableBaseWindow::SetSceneWorld(std::shared_ptr<SceneWorld> world)
+std::shared_ptr<BaseWindow> SwitchableBaseWindow::GetWindow(WindowMode mode) const
 {
-    sceneWorld = world;
-    if (activeMode == WindowMode::SceneWorld)
+    auto it = windows.find(mode);
+    if (it != windows.end())
     {
-        activeWindow = sceneWorld;
-        if (activeWindow)
-        {
-            activeWindow->Show();
-        }
+        return it->second;
     }
-    else if (sceneWorld)
-    {
-        sceneWorld->Hide();
-    }
-}
-
-std::shared_ptr<MeshViewer> SwitchableBaseWindow::GetMeshViewer() const
-{
-    return meshViewer;
-}
-
-std::shared_ptr<SceneWorld> SwitchableBaseWindow::GetSceneWorld() const
-{
-    return sceneWorld;
+    return nullptr;
 }
 
 void SwitchableBaseWindow::SetActiveMode(WindowMode mode)
 {
     if (activeWindow)
     {
+        activeWindow->OnDeactivate();
         activeWindow->Hide();
     }
 
-    // Reset interaction state on deactivate
-    if (activeMode == WindowMode::MeshViewer && meshViewer)
-    {
-        meshViewer->SetReleaseClick();
-    }
-    else if (activeMode == WindowMode::SceneWorld && sceneWorld)
-    {
-        sceneWorld->SetLookActive(false);
-    }
-
     activeMode = mode;
-    switch (activeMode)
-    {
-        case WindowMode::MeshViewer:
-            activeWindow = meshViewer;
-            break;
-        case WindowMode::SceneWorld:
-            activeWindow = sceneWorld;
-            break;
-    }
+    activeWindow = GetWindow(mode);
 
     if (activeWindow)
     {
@@ -129,59 +91,32 @@ std::shared_ptr<BaseWindow> SwitchableBaseWindow::GetActiveWindow() const
 
 void SwitchableBaseWindow::OnCursorPosition(double xpos, double ypos)
 {
-    const int x = static_cast<int>(xpos);
-    const int y = static_cast<int>(ypos);
-    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    if (activeWindow)
     {
-        meshViewer->SetDownClickPosition(x, y);
-    }
-    else if (activeMode == WindowMode::SceneWorld && sceneWorld)
-    {
-        sceneWorld->SetMousePosition(x, y);
+        activeWindow->OnCursorPosition(xpos, ypos);
     }
 }
 
 void SwitchableBaseWindow::OnKey(int key, int action)
 {
-    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    if (activeWindow)
     {
-        meshViewer->KeyCallback(action, key);
-    }
-    else if (activeMode == WindowMode::SceneWorld && sceneWorld)
-    {
-        sceneWorld->KeyCallback(action, key);
+        activeWindow->OnKey(key, action);
     }
 }
 
 void SwitchableBaseWindow::OnMouseButton(int button, int action, double xpos, double ypos)
 {
-    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    if (activeWindow)
     {
-        if (button == GLFW_MOUSE_BUTTON_LEFT)
-        {
-            if (action == GLFW_PRESS)
-            {
-                meshViewer->SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
-            }
-            else
-            {
-                meshViewer->SetReleaseClick();
-            }
-        }
-    }
-    else if (activeMode == WindowMode::SceneWorld && sceneWorld)
-    {
-        if (button == GLFW_MOUSE_BUTTON_RIGHT)
-        {
-            sceneWorld->SetLookActive(action == GLFW_PRESS || action == GLFW_REPEAT);
-        }
+        activeWindow->OnMouseButton(button, action, xpos, ypos);
     }
 }
 
 void SwitchableBaseWindow::OnScroll(double yoffset)
 {
-    if (activeMode == WindowMode::MeshViewer && meshViewer)
+    if (activeWindow)
     {
-        meshViewer->OnScroll(yoffset);
+        activeWindow->OnScroll(yoffset);
     }
 }

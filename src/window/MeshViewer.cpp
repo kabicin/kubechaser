@@ -296,6 +296,36 @@ void MeshViewer::OnScroll(double yOffset)
     scroll_offset += yOffset;
 }
 
+void MeshViewer::OnCursorPosition(double xpos, double ypos)
+{
+    SetDownClickPosition(static_cast<int>(xpos), static_cast<int>(ypos));
+}
+
+void MeshViewer::OnMouseButton(int button, int action, double xpos, double ypos)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            SetDownClick(static_cast<int>(xpos), static_cast<int>(ypos));
+        }
+        else
+        {
+            SetReleaseClick();
+        }
+    }
+}
+
+void MeshViewer::OnKey(int key, int action)
+{
+    KeyCallback(action, key);
+}
+
+void MeshViewer::OnDeactivate()
+{
+    SetReleaseClick();
+}
+
 void MeshViewer::SaveMeshJSON()
 {
     std::cout << "Saving mesh.." << std::endl;

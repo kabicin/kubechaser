@@ -130,3 +130,26 @@ void SceneWorld::SetLookActive(bool active)
     look_active = active;
     mouse_initialized = false;
 }
+
+void SceneWorld::OnCursorPosition(double xpos, double ypos)
+{
+    SetMousePosition(static_cast<int>(xpos), static_cast<int>(ypos));
+}
+
+void SceneWorld::OnMouseButton(int button, int action, double, double)
+{
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        SetLookActive(action == GLFW_PRESS || action == GLFW_REPEAT);
+    }
+}
+
+void SceneWorld::OnKey(int key, int action)
+{
+    KeyCallback(action, key);
+}
+
+void SceneWorld::OnDeactivate()
+{
+    SetLookActive(false);
+}

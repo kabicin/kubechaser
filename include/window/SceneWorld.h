@@ -37,6 +37,11 @@ public:
     void SetMousePosition(int x, int y);
     void SetLookActive(bool active);
 
+    void OnCursorPosition(double xpos, double ypos) override;
+    void OnMouseButton(int button, int action, double xpos, double ypos) override;
+    void OnKey(int key, int action) override;
+    void OnDeactivate() override;
+
     void AddCamera(std::shared_ptr<Camera> playerCamera);
     void AddScene(std::shared_ptr<Scene> scene);
     void AddSceneManager(std::shared_ptr<SceneManager> manager);

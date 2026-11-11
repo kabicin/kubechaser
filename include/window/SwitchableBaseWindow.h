@@ -3,8 +3,7 @@
 
 #include "window/BaseFrame.h"
 #include "window/BaseWindow.h"
-#include "window/MeshViewer.h"
-#include "window/SceneWorld.h"
+#include <map>
 #include <memory>
 
 enum class WindowMode
@@ -20,17 +19,14 @@ public:
 
     SwitchableBaseWindow(int x, int y, int width, int height);
     SwitchableBaseWindow(int x, int y, int width, int height,
-                         std::shared_ptr<MeshViewer> meshViewer,
-                         std::shared_ptr<SceneWorld> sceneWorld);
+                         std::shared_ptr<BaseWindow> meshViewer,
+                         std::shared_ptr<BaseWindow> sceneWorld);
 
     void Render() override;
     void Resize(int x, int y, int width, int height) override;
 
-    void SetMeshViewer(std::shared_ptr<MeshViewer> viewer);
-    void SetSceneWorld(std::shared_ptr<SceneWorld> world);
-
-    std::shared_ptr<MeshViewer> GetMeshViewer() const;
-    std::shared_ptr<SceneWorld> GetSceneWorld() const;
+    void RegisterWindow(WindowMode mode, std::shared_ptr<BaseWindow> window);
+    std::shared_ptr<BaseWindow> GetWindow(WindowMode mode) const;
 
     void SetActiveMode(WindowMode mode);
     WindowMode GetActiveMode() const;
@@ -42,8 +38,7 @@ public:
     void OnScroll(double yoffset);
 
 private:
-    std::shared_ptr<MeshViewer> meshViewer;
-    std::shared_ptr<SceneWorld> sceneWorld;
+    std::map<WindowMode, std::shared_ptr<BaseWindow>> windows;
     std::shared_ptr<BaseWindow> activeWindow;
     WindowMode activeMode = WindowMode::MeshViewer;
 };
