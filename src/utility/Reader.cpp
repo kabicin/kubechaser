@@ -169,10 +169,17 @@ void Reader::ReadOBJ(const std::string& fileName,
         int max_count = 0;
         while (std::getline(file, line))
         {
-            if (line.find("mtllib") != std::string::npos)
+            const size_t recordStart = line.find_first_not_of(" \t\r");
+            if (recordStart == std::string::npos || line[recordStart] == '#') {
+                continue;
+            }
+
+            const std::string record = line.substr(recordStart);
+            const std::string materialLibraryPrefix = "mtllib ";
+            if (record.compare(0, materialLibraryPrefix.length(), materialLibraryPrefix) == 0)
             {
                 // get mtl file name
-                std::string fileName = line.substr(line.find("mtllib ") + strlen("mtllib "));
+                std::string fileName = record.substr(materialLibraryPrefix.length());
                 fileName = fileName.substr(0, fileName.find(".mtl") + strlen(".mtl"));
                 std::string mtlFileName = MESH_DIR + fileName;
 
@@ -220,18 +227,18 @@ void Reader::ReadOBJ(const std::string& fileName,
                         std::cout << material << std::endl;
                     }
                 } else {
-                    std::cout << "ERROR: Could not open file: " << MESH_DIR + line.substr(line.find("mtllib ") + strlen("mtllib ")) << std::endl;
+                    std::cout << "ERROR: Could not open file: " << MESH_DIR + record.substr(materialLibraryPrefix.length()) << std::endl;
                     std::cout << "Error: " << strerror(errno) << std::endl;
                 }
             }
 
             for (int i = 0; i < delimiters.size(); ++i)
             {
-                if (line.find(delimiters[i]) != std::string::npos)
+                if (record.compare(0, delimiters[i].length(), delimiters[i]) == 0)
                 {
                     iss.str(std::string());
                     iss.clear();
-                    iss.str(line.substr(line.find(delimiters[i]) + delimiters[i].length()));
+                    iss.str(record.substr(delimiters[i].length()));
                     int count = 0;
                     Eigen::RowVector3f rowf3;
                     while (iss >> str)

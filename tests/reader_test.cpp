@@ -1,6 +1,7 @@
 #include "utility/Reader.h"
 
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -42,6 +43,39 @@ int main()
         || !approximatelyEqual(diffuse.y, 0.2f)
         || !approximatelyEqual(diffuse.z, 0.3f)) {
         std::cerr << "Reader did not parse a vector material property.\n";
+        return 1;
+    }
+
+    Reader::MESH_DIR = std::string(KUBECHASER_TEST_FIXTURE_DIR) + "/";
+    std::string textureFile;
+    Eigen::MatrixXf vertices;
+    Eigen::MatrixXi faces;
+    Eigen::MatrixXf textureCoordinates;
+    Eigen::MatrixXi textureFaces;
+    Eigen::MatrixXf normals;
+    Eigen::MatrixXi normalFaces;
+    std::vector<Material> materials;
+
+    try {
+        Reader::ReadOBJ(
+            "commented_triangle.obj",
+            textureFile,
+            vertices,
+            faces,
+            textureCoordinates,
+            textureFaces,
+            normals,
+            normalFaces,
+            materials);
+    } catch (const std::exception& error) {
+        std::cerr << "Reader treated an OBJ comment as geometry: " << error.what() << '\n';
+        return 1;
+    }
+
+    if (vertices.rows() != 3
+        || textureCoordinates.rows() != 3
+        || normals.rows() != 1) {
+        std::cerr << "Reader returned unexpected geometry for the commented OBJ fixture.\n";
         return 1;
     }
 
