@@ -73,7 +73,7 @@ int Application::Run()
     }
 
     while (!glfwWindowShouldClose(window)) {
-        time->GetDelta();
+        services.time->GetDelta();
         glfwPollEvents();
         RenderFrame();
         glfwSwapBuffers(window);
@@ -125,19 +125,14 @@ bool Application::Initialize()
 
 void Application::InitializeServices()
 {
-    logger = std::make_shared<Logger>();
-    BaseWindow::AttachLogger(logger);
-
-    shaderFactory = std::make_shared<ShaderFactory>();
-    BaseWindow::AttachShaderFactory(shaderFactory);
-
-    time = std::make_shared<Time>();
-    BaseWindow::AttachTime(time);
+    services.logger = std::make_shared<Logger>();
+    services.shaderFactory = std::make_shared<ShaderFactory>();
+    services.time = std::make_shared<Time>();
 }
 
 void Application::InitializeWindows()
 {
-    auto sceneControl = std::make_shared<SceneControl>(0, 0, 250, screenHeight / 2);
+    auto sceneControl = std::make_shared<SceneControl>(services, 0, 0, 250, screenHeight / 2);
     windows.push_back(sceneControl);
 
     auto root = std::make_shared<SceneNode>();
@@ -161,7 +156,7 @@ void Application::InitializeWindows()
 
     auto scene = std::make_shared<Scene>(root);
     auto worldCamera = std::make_shared<Camera>(screenWidth, screenHeight);
-    auto sceneWorld = std::make_shared<SceneWorld>(0, 0, screenWidth, screenHeight);
+    auto sceneWorld = std::make_shared<SceneWorld>(services, 0, 0, screenWidth, screenHeight);
     sceneWorld->AddCamera(worldCamera);
 
     auto sceneManager = std::make_shared<SceneManager>();
@@ -171,15 +166,15 @@ void Application::InitializeWindows()
     sceneWorld->AddSceneManager(sceneManager);
 
     auto windowSwitch = std::make_shared<SwitchableBaseWindow>(0, 0, screenWidth, screenHeight);
-    windowSwitch->AddWindow(std::make_shared<MeshViewer>(0, 0, screenWidth, screenHeight));
+    windowSwitch->AddWindow(std::make_shared<MeshViewer>(services, 0, 0, screenWidth, screenHeight));
     windowSwitch->SetActiveMeshViewer(0);
     windowSwitch->AddWindow(sceneWorld);
     windowSwitch->AttachSceneController(sceneControl);
     sceneControl->AttachSwitchableBaseWindow(windowSwitch);
 
     windows.push_back(windowSwitch);
-    windows.push_back(std::make_shared<AssetPanel>(screenWidth - 250, screenHeight / 4, 250, screenHeight / 2));
-    windows.push_back(std::make_shared<ConsolePanel>(screenWidth - 250, screenHeight / 2, 250, screenHeight / 2));
+    windows.push_back(std::make_shared<AssetPanel>(services, screenWidth - 250, screenHeight / 4, 250, screenHeight / 2));
+    windows.push_back(std::make_shared<ConsolePanel>(services, screenWidth - 250, screenHeight / 2, 250, screenHeight / 2));
 
     auto initialPod = std::make_shared<Mesh>("pod.obj");
     initialPod->da.solidColor = glm::vec3(0.53f, 0.83f, 0.62f);
@@ -261,7 +256,7 @@ void Application::RenderShowcase()
                 selectedMesh->da.color = true;
                 selectedMesh->da.useVertexColor = false;
                 MeshViewer::SetMesh(selectedMesh);
-                logger->LogMessage("Showcasing OBJ model: " + showcase[i].filename);
+                services.logger->LogMessage("Showcasing OBJ model: " + showcase[i].filename);
             }
             ImGui::PopStyleColor();
             ImGui::PopID();
@@ -279,12 +274,9 @@ void Application::Shutdown()
     MeshViewer::SetMesh(nullptr);
     windows.clear();
 
-    BaseWindow::AttachShaderFactory(nullptr);
-    BaseWindow::AttachTime(nullptr);
-    BaseWindow::AttachLogger(nullptr);
-    shaderFactory.reset();
-    time.reset();
-    logger.reset();
+    services.shaderFactory.reset();
+    services.time.reset();
+    services.logger.reset();
 
     if (imguiOpenGLInitialized) {
         ImGui_ImplOpenGL3_Shutdown();

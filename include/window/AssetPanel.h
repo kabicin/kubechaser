@@ -23,7 +23,7 @@ private:
     std::vector<Asset *>::iterator deleteAsset(std::vector<Asset *>::iterator it, int assetNum);
 
 public:
-    AssetPanel(int x, int y, int width, int height);
+    AssetPanel(const WindowServices& services, int x, int y, int width, int height);
     ~AssetPanel();
     void Render();
     bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_width, int* out_height);

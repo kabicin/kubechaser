@@ -22,7 +22,7 @@ private:
     void showGUI();
 
 public:
-    MeshViewer(int x, int y, int width, int height);
+    MeshViewer(const WindowServices& services, int x, int y, int width, int height);
 
     static void SetMesh(std::shared_ptr<Mesh> mesh);
     void Render();

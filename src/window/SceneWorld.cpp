@@ -12,13 +12,13 @@ float SceneWorld::yaw_deg = -90.0f;
 float SceneWorld::pitch_deg = 0.0f;
 float SceneWorld::look_sensitivity = 0.12f;
 
-SceneWorld::SceneWorld(int x, int y, int width, int height)
-    : BaseWindow(x, y, width, height)
+SceneWorld::SceneWorld(const WindowServices& services, int x, int y, int width, int height)
+    : BaseWindow(services, x, y, width, height)
 {
 }
 
-SceneWorld::SceneWorld(int x, int y, int width, int height, std::shared_ptr<Camera> playerCamera)
-    : BaseWindow(x, y, width, height)
+SceneWorld::SceneWorld(const WindowServices& services, int x, int y, int width, int height, std::shared_ptr<Camera> playerCamera)
+    : BaseWindow(services, x, y, width, height)
 {
     AddCamera(playerCamera);
 }

@@ -2,8 +2,8 @@
 #include "utility/Reader.h"
 
 
-SceneBuilder::SceneBuilder(int x, int y, int width, int height)
-    : BaseWindow(x, y, width, height)
+SceneBuilder::SceneBuilder(const WindowServices& services, int x, int y, int width, int height)
+    : BaseWindow(services, x, y, width, height)
 {
     std::cout << "Scene Builder: " << x << " " << y << " " << width << " " << height << std::endl;
     this->SetCamera(std::make_shared<Camera>(width, height));

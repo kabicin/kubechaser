@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 #include "dearimgui.h"
 #include "shader/Shader.h"
-#include "logger/Logger.h"
 #include "entity/Entity.h"
 #include "Asset.h"
 #include <memory>
@@ -16,7 +15,6 @@ private:
     bool hidden = false;
 
 public:
-    static std::shared_ptr<Logger> logger;
     BaseFrame(int x, int y, int width, int height);
     virtual ~BaseFrame();
     virtual void Resize(int x, int y, int width, int height);
@@ -25,7 +23,6 @@ public:
 
     void DisplayLocation();
     void ClearBackground(float r, float g, float b, float a);
-    static void AttachLogger(std::shared_ptr<Logger> logger);
 
     // getters
     int GetX() const { return m_x; }

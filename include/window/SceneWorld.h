@@ -24,8 +24,8 @@ private:
     static float look_sensitivity;
     
 public:
-    SceneWorld(int x, int y, int width, int height);
-    SceneWorld(int x, int y, int width, int height, std::shared_ptr<Camera> playerCamera);
+    SceneWorld(const WindowServices& services, int x, int y, int width, int height);
+    SceneWorld(const WindowServices& services, int x, int y, int width, int height, std::shared_ptr<Camera> playerCamera);
     ~SceneWorld();
     void Render() override;
     void Resize(int x, int y, int width, int height) override;

@@ -38,11 +38,6 @@ void BaseFrame::DisplayLocation()
     std::cout << "x: " << m_x << " y: " << m_y << " w: " << m_width << " h: " << m_height << std::endl;
 }
 
-void BaseFrame::AttachLogger(std::shared_ptr<Logger> n_logger)
-{
-    logger = n_logger;
-}
-
 void BaseFrame::Hide()
 {
     hidden = true;
@@ -57,5 +52,3 @@ bool BaseFrame::Hidden()
 {
     return hidden;
 }
-
-std::shared_ptr<Logger> BaseFrame::logger;

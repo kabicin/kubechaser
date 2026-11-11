@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <iostream>
 
-MeshViewer::MeshViewer(int x, int y, int width, int height) 
-    : BaseWindow(x, y, width, height)
+MeshViewer::MeshViewer(const WindowServices& services, int x, int y, int width, int height)
+    : BaseWindow(services, x, y, width, height)
 {
     camera = std::make_shared<Camera>(width, height);
 

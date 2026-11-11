@@ -1,7 +1,7 @@
 #include "window/ConsolePanel.h"
 
-ConsolePanel::ConsolePanel(int x, int y, int width, int height)
-	: BaseWindow(x, y, width, height)
+ConsolePanel::ConsolePanel(const WindowServices& services, int x, int y, int width, int height)
+	: BaseWindow(services, x, y, width, height)
 {
 }
 
@@ -19,11 +19,11 @@ void ConsolePanel::Render()
         ImGui::Begin("Console", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
         
         // read console buffer here
-        ImGui::Text("%s", logger->Output().c_str());
+        ImGui::Text("%s", GetLogger()->Output().c_str());
 
         // if there is a new log event, set the scrollbar to the bottom
-        if (logger->GetState() != logState) {
-            logState = logger->GetState();
+        if (GetLogger()->GetState() != logState) {
+            logState = GetLogger()->GetState();
             ImGui::SetScrollHere(1.0f);
         }
         

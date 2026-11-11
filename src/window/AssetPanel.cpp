@@ -1,7 +1,8 @@
 #include "window/AssetPanel.h"
+#include "logger/Logger.h"
 
-AssetPanel::AssetPanel(int x, int y, int width, int height)
-    : BaseWindow(x, y, width, height)
+AssetPanel::AssetPanel(const WindowServices& services, int x, int y, int width, int height)
+    : BaseWindow(services, x, y, width, height)
 {
 }
 
@@ -124,7 +125,7 @@ void AssetPanel::Render()
                     std::shared_ptr<Entity> entity = SceneBuilder::AddEntity(shape, glm::vec3(0.0f, 0.5f, 0.0f));
                     entity->SetTexture(*ia);
                   
-                    logger->LogMessage("Added " + std::string(shape) + " with texture " + imageList[i]->TextureName);
+                    GetLogger()->LogMessage("Added " + std::string(shape) + " with texture " + imageList[i]->TextureName);
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::SameLine();
@@ -182,14 +183,14 @@ int AssetPanel::addAsset(char *filename, GLuint image, int imageWidth, int image
     imageList.push_back(ia);
     setBit(ia->Num);
 
-    logger->LogMessage("Added image: " + textureName);
+    GetLogger()->LogMessage("Added image: " + textureName);
     return ia->Num;
 }
 
 std::vector<Asset*>::iterator AssetPanel::deleteAsset(std::vector<Asset*>::iterator it, int assetNum)
 {
     delete *it;
-    logger->LogMessage("Deleted image: " + std::to_string(assetNum));
+    GetLogger()->LogMessage("Deleted image: " + std::to_string(assetNum));
     clearBit(assetNum);
     return imageList.erase(it);
 }

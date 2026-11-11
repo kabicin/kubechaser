@@ -2,6 +2,7 @@
 #define APPLICATION_H
 
 #include "glm.h"
+#include "window/WindowServices.h"
 
 #include <memory>
 #include <string>
@@ -10,9 +11,6 @@
 struct GLFWwindow;
 
 class BaseFrame;
-class Logger;
-class ShaderFactory;
-class Time;
 
 class Application
 {
@@ -64,11 +62,9 @@ private:
     bool imguiGlfwInitialized = false;
     bool imguiOpenGLInitialized = false;
 
+    WindowServices services;
     std::vector<std::shared_ptr<BaseFrame>> windows;
     std::vector<ShowcaseItem> showcase;
-    std::shared_ptr<Logger> logger;
-    std::shared_ptr<ShaderFactory> shaderFactory;
-    std::shared_ptr<Time> time;
 };
 
 #endif

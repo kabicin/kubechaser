@@ -1,9 +1,10 @@
 #include "window/SceneControl.h"
+#include "logger/Logger.h"
 #include "window/SwitchableBaseWindow.h"
 #include <filesystem>
 
-SceneControl::SceneControl(int x, int y, int width, int height)
-    : BaseWindow(x, y, width, height)
+SceneControl::SceneControl(const WindowServices& services, int x, int y, int width, int height)
+    : BaseWindow(services, x, y, width, height)
 {
 }
 
@@ -106,7 +107,7 @@ void SceneControl::Render()
             if (ImGui::Button("Add") && !obj.empty())
             {
                 SceneBuilder::AddEntity(obj, glm::vec3(0.0f, 0.5f, 0.0f));
-                logger->LogMessage("Added " + obj);
+                GetLogger()->LogMessage("Added " + obj);
 
                 std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(obj);
                 mesh->Scale(glm::vec3(1, 1, 1));

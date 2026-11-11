@@ -1,8 +1,8 @@
 #include "window/BaseWindow.h"
 #include <iostream>
 
-BaseWindow::BaseWindow(int x, int y, int width, int height)
-    : BaseFrame(x, y, width, height)
+BaseWindow::BaseWindow(const WindowServices& services, int x, int y, int width, int height)
+    : BaseFrame(x, y, width, height), services(services)
 {
 }
 
@@ -21,29 +21,18 @@ void BaseWindow::KeyCallback(int key, int scancode, int action, int mods)
     // do nothing, meant to be overriden in derived classes
 }
 
-void BaseWindow::AttachShaderFactory(std::shared_ptr<ShaderFactory> factory)
+std::shared_ptr<Logger> BaseWindow::GetLogger() const
 {
-    BaseWindow::factory = factory;
+    return services.logger;
 }
 
-std::shared_ptr<ShaderFactory> BaseWindow::GetShaderFactory()
+std::shared_ptr<ShaderFactory> BaseWindow::GetShaderFactory() const
 {
-    return BaseWindow::factory;
+    return services.shaderFactory;
 }
 
-void BaseWindow::AttachTime(std::shared_ptr<Time> time)
+std::shared_ptr<Time> BaseWindow::GetTime() const
 {
-    BaseWindow::time = time;
+    return services.time;
 }
-
-std::shared_ptr<Time> BaseWindow::GetTime()
-{
-    return BaseWindow::time;
-}
-
-std::shared_ptr<ShaderFactory> BaseWindow::factory;
-std::shared_ptr<Time> BaseWindow::time;
-
-
-
 

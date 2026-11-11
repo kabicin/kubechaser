@@ -18,7 +18,7 @@ private:
 
     std::weak_ptr<SwitchableBaseWindow> sbWindow;
 public:
-    SceneControl(int x, int y, int width, int height);
+    SceneControl(const WindowServices& services, int x, int y, int width, int height);
     ~SceneControl();
     void Render();
     bool HasChanged();

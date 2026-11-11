@@ -33,7 +33,7 @@ private:
     std::shared_ptr<Scene> scene;
 
 public:
-    SceneBuilder(int x, int y, int width, int height);
+    SceneBuilder(const WindowServices& services, int x, int y, int width, int height);
     ~SceneBuilder();
     void Render() override;
     void Resize(int x, int y, int width, int height) override;
