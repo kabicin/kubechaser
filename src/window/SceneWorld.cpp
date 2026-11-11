@@ -1,8 +1,16 @@
 #include "window/SceneWorld.h"
+#include "entity/Entity.h"
+#include "scene/SceneDocument.h"
 #include <GLFW/glfw3.h>
+#include <limits>
 
 SceneWorld::SceneWorld(const WindowServices& services, int x, int y, int width, int height)
     : BaseWindow(services, x, y, width, height)
+{
+}
+
+SceneWorld::SceneWorld(const WindowServices& services, SceneDocument& sceneDocument, int x, int y, int width, int height)
+    : BaseWindow(services, x, y, width, height), sceneDocument(&sceneDocument)
 {
 }
 
@@ -14,6 +22,16 @@ SceneWorld::SceneWorld(const WindowServices& services, int x, int y, int width, 
 
 SceneWorld::~SceneWorld()
 {
+}
+
+void SceneWorld::SetSceneDocument(SceneDocument* doc)
+{
+    sceneDocument = doc;
+}
+
+SceneDocument* SceneWorld::GetSceneDocument() const
+{
+    return sceneDocument;
 }
 
 void SceneWorld::Resize(int x, int y, int width, int height)
@@ -41,6 +59,12 @@ void SceneWorld::Render()
         manager->RenderActive(GetShaderFactory(), camera);
     } else if (scene) {
         scene->Render(GetShaderFactory(), camera);
+    } else if (sceneDocument) {
+        for (const auto& entity : sceneDocument->GetEntities()) {
+            if (entity) {
+                entity->Draw(GetShaderFactory(), camera);
+            }
+        }
     }
 }
 
@@ -136,11 +160,37 @@ void SceneWorld::OnCursorPosition(double xpos, double ypos)
     SetMousePosition(static_cast<int>(xpos), static_cast<int>(ypos));
 }
 
-void SceneWorld::OnMouseButton(int button, int action, double, double)
+void SceneWorld::OnMouseButton(int button, int action, double xpos, double ypos)
 {
     if (button == GLFW_MOUSE_BUTTON_RIGHT)
     {
         SetLookActive(action == GLFW_PRESS || action == GLFW_REPEAT);
+    }
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        if (sceneDocument && camera)
+        {
+            Ray ray = camera->GetRay(xpos, ypos);
+            double min_t = std::numeric_limits<double>::infinity();
+            double temp_t = 0.0;
+            int opt_i = -1;
+            const auto& entities = sceneDocument->GetEntities();
+            for (std::size_t i = 0; i < entities.size(); ++i)
+            {
+                if (entities[i] && entities[i]->Intersect(camera, ray, temp_t))
+                {
+                    if (temp_t < min_t)
+                    {
+                        min_t = temp_t;
+                        opt_i = static_cast<int>(i);
+                    }
+                }
+            }
+            if (opt_i != -1)
+            {
+                sceneDocument->SetActiveEntity(opt_i);
+            }
+        }
     }
 }
 

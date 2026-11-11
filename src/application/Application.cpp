@@ -136,6 +136,7 @@ void Application::InitializeWindows()
     windows.push_back(sceneControl);
 
     auto root = std::make_shared<SceneNode>();
+    root->AttachSceneDocument(&sceneDocument);
 
     const int numCols = 6;
     const float spacingX = 4.0f;
@@ -156,7 +157,7 @@ void Application::InitializeWindows()
 
     auto scene = std::make_shared<Scene>(root);
     auto worldCamera = std::make_shared<Camera>(screenWidth, screenHeight);
-    sceneWorld = std::make_shared<SceneWorld>(services, 0, 0, screenWidth, screenHeight);
+    sceneWorld = std::make_shared<SceneWorld>(services, sceneDocument, 0, 0, screenWidth, screenHeight);
     sceneWorld->AddCamera(worldCamera);
 
     auto sceneManager = std::make_shared<SceneManager>();

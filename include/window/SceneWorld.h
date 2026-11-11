@@ -9,12 +9,15 @@
 #include <bitset>
 #include <GLFW/glfw3.h>
 
+class SceneDocument;
+
 class SceneWorld : public BaseWindow
 {
 private:
     std::shared_ptr<Camera> camera;
     std::shared_ptr<Scene> scene;
     std::shared_ptr<SceneManager> manager;
+    SceneDocument* sceneDocument = nullptr;
     void handleInput();
     std::bitset<GLFW_KEY_LAST + 1> pressed;
     bool look_active = false;
@@ -29,6 +32,7 @@ private:
     
 public:
     SceneWorld(const WindowServices& services, int x, int y, int width, int height);
+    SceneWorld(const WindowServices& services, SceneDocument& sceneDocument, int x, int y, int width, int height);
     SceneWorld(const WindowServices& services, int x, int y, int width, int height, std::shared_ptr<Camera> playerCamera);
     ~SceneWorld();
     void Render() override;
@@ -46,5 +50,8 @@ public:
     void AddScene(std::shared_ptr<Scene> scene);
     void AddSceneManager(std::shared_ptr<SceneManager> manager);
     void SetShowGrid(bool enabled);
+
+    void SetSceneDocument(SceneDocument* doc);
+    SceneDocument* GetSceneDocument() const;
 };
 #endif
