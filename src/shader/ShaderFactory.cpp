@@ -17,17 +17,22 @@ ShaderArgs ShaderArgs_Color = 16;
 ShaderArgs ShaderArgs_Instanced = 32;
 
 ShaderFactory::ShaderFactory()
+    : shaderProgram(0)
 {
-    this->shaderProgram = glCreateProgram();
-    InitShader(); // load default shader
-    this->cachedShaders = std::vector<ShaderCacheTriplet>();
+    // InitShader creates, caches and selects the default program
+    InitShader();
 }
 
 ShaderFactory::~ShaderFactory()
 {
-    // for (int i = 0; i <) 
-    // TODO: loop through cached shaders and delete all programs
-    glDeleteProgram(this->shaderProgram);
+    // every program ever created by InitShader lives in the cache, including
+    // the currently selected one, so deleting the cache frees them all
+    for (const ShaderCacheTriplet& cached : cachedShaders)
+    {
+        glDeleteProgram(cached.second.second);
+    }
+    cachedShaders.clear();
+    this->shaderProgram = 0;
 }
 
 GLuint ShaderFactory::generateShaderProgram()

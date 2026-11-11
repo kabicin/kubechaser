@@ -141,6 +141,9 @@ public:
     
     ShaderFactory();
     ~ShaderFactory();
+    // owns GL program handles; copying would double-delete them
+    ShaderFactory(const ShaderFactory&) = delete;
+    ShaderFactory& operator=(const ShaderFactory&) = delete;
     GLuint GetShaderProgram();
 
     unsigned int InitShader(const ShaderArgs& extraShaderArgs = 0);
