@@ -44,9 +44,10 @@ glm::mat4 Camera::GetViewInverse()
 glm::mat4 Camera::GenerateModel(const CameraAttributes& ca)
 {
 	// apply local space translations
-	model = glm::rotate(glm::rotate(
-		glm::translate(glm::scale(glm::mat4(1.0f), ca.scale), ca.translate), 
-		glm::radians(ca.rotateXdeg), glm::vec3(1,0,0)), glm::radians(ca.rotateYdeg), glm::vec3(0,1,0));
+	model = glm::translate(glm::scale(glm::mat4(1.0f), ca.scale), ca.translate);
+	model = glm::rotate(model, glm::radians(ca.rotateXdeg), glm::vec3(1,0,0));
+	model = glm::rotate(model, glm::radians(ca.rotateYdeg), glm::vec3(0,1,0));
+	model = glm::rotate(model, glm::radians(ca.rotateZdeg), glm::vec3(0,0,1));
 	// apply entire model translations
 	glm::vec3 scaledTranslate = glm::vec3(cma.translate.x / ca.scale.x, cma.translate.y / ca.scale.y, cma.translate.z / ca.scale.z);
 	model = glm::translate(model, scaledTranslate);

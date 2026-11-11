@@ -15,11 +15,11 @@ struct CameraAttributes
 		: translate(attribs.translate), scale(attribs.scale), rotateXdeg(attribs.rotateXdeg), rotateYdeg(attribs.rotateYdeg), rotateZdeg(attribs.rotateZdeg) {}
 	
 	// local space translations
-	glm::vec3 translate;
-	glm::vec3 scale;
-	float rotateXdeg;
-	float rotateYdeg;
-	float rotateZdeg;
+	glm::vec3 translate = glm::vec3(0.0f);
+	glm::vec3 scale = glm::vec3(1.0f);
+	float rotateXdeg = 0.0f;
+	float rotateYdeg = 0.0f;
+	float rotateZdeg = 0.0f;
 };
 
 struct CameraModelAttributes {

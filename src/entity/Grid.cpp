@@ -146,6 +146,7 @@ void Grid::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
         ca.translate = glm::vec3(0, 0, 0);
         ca.rotateXdeg = 0;
         ca.rotateYdeg = 0;
+        ca.rotateZdeg = 0;
         factory->Use(da, camera->GetCameraPos());
         camera->Render(factory->GetShaderProgram(), ca);
         // draw cross
@@ -170,6 +171,7 @@ void Grid::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
         ca.translate = glm::vec3(0, 0, 0);
         ca.rotateXdeg = 0;
         ca.rotateYdeg = 0;
+        ca.rotateZdeg = 0;
     }
     glDisable(GL_BLEND);
 }
@@ -194,6 +196,7 @@ void Grid::DrawLinesInstanced(const std::shared_ptr<ShaderFactory>& factory, con
     ca.translate = glm::vec3(0, 0, 0);
     ca.rotateXdeg = 0;
     ca.rotateYdeg = 0;
+    ca.rotateZdeg = 0;
 
     factory->Use(da, camera->GetCameraPos());
     camera->Render(factory->GetShaderProgram(), ca);
