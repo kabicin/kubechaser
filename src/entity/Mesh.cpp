@@ -187,7 +187,11 @@ void Mesh::generate(
         {
             int vertex = face_fan.row(i)[j];
             Eigen::RowVector3f pos = V.row(vertex);
-            Eigen::RowVector2f uvpos = UV.row(face_fan.row(i)[j+3]);
+            // faces without texture coordinates (e.g. v//vn) have uv index -1
+            int uvIndex = face_fan.row(i)[j+3];
+            Eigen::RowVector2f uvpos = (uvIndex >= 0 && uvIndex < UV.rows())
+                ? Eigen::RowVector2f(UV.row(uvIndex))
+                : Eigen::RowVector2f(0.0f, 0.0f);
             
             Eigen::RowVector3f normal(0, 0, 0);
             if (adjacentFaces.find(vertex) != adjacentFaces.end())
