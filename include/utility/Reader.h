@@ -36,6 +36,7 @@ public:
     static bool findMaterialKeyAndPopulateValue(const std::string& line, const std::string& key, glm::vec3& value);
 
     static bool startsWithTab(const std::string& line);
+    static int resolveIndex(int index, size_t definedCount);
 
     static std::vector<std::string> split(const std::string& line, const std::string& delimiter);
 };

@@ -3,6 +3,8 @@
 #include <bitset>
 #include <climits>
 #include <sys/stat.h>
+#include <algorithm>
+#include <stdexcept>
 
 void Reader::ScanOBJ(const std::string& fileName)
 {
@@ -134,6 +136,17 @@ bool Reader::findMaterialKeyAndPopulateValue(const std::string& line, const std:
     return false;       
 }
 
+int Reader::resolveIndex(int index, size_t definedCount)
+{
+    // OBJ indices are 1-based; negative indices count back from the most recently defined element
+    const long long resolved = index < 0 ? static_cast<long long>(definedCount) + index + 1 : index;
+    if (index == 0 || resolved < 1 || resolved > static_cast<long long>(definedCount))
+    {
+        throw std::out_of_range("index " + std::to_string(index) + " out of range");
+    }
+    return static_cast<int>(resolved);
+}
+
 bool Reader::startsWithTab(const std::string& line)
 {
     return line.find("\t") == 0;
@@ -165,8 +178,10 @@ void Reader::ReadOBJ(const std::string& fileName,
         std::istringstream iss;
         std::string str;
         int max_count = 0;
+        int lineNumber = 0;
         while (std::getline(file, line))
         {
+            lineNumber++;
             const size_t recordStart = line.find_first_not_of(" \t\r");
             if (recordStart == std::string::npos || line[recordStart] == '#') {
                 continue;
@@ -230,15 +245,20 @@ void Reader::ReadOBJ(const std::string& fileName,
                 }
             }
 
-            for (int i = 0; i < delimiters.size(); ++i)
+            try
             {
-                if (record.compare(0, delimiters[i].length(), delimiters[i]) == 0)
+                for (int i = 0; i < delimiters.size(); ++i)
                 {
+                    if (record.compare(0, delimiters[i].length(), delimiters[i]) != 0)
+                    {
+                        continue;
+                    }
                     iss.str(std::string());
                     iss.clear();
                     iss.str(record.substr(delimiters[i].length()));
                     int count = 0;
                     Eigen::RowVector3f rowf3 = Eigen::RowVector3f::Zero();
+                    std::vector<T_int> lineF, lineUF, lineNF;
                     while (iss >> str)
                     {
                         if (i < 3)
@@ -250,58 +270,56 @@ void Reader::ReadOBJ(const std::string& fileName,
                         }
                         else
                         {
-                            size_t pos = 0;
-                            int icount = 0;
-                            str += "/";
-
-                            while ((pos = str.find("/")) != std::string::npos)
+                            // v, v/vt, v//vn or v/vt/vn; an empty field means that index is absent
+                            std::vector<std::string> fields = split(str, "/");
+                            if (fields.empty() || fields.size() > 3 || fields[0].empty())
                             {
-                                int val = std::stoi(str.substr(0, pos));
-                                if (icount == 0)
+                                throw std::invalid_argument("bad face vertex '" + str + "'");
+                            }
+                            const size_t definedCounts[3] = { vecV.size(), vecUV.size(), vecNV.size() };
+                            std::vector<T_int>* targets[3] = { &lineF, &lineUF, &lineNF };
+                            for (size_t k = 0; k < fields.size(); ++k)
+                            {
+                                if (fields[k].empty())
                                 {
-                                    vecF.emplace_back(counts[3] + 1, count, val);
+                                    continue;
                                 }
-                                else if (icount == 1)
-                                {
-                                    vecUF.emplace_back(counts[4] + 1, count, val);
-                                }
-                                else
-                                {
-                                    vecNF.emplace_back(counts[5] + 1, count, val);
-                                }
-                                str.erase(0, pos + 1);
-                                icount++;
+                                int val = resolveIndex(std::stoi(fields[k]), definedCounts[k]);
+                                targets[k]->emplace_back(counts[3] + 1, count, val);
                             }
                         }
                         count++;
-                        if (count > max_count)
-                        {
-                            max_count = count;
-                        }
                     }
-                    if (i < 3)
+
+                    if (i == 0)
                     {
-                        if (i == 0)
-                        {
-                            vecV.push_back(rowf3);
-                        }
-                        else if (i == 1)
-                        {
-                            vecUV.push_back(rowf3);
-                        }
-                        else if (i == 2)
-                        {
-                            vecNV.push_back(rowf3);
-                        }
+                        vecV.push_back(rowf3);
                     }
-                    else {
+                    else if (i == 1)
+                    {
+                        vecUV.push_back(rowf3);
+                    }
+                    else if (i == 2)
+                    {
+                        vecNV.push_back(rowf3);
+                    }
+                    else
+                    {
+                        vecF.insert(vecF.end(), lineF.begin(), lineF.end());
+                        vecUF.insert(vecUF.end(), lineUF.begin(), lineUF.end());
+                        vecNF.insert(vecNF.end(), lineNF.begin(), lineNF.end());
+                        max_count = std::max(max_count, count);
                         counts[3]++;
                         counts[4]++;
                         counts[5]++;
                     }
                 }
             }
-
+            catch (const std::exception& error)
+            {
+                std::cout << "WARNING: skipping malformed line " << lineNumber << " in " << objFileName
+                          << ": \"" << record << "\" (" << error.what() << ")" << std::endl;
+            }
         }
         V.resize(vecV.size(), 3);
         for (size_t r = 0; r < vecV.size(); ++r) V.row(r) = vecV[r];

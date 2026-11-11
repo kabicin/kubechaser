@@ -81,6 +81,41 @@ int main()
         return 1;
     }
 
+    const std::filesystem::path faceDir = std::filesystem::temp_directory_path() / "kubechaser_reader_faces";
+    std::filesystem::create_directories(faceDir);
+    {
+        std::ofstream faceObj(faceDir / "faces.obj");
+        faceObj << "v 0 0 0\nv 1 0 0\nv 0 1 0\nv 1 1 0\n"
+                << "vn 0 0 1\n"
+                << "f 1//1 2//1 3//1\n"   // vertex//normal, no texture coordinate
+                << "f -3 -2 -1\n"         // negative (relative) indices -> 2 3 4
+                << "f 1 2 x\n"            // malformed: skipped
+                << "f 1 2 99\n"           // out of range: skipped
+                << "v 1 nope 0\n";        // malformed vertex: skipped
+    }
+    Reader::MESH_DIR = faceDir.string() + "/";
+    materials.clear();
+    try {
+        Reader::ReadOBJ("faces.obj", textureFile, vertices, faces, textureCoordinates,
+            textureFaces, normals, normalFaces, materials);
+    } catch (const std::exception& error) {
+        std::cerr << "Reader threw on a malformed OBJ: " << error.what() << '\n';
+        return 1;
+    }
+    std::filesystem::remove_all(faceDir);
+
+    // face rows are 1-based in the sparse matrix, so face k is row k
+    if (vertices.rows() != 4 || normals.rows() != 1
+        || faces.rows() < 3
+        || faces(1, 0) != 1 || faces(1, 1) != 2 || faces(1, 2) != 3
+        || normalFaces(1, 0) != 1 || normalFaces(1, 2) != 1
+        || textureFaces(1, 0) != 0
+        || faces(2, 0) != 2 || faces(2, 1) != 3 || faces(2, 2) != 4
+        || (faces.rows() > 3 && faces.bottomRows(faces.rows() - 3).any())) {
+        std::cerr << "Reader returned unexpected faces for v//vn, negative or malformed indices.\n";
+        return 1;
+    }
+
     // larger than the old fixed 42,000-row buffers, with extra per-vertex color values
     const int largeVertexCount = 50000;
     const std::filesystem::path largeDir = std::filesystem::temp_directory_path() / "kubechaser_reader_test";
