@@ -49,7 +49,42 @@ int main()
         return 1;
     }
 
-    const Eigen::Vector3d projection = Linalg::ProjVonU(
+    // Triangle in the z=0 plane; hit from both sides, the normal must face the ray.
+    const Eigen::Vector3d pivot(0.0, 0.0, 0.0);
+    const Eigen::Vector3d edge1(1.0, 0.0, 0.0);
+    const Eigen::Vector3d edge2(0.0, 1.0, 0.0);
+    const Ray rayFromAbove(Eigen::Vector3d(0.25, 0.25, 2.0), Eigen::Vector3d(0.0, 0.0, -1.0));
+    Eigen::Vector3d baryNormal = Eigen::Vector3d::Zero();
+    double baryT = 0.0;
+    if (!Linalg::RayBaryIntersect(rayFromAbove, pivot, edge1, edge2, baryNormal, baryT)) {
+        std::cerr << "Expected the ray to hit the triangle from above.\n";
+        return 1;
+    }
+    if (!approximatelyEqual(baryNormal, Eigen::Vector3d(0.0, 0.0, 1.0))
+        || !approximatelyEqual(baryT, 2.0)) {
+        std::cerr << "Ray-triangle intersection from above returned an unexpected result.\n";
+        return 1;
+    }
+
+    const Ray rayFromBelow(Eigen::Vector3d(0.25, 0.25, -3.0), Eigen::Vector3d(0.0, 0.0, 1.0));
+    baryNormal = Eigen::Vector3d::Zero();
+    if (!Linalg::RayBaryIntersect(rayFromBelow, pivot, edge1, edge2, baryNormal, baryT)) {
+        std::cerr << "Expected the ray to hit the triangle from below.\n";
+        return 1;
+    }
+    if (!approximatelyEqual(baryNormal, Eigen::Vector3d(0.0, 0.0, -1.0))
+        || !approximatelyEqual(baryT, 3.0)) {
+        std::cerr << "Ray-triangle intersection from below returned an unexpected result.\n";
+        return 1;
+    }
+
+    const Ray rayMissing(Eigen::Vector3d(0.9, 0.9, 1.0), Eigen::Vector3d(0.0, 0.0, -1.0));
+    if (Linalg::RayBaryIntersect(rayMissing, pivot, edge1, edge2, baryNormal, baryT)) {
+        std::cerr << "Expected the ray to miss the triangle.\n";
+        return 1;
+    }
+
+    const Eigen::Vector3d projection =Linalg::ProjVonU(
         Eigen::Vector3d(1.0, 0.0, 0.0),
         Eigen::Vector3d(2.0, 3.0, 0.0));
     if (!approximatelyEqual(projection, Eigen::Vector3d(2.0, 0.0, 0.0))) {

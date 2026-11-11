@@ -23,11 +23,10 @@ bool Linalg::RayBaryIntersect(const Ray& ray, const Eigen::Vector3d& pivot,
     t = values(2);
     if (t > 0 && alpha >= 0 && gamma >= 0 && alpha + gamma <= 1)
     {
-        // find surface normal
-        Eigen::Vector3d n = t1.cross(t2);
-        if (n.dot(ray.direction) < 0)
-            n = t1.cross(t2);
-        n = n / n.norm();
+        // surface normal, flipped so it faces back toward the ray origin
+        n = temp_n.normalized();
+        if (n.dot(ray.direction) > 0)
+            n = -n;
         std::cout << "Ray-Bary Intersect: t=" << t << " n: (" << n(0) << "," << n(1) << "," << n(2) << ")"  << std::endl;
         return true;
     }
