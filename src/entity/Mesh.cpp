@@ -128,53 +128,13 @@ void Mesh::generate(
             j++;
         }
     }
-    float max_x = 0, max_y = 0, max_z = 0;
-    float min_x = 1000, min_y = 1000, min_z = 1000;
-
-    for (int i = 0; i < V.rows(); i++)
+    // ndcRatio is the largest absolute vertex coordinate on any axis, used to
+    // scale screen-space drag offsets into model units.
+    if (V.rows() > 0 && V.cols() >= 3)
     {
-        for (int j = 0; j < 3; j++)
-        {
-            Eigen::RowVector3f pos = V.row(i);
-            if (pos(0) > max_x)
-            {
-                max_x = pos(0);
-            }
-            if (pos(1) > max_y)
-            {
-                max_y = pos(1);
-            }
-            if (pos(2) > max_z)
-            {
-                max_z = pos(2);
-            }
-            if (pos(0) < min_x)
-            {
-                min_x = pos(0);
-            }
-            if (pos(1) < min_y)
-            {
-                min_y = pos(1);
-            }
-            if (pos(2) < min_z)
-            {
-                min_z = pos(2);
-            }
-        }    
+        const float maxAbs = V.leftCols<3>().cwiseAbs().maxCoeff();
+        if (maxAbs > 0.0f) this->ndcRatio = maxAbs;
     }
-    float cmin_x = std::min(std::abs(max_x), std::abs(min_x));
-    float cmin_y = std::min(std::abs(max_y), std::abs(min_y));
-    float cmin_z = std::min(std::abs(max_z), std::abs(min_z));
-    float cmax_x = std::max(std::abs(max_x), std::abs(min_x));
-    float cmax_y = std::max(std::abs(max_y), std::abs(min_y));
-    float cmax_z = std::max(std::abs(max_z), std::abs(min_z));
-    this->ndcRatio = std::max(cmax_x, std::max(cmax_y, cmax_z));
-    float diff_x = cmax_x - cmin_x;
-    float diff_y = cmax_y - cmin_y;
-    float diff_z = cmax_z - cmin_z;
-    float mid_x =  diff_x / 2.0;
-    float mid_y = diff_y / 2.0;
-    float mid_z = diff_z / 2.0;
 
     num_vertices = face_fan.rows() * 3;
     std::vector<NVertex> vertices(num_vertices);
