@@ -2,15 +2,13 @@
 
 Entity::Entity()
 {
-    int emptyBit = getFreeBit();
-    setBit(emptyBit);
-    _id = emptyBit;
+    _id = acquireId();
 }
 
 Entity::~Entity()
 {
     releaseTexture();
-    clearBit(_id);
+    releaseId(_id);
 }
 
 void Entity::releaseTexture()
@@ -98,28 +96,27 @@ void Entity::RotateZInc(float degrees)
     ca.rotateZdeg += degrees;
 }
 
-int Entity::getFreeBit()
+int Entity::acquireId()
 {
-    for (int i = 0; i < MAX_ENTITIES; i++)
+    // usedIds is sorted, so the first gap is the smallest free ID
+    int id = 0;
+    for (int used : usedIds)
     {
-        if (entityBitmap[i] == 0) {
-            return i;
+        if (used != id) {
+            break;
         }
+        id++;
     }
-    return 0;
+    usedIds.insert(id);
+    return id;
 }
 
-void Entity::setBit(int bit)
+void Entity::releaseId(int id)
 {
-    entityBitmap[bit] = 1;
+    usedIds.erase(id);
 }
 
-void Entity::clearBit(int bit)
-{
-    entityBitmap[bit] = 0;
-}
-
-std::bitset<MAX_ENTITIES> Entity::entityBitmap;
+std::set<int> Entity::usedIds;
 
 CameraAttributes Entity::GetCameraAttributes(){ return ca; }
 

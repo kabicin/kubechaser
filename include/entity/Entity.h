@@ -12,20 +12,17 @@
 #include <string>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <bitset>
+#include <set>
 #include "shader/DrawAttributes.h"
-#define MAX_ENTITIES 100
 
 class Entity
 {
 private:
 	int _id;
-	static std::bitset<MAX_ENTITIES> entityBitmap;
-
-	// bitmap functions
-	static int getFreeBit();
-	static void setBit(int bit);
-	static void clearBit(int bit);
+	// IDs held by live entities; a new entity takes the smallest unused ID
+	static std::set<int> usedIds;
+	static int acquireId();
+	static void releaseId(int id);
 
 	// camera
 	static std::shared_ptr<Camera> camera;
