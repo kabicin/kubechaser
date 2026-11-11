@@ -168,12 +168,22 @@ void Application::InitializeWindows()
     meshViewer = std::make_shared<MeshViewer>(services, 0, 0, screenWidth, screenHeight);
     windowSwitch = std::make_shared<SwitchableBaseWindow>(
         0, 0, screenWidth, screenHeight, meshViewer, sceneWorld);
+    sceneControl->SetShowGrid(true);
     sceneControl->SetModeChangeCallback([this](SwitchableBaseWindow::WindowMode mode) {
         if (windowSwitch) {
             windowSwitch->SetActiveMode(mode);
         }
     });
-    sceneControl->AttachSwitchableBaseWindow(windowSwitch);
+    sceneControl->SetGridToggleCallback([this](bool enabled) {
+        if (sceneWorld) {
+            sceneWorld->SetShowGrid(enabled);
+        }
+    });
+    sceneControl->SetMeshAddedCallback([this](const std::shared_ptr<Mesh>& mesh) {
+        if (meshViewer) {
+            meshViewer->SetMesh(mesh);
+        }
+    });
 
     windows.push_back(windowSwitch);
     windows.push_back(std::make_shared<AssetPanel>(services, sceneDocument, screenWidth - 250, screenHeight / 4, 250, screenHeight / 2));

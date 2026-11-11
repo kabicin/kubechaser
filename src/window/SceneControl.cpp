@@ -1,4 +1,5 @@
 #include "window/SceneControl.h"
+#include "entity/Mesh.h"
 #include "logger/Logger.h"
 #include "window/SwitchableBaseWindow.h"
 #include <filesystem>
@@ -119,10 +120,8 @@ void SceneControl::Render()
                 std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(obj);
                 mesh->Scale(glm::vec3(1, 1, 1));
                 mesh->Translate(glm::vec3(0, 0, 0));
-                if (auto switcher = this->sbWindow.lock()) {
-                    if (auto viewer = switcher->GetMeshViewer()) {
-                        viewer->SetMesh(mesh);
-                    }
+                if (meshAddedCallback) {
+                    meshAddedCallback(mesh);
                 }
 
                 ImGui::CloseCurrentPopup();
@@ -156,10 +155,9 @@ void SceneControl::Render()
         ImGui::PopStyleColor();
 
         ImGui::PushStyleColor(ImGuiCol_Text, imColorGrey);
-        ImGui::Checkbox("Grid", &showGrid);
-        if (auto switcher = sbWindow.lock()) {
-            if (auto sceneWorld = switcher->GetSceneWorld()) {
-                sceneWorld->SetShowGrid(showGrid);
+        if (ImGui::Checkbox("Grid", &showGrid)) {
+            if (gridToggleCallback) {
+                gridToggleCallback(showGrid);
             }
         }
         ImGui::PopStyleColor();
@@ -216,23 +214,35 @@ void SceneControl::SetModeChangeCallback(ModeChangeCallback callback)
     modeChangeCallback = std::move(callback);
 }
 
+void SceneControl::SetGridToggleCallback(GridToggleCallback callback)
+{
+    gridToggleCallback = std::move(callback);
+}
+
+void SceneControl::SetMeshAddedCallback(MeshAddedCallback callback)
+{
+    meshAddedCallback = std::move(callback);
+}
+
+void SceneControl::SetShowGrid(bool enabled)
+{
+    showGrid = enabled;
+}
+
+bool SceneControl::GetShowGrid() const
+{
+    return showGrid;
+}
+
 void SceneControl::changeWindow(WindowMode window)
 {
     windowMode = window;
     if (modeChangeCallback) {
         modeChangeCallback(window);
     }
-    if (auto switcher = sbWindow.lock()) {
-        switcher->SetActiveMode(window);
-    }
 }
 
 SceneControl::WindowMode SceneControl::GetWindowMode() const
 {
     return windowMode;
-}
-
-void SceneControl::AttachSwitchableBaseWindow(const std::shared_ptr<SwitchableBaseWindow>& sbWindow)
-{
-    this->sbWindow = sbWindow;
 }
