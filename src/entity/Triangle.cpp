@@ -97,7 +97,7 @@ bool Triangle::Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, 
 
     Eigen::Vector3d normal;
     return Linalg::RayBaryIntersect(ray, 
-        Eigen::Vector3d(u0.x, u1.y, u2.z), 
+        Eigen::Vector3d(u0.x, u0.y, u0.z), 
         Eigen::Vector3d(u1.x - u0.x, u1.y - u0.y, u1.z - u0.z), 
         Eigen::Vector3d(u2.x - u0.x, u2.y - u0.y, u2.z - u0.z),
         normal, t);
