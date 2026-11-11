@@ -15,12 +15,10 @@ AssetPanel::AssetPanel(
 
 AssetPanel::~AssetPanel()
 {
-    for (int i = 0; i < imageList.size(); i++)
+    for (const auto& asset : imageList)
     {
-        glDeleteTextures(1, &imageList[i]->TextureNum);
-        delete imageList[i];
+        glDeleteTextures(1, &asset->TextureNum);
     }
-    imageList.clear();
 }
 
 void AssetPanel::Render()
@@ -40,14 +38,8 @@ void AssetPanel::Render()
         ImGui::SetNextWindowPos(ImVec2(GetX(), GetY()));
         ImGui::SetNextWindowSize(ImVec2(GetWidth(), GetHeight()));
         ImGui::Begin("Asset Manager", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-        if (ImGui::Button("Add Asset")) {
-            if (numAssets < MAX_ASSETS) {
-                char* filename = new char[256];
-                delete[] filename;
-            }
-            else {
-                ImGui::OpenPopup("Too Many Assets");
-            }
+        if (ImGui::Button("Add Asset") && numAssets >= MAX_ASSETS) {
+            ImGui::OpenPopup("Too Many Assets");
         }
 
         // Too many assets
@@ -71,7 +63,7 @@ void AssetPanel::Render()
         int i = 0;
         for(auto it = imageList.begin(); it < imageList.end();)
         {
-            Asset* ia = *it;
+            Asset* ia = it->get();
             int assetNum = ia->Num;
             float multiplier = DEFAULT_WIDTH / ia->ImageWidth;
             float xoffset = (i % 2) * (DEFAULT_WIDTH);
@@ -182,23 +174,23 @@ int AssetPanel::addAsset(char *filename, GLuint image, int imageWidth, int image
     {
         textureName = "Name not found";
     }
-    Asset *ia = new Asset;
+    auto ia = std::make_unique<Asset>();
     ia->Num = getFreeBit();
     ia->TextureName = textureName;
     ia->TextureNum = image;
     ia->ImageWidth = imageWidth;
     ia->ImageHeight = imageHeight;
-    imageList.push_back(ia);
-    setBit(ia->Num);
+    const int assetNum = ia->Num;
+    imageList.push_back(std::move(ia));
+    setBit(assetNum);
 
     GetLogger()->LogMessage("Added image: " + textureName);
-    return ia->Num;
+    return assetNum;
 }
 
-std::vector<Asset*>::iterator AssetPanel::deleteAsset(std::vector<Asset*>::iterator it, int assetNum)
+std::vector<std::unique_ptr<Asset>>::iterator AssetPanel::deleteAsset(std::vector<std::unique_ptr<Asset>>::iterator it, int assetNum)
 {
     glDeleteTextures(1, &(*it)->TextureNum);
-    delete *it;
     GetLogger()->LogMessage("Deleted image: " + std::to_string(assetNum));
     clearBit(assetNum);
     return imageList.erase(it);

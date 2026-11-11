@@ -2,6 +2,7 @@
 #define ASSETPANEL_H
 #include "BaseWindow.h"
 #include "stb.h"
+#include <memory>
 #include <vector>
 #include <bitset>
 #include "scene/SceneDocument.h"
@@ -19,9 +20,9 @@ private:
     void setBit(int bit);
     void clearBit(int bit);
 
-    std::vector<Asset *> imageList;
+    std::vector<std::unique_ptr<Asset>> imageList;
     int addAsset(char *filename, GLuint image, int imageWidth, int imageHeight);
-    std::vector<Asset *>::iterator deleteAsset(std::vector<Asset *>::iterator it, int assetNum);
+    std::vector<std::unique_ptr<Asset>>::iterator deleteAsset(std::vector<std::unique_ptr<Asset>>::iterator it, int assetNum);
 
 public:
     AssetPanel(
