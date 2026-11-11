@@ -71,8 +71,8 @@ void Triangle::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::sh
 
     camera->Render(factory->GetShaderProgram(), GetCameraAttributes());
 
-    if (TEX != -1)
-        glBindTexture(GL_TEXTURE_2D, TEX);
+    // Always bind: TEX == 0 (no texture) unbinds, so a previous entity's texture doesn't leak.
+    glBindTexture(GL_TEXTURE_2D, TEX);
     glBindVertexArray(VAO);
     
     if (da.wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
