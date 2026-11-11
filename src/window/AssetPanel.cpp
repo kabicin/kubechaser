@@ -1,5 +1,6 @@
 #include "window/AssetPanel.h"
 #include "logger/Logger.h"
+#include "utility/Reader.h"
 
 AssetPanel::AssetPanel(
     const WindowServices& services,
@@ -164,16 +165,7 @@ void AssetPanel::Render()
 
 int AssetPanel::addAsset(char *filename, GLuint image, int imageWidth, int imageHeight)
 {
-    std::string textureName(filename);
-    const size_t start = textureName.rfind("\\");
-    if (std::string::npos != start)
-    {
-        textureName = textureName.substr(start+1, std::string::npos);
-    }
-    else
-    {
-        textureName = "Name not found";
-    }
+    const std::string textureName = Reader::FileNameFromPath(filename);
     auto ia = std::make_unique<Asset>();
     ia->Num = getFreeBit();
     ia->TextureName = textureName;

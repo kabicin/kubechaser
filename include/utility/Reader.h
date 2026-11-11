@@ -42,6 +42,10 @@ public:
     static int PrimaryMaterialIndex(const std::vector<Material>& materials);
     static int resolveIndex(int index, size_t definedCount);
 
+    // Final component of a path, accepting both '/' and '\\' as separators.
+    // Returns the input unchanged when it contains no separator.
+    static std::string FileNameFromPath(const std::string& path);
+
     static std::vector<std::string> split(const std::string& line, const std::string& delimiter);
 };
 #endif

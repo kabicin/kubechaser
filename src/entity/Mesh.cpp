@@ -208,8 +208,7 @@ void Mesh::generate(
     if (textureFile != "")
     {
         std::cout << "Setting texture file: "  << textureFile << std::endl;
-        AddTexture(Reader::MESH_DIR + textureFile);
-        this->da.texture = true;
+        this->da.texture = AddTexture(Reader::MESH_DIR + textureFile);
     }
     else
     {

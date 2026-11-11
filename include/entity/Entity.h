@@ -57,7 +57,9 @@ public:
 	virtual std::string GetName();
 	virtual GLuint GetTexture();
 	virtual std::string GetTextureName();
-	virtual void AddTexture(const std::string& imagePath);
+	// Loads imagePath into a new owned texture. Returns false (and leaves the
+	// current texture untouched) if the image could not be loaded.
+	virtual bool AddTexture(const std::string& imagePath);
 	virtual void SetTexture(Asset asset);
 
 

@@ -423,4 +423,14 @@ void Reader::ReadOBJ(const std::string& fileName,
     }
 }
 
+std::string Reader::FileNameFromPath(const std::string& path)
+{
+    const size_t separator = path.find_last_of("/\\");
+    if (separator == std::string::npos)
+    {
+        return path;
+    }
+    return path.substr(separator + 1);
+}
+
 std::string Reader::MESH_DIR = std::string(ASSET_DIR) + "/models/";

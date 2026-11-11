@@ -32,6 +32,14 @@ int main()
         return 1;
     }
 
+    if (Reader::FileNameFromPath("/textures/brick.png") != "brick.png"
+        || Reader::FileNameFromPath("C:\\textures\\brick.png") != "brick.png"
+        || Reader::FileNameFromPath("assets/models\\mixed/brick.png") != "brick.png"
+        || Reader::FileNameFromPath("brick.png") != "brick.png") {
+        std::cerr << "Reader did not extract the file name from a path.\n";
+        return 1;
+    }
+
     float shininess = 0.0f;
     if (!Reader::findMaterialKeyAndPopulateValue("Ns 32.5", "Ns", shininess)
         || !approximatelyEqual(shininess, 32.5f)) {
