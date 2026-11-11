@@ -53,7 +53,7 @@ void SceneControl::Render()
     glDepthFunc(GL_LESS);
     {
         // Scene Control
-        ImGui::SetNextWindowPos(ImVec2(GetX(), GetHeight()));
+        ImGui::SetNextWindowPos(ImVec2(GetX(), GetY() + GetHeight()));
         ImGui::SetNextWindowSize(ImVec2(GetWidth(), GetHeight()));
         ImGui::Begin("Scene Control", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
         ImGui::PushStyleColor(ImGuiCol_Text, imColorWhite);
@@ -166,7 +166,7 @@ void SceneControl::Render()
 
         
         // Scene Statistics
-        ImGui::SetNextWindowPos(ImVec2(200, 0));
+        ImGui::SetNextWindowPos(ImVec2(GetX() + 200, GetY()));
         ImGui::SetNextWindowSize(ImVec2(200, 50));
         ImGui::Begin("Scene Statistics", NULL, 0);
         ImGui::Text("Active Objects:");
@@ -175,7 +175,7 @@ void SceneControl::Render()
         ImGui::End();
 
         // Scene Object
-        ImGui::SetNextWindowPos(ImVec2(0,0));
+        ImGui::SetNextWindowPos(ImVec2(GetX(), GetY()));
         ImGui::SetNextWindowSize(ImVec2(200, 300));
         std::shared_ptr<Entity> entity = sceneDocument.GetActiveEntity();
         if (entity != NULL)

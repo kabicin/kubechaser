@@ -77,7 +77,7 @@ void AssetPanel::Render()
             float xoffset = (i % 2) * (DEFAULT_WIDTH);
             float yoffset = (i / 2) * (DEFAULT_HEIGHT);
 
-            ImGui::SetNextWindowPos(ImVec2(GetX() + 5.0f + xoffset, 70.0f + yoffset));
+            ImGui::SetNextWindowPos(ImVec2(GetX() + 5.0f + xoffset, GetY() + 70.0f + yoffset));
             ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(255, 255, 255, 255));
 
             ImGui::BeginChild("Asset Manager - Image", ImVec2(DEFAULT_WIDTH, DEFAULT_HEIGHT), 0);

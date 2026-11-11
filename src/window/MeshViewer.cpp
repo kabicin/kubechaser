@@ -56,7 +56,9 @@ void MeshViewer::handleInput()
 void MeshViewer::showGUI()
 {
     {
-        ImGui::SetNextWindowPos(ImVec2(GetWidth() / 2 - 360, GetHeight() - 210));
+        float posX = std::max(static_cast<float>(GetX()), static_cast<float>(GetX()) + (GetWidth() - 720.0f) * 0.5f);
+        float posY = static_cast<float>(GetY() + GetHeight() - 210);
+        ImGui::SetNextWindowPos(ImVec2(posX, posY));
         ImGui::SetNextWindowSize(ImVec2(720, 210));
         ImGui::Begin("Mesh Viewer", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
