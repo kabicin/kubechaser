@@ -4,12 +4,13 @@
 #include "stb.h"
 #include <vector>
 #include <bitset>
-#include "SceneBuilder.h"
+#include "scene/SceneDocument.h"
 #define MAX_ASSETS 32
 
 class AssetPanel : public BaseWindow
 {
 private:
+    SceneDocument& sceneDocument;
     const float DEFAULT_WIDTH = 100.0f;
     const float DEFAULT_HEIGHT = 100.0f;
     std::bitset<MAX_ASSETS> assetBitmap;
@@ -23,7 +24,13 @@ private:
     std::vector<Asset *>::iterator deleteAsset(std::vector<Asset *>::iterator it, int assetNum);
 
 public:
-    AssetPanel(const WindowServices& services, int x, int y, int width, int height);
+    AssetPanel(
+        const WindowServices& services,
+        SceneDocument& sceneDocument,
+        int x,
+        int y,
+        int width,
+        int height);
     ~AssetPanel();
     void Render();
     bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_width, int* out_height);

@@ -1,5 +1,6 @@
 #ifndef SCENECONTROL_H
 #define SCENECONTROL_H
+#include "scene/SceneDocument.h"
 #include "window/BaseWindow.h"
 #include "window/SceneBuilder.h"
 #include "window/SceneWorld.h"
@@ -9,6 +10,7 @@ class SwitchableBaseWindow;
 class SceneControl : public BaseWindow
 {
 private:
+    SceneDocument& sceneDocument;
     bool propagateControl = false;
     int windowMode = 0;
     void changeWindow(int window);
@@ -18,7 +20,13 @@ private:
 
     std::weak_ptr<SwitchableBaseWindow> sbWindow;
 public:
-    SceneControl(const WindowServices& services, int x, int y, int width, int height);
+    SceneControl(
+        const WindowServices& services,
+        SceneDocument& sceneDocument,
+        int x,
+        int y,
+        int width,
+        int height);
     ~SceneControl();
     void Render();
     bool HasChanged();

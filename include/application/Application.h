@@ -2,6 +2,7 @@
 #define APPLICATION_H
 
 #include "glm.h"
+#include "scene/SceneDocument.h"
 #include "window/WindowServices.h"
 
 #include <memory>
@@ -65,6 +66,7 @@ private:
     bool imguiOpenGLInitialized = false;
 
     WindowServices services;
+    SceneDocument sceneDocument;
     std::shared_ptr<MeshViewer> meshViewer;
     std::shared_ptr<SceneWorld> sceneWorld;
     std::vector<std::shared_ptr<BaseFrame>> windows;

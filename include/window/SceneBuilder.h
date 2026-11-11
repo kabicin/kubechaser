@@ -1,7 +1,7 @@
 #ifndef SCENEBUILDER_H
 #define SCENEBUILDER_H
 #include "BaseWindow.h"
-#include "entity/Shapes.h"
+#include "scene/SceneDocument.h"
 #include "utility/Camera.h"
 #include "shader/ShaderFactory.h"
 #include <vector>
@@ -15,8 +15,7 @@
 class SceneBuilder : public BaseWindow
 {
 private:
-    static std::vector<std::shared_ptr<Entity>> entities;
-    static size_t activeEntityIndex;
+    SceneDocument& sceneDocument;
 
     // Scene Builder specific object picking and ray casting members
     static int prev_x, prev_y, mouse_x, mouse_y;
@@ -33,27 +32,18 @@ private:
     std::shared_ptr<Scene> scene;
 
 public:
-    SceneBuilder(const WindowServices& services, int x, int y, int width, int height);
-    ~SceneBuilder();
+    SceneBuilder(
+        const WindowServices& services,
+        SceneDocument& sceneDocument,
+        int x,
+        int y,
+        int width,
+        int height);
+    ~SceneBuilder() = default;
     void Render() override;
     void Resize(int x, int y, int width, int height) override;
 
-    static std::shared_ptr<Entity> AddEntity(std::shared_ptr<Entity> entity, glm::vec3 offset = glm::vec3(0, 0, 0));
-    static std::shared_ptr<Entity> AddEntity(const std::string& className, glm::vec3 offset = glm::vec3(0, 0, 0));
-    static std::shared_ptr<Entity> AddEntity(const std::string& className, const std::string& objectFile, glm::vec3 offset = glm::vec3(0, 0, 0));
-    static std::shared_ptr<Entity> AddEntity(const std::string& className, const std::string& objectFile, const std::string& textureFile, glm::vec3 offset = glm::vec3(0, 0, 0));
-    static std::vector<std::shared_ptr<Entity>> GetAllEntities();
-    static size_t GetNumEntities();
-    static void SetActiveEntity(int index);
-    static std::shared_ptr<Entity> GetActiveEntity();
-    static void DeleteEntity(int index);
-    static void DeleteEntity(std::shared_ptr<Entity> entity);
-
     static void OnScroll(std::shared_ptr<Entity> entity, double yoffset);
-    static double maxDepth;
-    static double minDepth;
-    static double GetMaxDepth();
-    static double GetMinDepth();
 
     // Scene Builder specific object picking and ray casting functions
     bool GetMouseClicked();

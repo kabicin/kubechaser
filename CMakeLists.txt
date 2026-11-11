@@ -60,6 +60,7 @@ if(KUBECHASER_BUILD_APP)
         src/entity/Quad.cpp
         src/entity/Triangle.cpp
         src/scene/Scene.cpp
+        src/scene/SceneDocument.cpp
         src/scene/SceneManager.cpp
         src/scene/SceneNode.cpp
         src/shader/DrawAttributes.cpp

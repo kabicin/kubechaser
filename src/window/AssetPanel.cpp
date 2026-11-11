@@ -1,8 +1,15 @@
 #include "window/AssetPanel.h"
 #include "logger/Logger.h"
 
-AssetPanel::AssetPanel(const WindowServices& services, int x, int y, int width, int height)
-    : BaseWindow(services, x, y, width, height)
+AssetPanel::AssetPanel(
+    const WindowServices& services,
+    SceneDocument& sceneDocument,
+    int x,
+    int y,
+    int width,
+    int height)
+    : BaseWindow(services, x, y, width, height),
+      sceneDocument(sceneDocument)
 {
 }
 
@@ -122,7 +129,7 @@ void AssetPanel::Render()
                 }
                 if (ImGui::Button("Add") && shape != NULL)
                 {
-                    std::shared_ptr<Entity> entity = SceneBuilder::AddEntity(shape, glm::vec3(0.0f, 0.5f, 0.0f));
+                    std::shared_ptr<Entity> entity = sceneDocument.AddEntity(shape, glm::vec3(0.0f, 0.5f, 0.0f));
                     entity->SetTexture(*ia);
                   
                     GetLogger()->LogMessage("Added " + std::string(shape) + " with texture " + imageList[i]->TextureName);

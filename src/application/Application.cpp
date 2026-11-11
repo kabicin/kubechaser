@@ -12,6 +12,7 @@
 #include "entity/Mesh.h"
 #include "logger/Logger.h"
 #include "scene/Scene.h"
+#include "scene/SceneDocument.h"
 #include "scene/SceneManager.h"
 #include "scene/SceneNode.h"
 #include "shader/ShaderFactory.h"
@@ -132,7 +133,7 @@ void Application::InitializeServices()
 
 void Application::InitializeWindows()
 {
-    auto sceneControl = std::make_shared<SceneControl>(services, 0, 0, 250, screenHeight / 2);
+    auto sceneControl = std::make_shared<SceneControl>(services, sceneDocument, 0, 0, 250, screenHeight / 2);
     windows.push_back(sceneControl);
 
     auto root = std::make_shared<SceneNode>();
@@ -174,7 +175,7 @@ void Application::InitializeWindows()
     sceneControl->AttachSwitchableBaseWindow(windowSwitch);
 
     windows.push_back(windowSwitch);
-    windows.push_back(std::make_shared<AssetPanel>(services, screenWidth - 250, screenHeight / 4, 250, screenHeight / 2));
+    windows.push_back(std::make_shared<AssetPanel>(services, sceneDocument, screenWidth - 250, screenHeight / 4, 250, screenHeight / 2));
     windows.push_back(std::make_shared<ConsolePanel>(services, screenWidth - 250, screenHeight / 2, 250, screenHeight / 2));
 
     auto initialPod = std::make_shared<Mesh>("pod.obj");
@@ -275,6 +276,7 @@ void Application::Shutdown()
     windows.clear();
     meshViewer.reset();
     sceneWorld.reset();
+    sceneDocument.Clear();
 
     services.shaderFactory.reset();
     services.time.reset();
@@ -353,7 +355,7 @@ void Application::OnMouseButton(int button, int action)
 
 void Application::OnScroll(double yoffset)
 {
-    SceneBuilder::OnScroll(SceneBuilder::GetActiveEntity(), yoffset);
+    SceneBuilder::OnScroll(sceneDocument.GetActiveEntity(), yoffset);
     if (meshViewer) {
         meshViewer->OnScroll(yoffset);
     }

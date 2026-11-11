@@ -3,8 +3,15 @@
 #include "window/SwitchableBaseWindow.h"
 #include <filesystem>
 
-SceneControl::SceneControl(const WindowServices& services, int x, int y, int width, int height)
-    : BaseWindow(services, x, y, width, height)
+SceneControl::SceneControl(
+    const WindowServices& services,
+    SceneDocument& sceneDocument,
+    int x,
+    int y,
+    int width,
+    int height)
+    : BaseWindow(services, x, y, width, height),
+      sceneDocument(sceneDocument)
 {
 }
 
@@ -106,7 +113,7 @@ void SceneControl::Render()
 
             if (ImGui::Button("Add") && !obj.empty())
             {
-                SceneBuilder::AddEntity(obj, glm::vec3(0.0f, 0.5f, 0.0f));
+                sceneDocument.AddEntity("Mesh", obj, glm::vec3(0.0f, 0.5f, 0.0f));
                 GetLogger()->LogMessage("Added " + obj);
 
                 std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(obj);
@@ -129,12 +136,12 @@ void SceneControl::Render()
             ImGui::PopStyleColor();
         }
 
-        std::vector<std::shared_ptr<Entity>> entities = SceneBuilder::GetAllEntities();
-        for (int i = 0; i < SceneBuilder::GetNumEntities(); i++)
+        const auto& entities = sceneDocument.GetEntities();
+        for (std::size_t i = 0; i < sceneDocument.GetNumEntities(); ++i)
         {
             if (ImGui::Button(std::string("Entity " + std::to_string(entities[i]->GetId())).c_str()))
             {
-                SceneBuilder::SetActiveEntity(i);
+                sceneDocument.SetActiveEntity(static_cast<int>(i));
             }
             ImGui::SameLine();
         }
@@ -162,13 +169,13 @@ void SceneControl::Render()
         ImGui::Begin("Scene Statistics", NULL, 0);
         ImGui::Text("Active Objects:");
         ImGui::SameLine();
-        ImGui::Text("%s", std::to_string(SceneBuilder::GetNumEntities()).c_str());
+        ImGui::Text("%s", std::to_string(sceneDocument.GetNumEntities()).c_str());
         ImGui::End();
 
         // Scene Object
         ImGui::SetNextWindowPos(ImVec2(0,0));
         ImGui::SetNextWindowSize(ImVec2(200, 300));
-        std::shared_ptr<Entity> entity = SceneBuilder::GetActiveEntity();
+        std::shared_ptr<Entity> entity = sceneDocument.GetActiveEntity();
         if (entity != NULL)
         {
             ImGui::Begin(std::string("Active Object: [Object " + std::to_string(entity->GetId()) + "]").c_str(), NULL, 0);
@@ -180,10 +187,10 @@ void SceneControl::Render()
             ImGui::SameLine();
             ImGui::Text("%s", entity->GetTextureName().c_str());
 
-            if (ImGui::Button("Delete"))                    SceneBuilder::DeleteEntity(entity);
-	        if (ImGui::Button("Move Front"))                entity->MoveUp(glm::vec3(0.0f, 0.0f, SceneBuilder::GetMaxDepth()));
+            if (ImGui::Button("Delete"))                    sceneDocument.DeleteEntity(entity);
+	        if (ImGui::Button("Move Front"))                entity->MoveUp(glm::vec3(0.0f, 0.0f, sceneDocument.GetMaxDepth()));
             ImGui::SameLine();
-            if (ImGui::Button("Move Back"))                 entity->MoveBack(glm::vec3(0.0f, 0.0f, SceneBuilder::GetMinDepth()));
+            if (ImGui::Button("Move Back"))                 entity->MoveBack(glm::vec3(0.0f, 0.0f, sceneDocument.GetMinDepth()));
             if (ImGui::Button("Cast Directional Light"))    entity->da.lightSwitch ^= 1;
             if (ImGui::Button("Cast Point Light"))          entity->da.lightSwitch ^= (1 << 1);
             if (ImGui::Button("Cast Spotlight"))            entity->da.lightSwitch ^= (1 << 2);
