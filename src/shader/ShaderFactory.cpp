@@ -405,6 +405,12 @@ gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n");
                 shader.object.AddCustomVariable("out vec3 pos_es_in[];");
                 shader.object.AddBody("pos_es_in[gl_InvocationID] = pos_cs_in[gl_InvocationID];");
             }
+            if (shader.args & ShaderArgs_Color)
+            {
+                shader.object.AddCustomVariable("in vec4 color_cs_in[];");
+                shader.object.AddCustomVariable("out vec4 color_es_in[];");
+                shader.object.AddBody("color_es_in[gl_InvocationID] = color_cs_in[gl_InvocationID];");
+            }
         }
         
     }
@@ -441,6 +447,12 @@ gl_Position = u * gl_in[0].gl_Position + v * gl_in[1].gl_Position + w * gl_in[2]
                 shader.object.AddCustomVariable("in vec3 pos_es_in[];");
                 shader.object.AddVariable(VarType::Output, "vec3", "pos_fs_in");
                 shader.object.AddBody("pos_fs_in = u * pos_es_in[0] + v * pos_es_in[1] + w * pos_es_in[2];");
+            }
+            if (shader.args & ShaderArgs_Color)
+            {
+                shader.object.AddCustomVariable("in vec4 color_es_in[];");
+                shader.object.AddVariable(VarType::Output, "vec4", "color_fs_in");
+                shader.object.AddBody("color_fs_in = u * color_es_in[0] + v * color_es_in[1] + w * color_es_in[2];");
             }
         }
     }
