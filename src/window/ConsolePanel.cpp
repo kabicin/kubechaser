@@ -19,7 +19,10 @@ void ConsolePanel::Render()
         ImGui::Begin("Console", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
         
         // read console buffer here
-        ImGui::Text("%s", GetLogger()->Output().c_str());
+        // TextUnformatted has no length limit, unlike Text which formats
+        // into a fixed-size buffer and truncates long logs.
+        const std::string output = GetLogger()->Output();
+        ImGui::TextUnformatted(output.c_str(), output.c_str() + output.size());
 
         // if there is a new log event, set the scrollbar to the bottom
         if (GetLogger()->GetState() != logState) {
