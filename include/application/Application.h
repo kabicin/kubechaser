@@ -11,8 +11,11 @@
 
 struct GLFWwindow;
 
+class AssetPanel;
 class BaseFrame;
+class ConsolePanel;
 class MeshViewer;
+class SceneControl;
 class SceneWorld;
 class SwitchableBaseWindow;
 
@@ -49,6 +52,7 @@ private:
     void OnMouseButton(int button, int action);
     void OnScroll(double yoffset);
     void OnWindowSize(int width, int height);
+    void UpdateLayout();
 
     static Application* FromWindow(GLFWwindow* window);
     static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
@@ -68,9 +72,12 @@ private:
 
     WindowServices services;
     SceneDocument sceneDocument;
+    std::shared_ptr<SceneControl> sceneControl;
+    std::shared_ptr<SwitchableBaseWindow> windowSwitch;
+    std::shared_ptr<AssetPanel> assetPanel;
+    std::shared_ptr<ConsolePanel> consolePanel;
     std::shared_ptr<MeshViewer> meshViewer;
     std::shared_ptr<SceneWorld> sceneWorld;
-    std::shared_ptr<SwitchableBaseWindow> windowSwitch;
     std::vector<std::shared_ptr<BaseFrame>> windows;
     std::vector<ShowcaseItem> showcase;
 };

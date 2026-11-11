@@ -14,7 +14,7 @@ void ConsolePanel::Render()
 	//ClearBackground(0.19f, 0.28f, 0.37f, 1.0f);
     glViewport(GetX(), GetY(), GetWidth(), GetHeight());
     {
-        ImGui::SetNextWindowPos(ImVec2(GetX(), GetHeight()));
+        ImGui::SetNextWindowPos(ImVec2(GetX(), GetY()));
         ImGui::SetNextWindowSize(ImVec2(GetWidth(), GetHeight()));
         ImGui::Begin("Console", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
         

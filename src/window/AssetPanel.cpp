@@ -37,7 +37,7 @@ void AssetPanel::Render()
         static int deletedId = -1;
 
 	    size_t numAssets = imageList.size();
-        ImGui::SetNextWindowPos(ImVec2(GetX(), 0));
+        ImGui::SetNextWindowPos(ImVec2(GetX(), GetY()));
         ImGui::SetNextWindowSize(ImVec2(GetWidth(), GetHeight()));
         ImGui::Begin("Asset Manager", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
         if (ImGui::Button("Add Asset")) {

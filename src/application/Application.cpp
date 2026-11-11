@@ -132,7 +132,7 @@ void Application::InitializeServices()
 
 void Application::InitializeWindows()
 {
-    auto sceneControl = std::make_shared<SceneControl>(services, sceneDocument, 0, 0, 250, screenHeight / 2);
+    sceneControl = std::make_shared<SceneControl>(services, sceneDocument, 0, 0, 250, screenHeight / 2);
     windows.push_back(sceneControl);
 
     auto root = std::make_shared<SceneNode>();
@@ -187,8 +187,12 @@ void Application::InitializeWindows()
     });
 
     windows.push_back(windowSwitch);
-    windows.push_back(std::make_shared<AssetPanel>(services, sceneDocument, screenWidth - 250, screenHeight / 4, 250, screenHeight / 2));
-    windows.push_back(std::make_shared<ConsolePanel>(services, screenWidth - 250, screenHeight / 2, 250, screenHeight / 2));
+    assetPanel = std::make_shared<AssetPanel>(services, sceneDocument, 0, 0, 250, screenHeight / 2);
+    windows.push_back(assetPanel);
+    consolePanel = std::make_shared<ConsolePanel>(services, 0, 0, 250, screenHeight / 2);
+    windows.push_back(consolePanel);
+
+    UpdateLayout();
 
     auto initialPod = std::make_shared<Mesh>("pod.obj");
     initialPod->da.solidColor = glm::vec3(0.53f, 0.83f, 0.62f);
@@ -286,7 +290,10 @@ void Application::Shutdown()
     }
 
     windows.clear();
+    sceneControl.reset();
     windowSwitch.reset();
+    assetPanel.reset();
+    consolePanel.reset();
     meshViewer.reset();
     sceneWorld.reset();
     sceneDocument.Clear();
@@ -358,18 +365,31 @@ void Application::OnScroll(double yoffset)
     }
 }
 
+void Application::UpdateLayout()
+{
+    const int sidebarWidth = 250;
+    const int halfHeight = screenHeight / 2;
+    const int rightSidebarX = screenWidth - sidebarWidth;
+
+    if (sceneControl) {
+        sceneControl->Resize(0, 0, sidebarWidth, halfHeight);
+    }
+    if (windowSwitch) {
+        windowSwitch->Resize(0, 0, screenWidth, screenHeight);
+    }
+    if (assetPanel) {
+        assetPanel->Resize(rightSidebarX, 0, sidebarWidth, halfHeight);
+    }
+    if (consolePanel) {
+        consolePanel->Resize(rightSidebarX, halfHeight, sidebarWidth, halfHeight);
+    }
+}
+
 void Application::OnWindowSize(int width, int height)
 {
     screenWidth = width;
     screenHeight = height;
-
-    if (windows.size() < 4) {
-        return;
-    }
-    windows[0]->Resize(0, 0, 250, screenHeight / 2);
-    windows[1]->Resize(0, 0, screenWidth, screenHeight);
-    windows[2]->Resize(screenWidth - 250, screenHeight / 4, 250, screenHeight / 2);
-    windows[3]->Resize(screenWidth - 250, 0, 250, screenHeight / 2);
+    UpdateLayout();
 }
 
 Application* Application::FromWindow(GLFWwindow* glfwWindow)
