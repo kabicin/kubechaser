@@ -231,13 +231,11 @@ void MeshViewer::KeyCallback(int action, int key)
     }
     else if (key == GLFW_KEY_Q)
     {
+        // Toggle the same state the "wireframe" checkbox edits; showGUI()
+        // copies it into mesh->da every frame.
         if (action == GLFW_PRESS)
         {
-            mesh->da.wireframe = true;
-        }
-        else if (action == GLFW_RELEASE)
-        {
-            mesh->da.wireframe = false;
+            wireframe = !wireframe;
         }
     }
 }
