@@ -1,4 +1,5 @@
 #include "entity/Grid.h"
+#include <algorithm>
 #include <assert.h>
 #include <iostream>
 
@@ -88,8 +89,8 @@ void Grid::initializeLines(const glm::vec3& cartesianScale, int axis)
         lines = static_cast<int>(cartesianScale.z);
     }
 
-    PCVertex vertices[200];
-    int max_lines = std::min(100, lines * 5) + 2; // +2 for the x and z cartesian axes when no cross is drawn.
+    int max_lines = std::max(0, std::min(100, lines * 5)) + 2; // +2 for the x and z cartesian axes when no cross is drawn.
+    std::vector<PCVertex> vertices(2 * max_lines);
     float gridColors[4] = { neutralColor.x, neutralColor.y, neutralColor.z, neutralColor.w };
     std::cout << "initializing (" << max_lines << ") line pairs" << std::endl;
     if (axis == 0 || axis == 2)
@@ -123,7 +124,7 @@ void Grid::initializeLines(const glm::vec3& cartesianScale, int axis)
     glGenBuffers(1, &lines_VBO[axis]);
     glBindBuffer(GL_ARRAY_BUFFER, lines_VBO[axis]);
     num_lines[axis] = max_lines;
-    glBufferData(GL_ARRAY_BUFFER, sizeof(PCVertex) * num_lines[axis] * 2, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(PCVertex) * num_lines[axis] * 2, vertices.data(), GL_STATIC_DRAW);
 
     // pos
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PCVertex), (void*)0);
