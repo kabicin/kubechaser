@@ -155,9 +155,7 @@ void Reader::ReadOBJ(const std::string& fileName,
     std::vector<std::string> delimiters(arr, arr + sizeof(arr) / sizeof(arr[0]));
     std::vector<int> counts(delimiters.size() + 2, 0);
     std::vector<T_int> vecF, vecUF, vecNF;
-    V.resize(42000, 3);
-    UV.resize(42000, 2);
-    NV.resize(42000, 3);
+    std::vector<Eigen::RowVector3f> vecV, vecUV, vecNV;
 
     // get file name
     std::string objFileName = MESH_DIR + fileName;
@@ -240,13 +238,15 @@ void Reader::ReadOBJ(const std::string& fileName,
                     iss.clear();
                     iss.str(record.substr(delimiters[i].length()));
                     int count = 0;
-                    Eigen::RowVector3f rowf3;
+                    Eigen::RowVector3f rowf3 = Eigen::RowVector3f::Zero();
                     while (iss >> str)
                     {
                         if (i < 3)
                         {
-                            double val = std::stod(str);
-                            rowf3(count) = val;
+                            if (count < 3)
+                            {
+                                rowf3(count) = std::stof(str);
+                            }
                         }
                         else
                         {
@@ -283,15 +283,15 @@ void Reader::ReadOBJ(const std::string& fileName,
                     {
                         if (i == 0)
                         {
-                            V.row(counts[i]++) = rowf3;
+                            vecV.push_back(rowf3);
                         }
                         else if (i == 1)
                         {
-                            UV.row(counts[i]++) = Eigen::RowVector2f(rowf3(0), rowf3(1));
+                            vecUV.push_back(rowf3);
                         }
                         else if (i == 2)
                         {
-                            NV.row(counts[i]++) = rowf3;
+                            vecNV.push_back(rowf3);
                         }
                     }
                     else {
@@ -303,9 +303,12 @@ void Reader::ReadOBJ(const std::string& fileName,
             }
 
         }
-        V.conservativeResize(counts[0], 3);
-        UV.conservativeResize(counts[1], 2);
-        NV.conservativeResize(counts[2], 3);
+        V.resize(vecV.size(), 3);
+        for (size_t r = 0; r < vecV.size(); ++r) V.row(r) = vecV[r];
+        UV.resize(vecUV.size(), 2);
+        for (size_t r = 0; r < vecUV.size(); ++r) UV.row(r) = vecUV[r].head<2>();
+        NV.resize(vecNV.size(), 3);
+        for (size_t r = 0; r < vecNV.size(); ++r) NV.row(r) = vecNV[r];
         int rows = vecF.size();
         int cols = max_count;
         Eigen::SparseMatrix<int> sparseF, sparseUF, sparseNF;

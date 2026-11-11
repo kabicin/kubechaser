@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include <exception>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -76,6 +78,43 @@ int main()
         || textureCoordinates.rows() != 3
         || normals.rows() != 1) {
         std::cerr << "Reader returned unexpected geometry for the commented OBJ fixture.\n";
+        return 1;
+    }
+
+    // larger than the old fixed 42,000-row buffers, with extra per-vertex color values
+    const int largeVertexCount = 50000;
+    const std::filesystem::path largeDir = std::filesystem::temp_directory_path() / "kubechaser_reader_test";
+    std::filesystem::create_directories(largeDir);
+    {
+        std::ofstream largeObj(largeDir / "large.obj");
+        for (int i = 0; i < largeVertexCount; ++i) {
+            largeObj << "v " << i << " 0 0 0.5 0.5 0.5\n";
+            largeObj << "vt 0 0\n";
+        }
+        for (int i = 0; i + 2 < largeVertexCount; i += 3) {
+            largeObj << "f " << i + 1 << "/" << i + 1 << " " << i + 2 << "/" << i + 2 << " " << i + 3 << "/" << i + 3 << "\n";
+        }
+    }
+
+    Reader::MESH_DIR = largeDir.string() + "/";
+    materials.clear();
+    Reader::ReadOBJ(
+        "large.obj",
+        textureFile,
+        vertices,
+        faces,
+        textureCoordinates,
+        textureFaces,
+        normals,
+        normalFaces,
+        materials);
+    std::filesystem::remove_all(largeDir);
+
+    if (vertices.rows() != largeVertexCount
+        || textureCoordinates.rows() != largeVertexCount
+        || !approximatelyEqual(vertices(largeVertexCount - 1, 0), static_cast<float>(largeVertexCount - 1))
+        || !approximatelyEqual(vertices(largeVertexCount - 1, 2), 0.0f)) {
+        std::cerr << "Reader returned unexpected geometry for a large OBJ.\n";
         return 1;
     }
 

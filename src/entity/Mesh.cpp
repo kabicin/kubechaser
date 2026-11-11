@@ -95,8 +95,19 @@ void Mesh::generate(
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
+    int numTriangles = 0;
+    for (int i = 0; i < F.rows(); ++i)
+    {
+        int j = 0;
+        while (j < F.cols() - 2 && F(i, j + 2) != 0)
+        {
+            numTriangles++;
+            j++;
+        }
+    }
+
     Eigen::MatrixXi face_fan;
-    face_fan.resize(20000, 6);
+    face_fan.resize(numTriangles, 6);
     std::unordered_map<int, std::unordered_set<int>> adjacentFaces;
     int index = 0;
     for (int i = 0; i < F.rows(); ++i)
@@ -119,7 +130,6 @@ void Mesh::generate(
             j++;
         }
     }
-    face_fan.conservativeResize(index, 6);
     float max_x = 0, max_y = 0, max_z = 0;
     float min_x = 1000, min_y = 1000, min_z = 1000;
 
@@ -168,8 +178,8 @@ void Mesh::generate(
     float mid_y = diff_y / 2.0;
     float mid_z = diff_z / 2.0;
 
-    NVertex vertices[10000];
     num_vertices = face_fan.rows() * 3;
+    std::vector<NVertex> vertices(num_vertices);
     int vertexIndex = 0;
     for (int i = 0; i < face_fan.rows(); i++)
     {
@@ -218,7 +228,7 @@ void Mesh::generate(
     // create VBO
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(NVertex) * num_vertices, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(NVertex) * num_vertices, vertices.data(), GL_STATIC_DRAW);
 
     // pos
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(NVertex), (void*)0);
