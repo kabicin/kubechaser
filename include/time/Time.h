@@ -7,17 +7,18 @@
 class Time
 {
 private:
-    double previousTime, currentTime;
+    double previousTime = 0.0, currentTime = 0.0;
     double fps = 60;
     double lastDelta = 0.0;
 
 public:
     Time();
     ~Time();
-    double GetDelta();
-    double GetLastDelta() const;
-    double GetDeltaMilliseconds();
-    double GetDeltaFrames();
-    double GetLastDeltaFrames() const;
+
+    void Update();
+
+    double GetDelta() const;
+    double GetDeltaMilliseconds() const;
+    double GetDeltaFrames() const;
 };
 #endif

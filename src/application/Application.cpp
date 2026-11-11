@@ -73,7 +73,7 @@ int Application::Run()
     }
 
     while (!glfwWindowShouldClose(window)) {
-        services.time->GetDelta();
+        services.time->Update();
         glfwPollEvents();
         RenderFrame();
         glfwSwapBuffers(window);

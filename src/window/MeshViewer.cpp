@@ -165,7 +165,7 @@ void MeshViewer::Render()
     {
         double delta = scroll_offset;
         scroll_offset = 0.0;
-        double dt = GetTime()->GetLastDelta();
+        double dt = GetTime()->GetDelta();
         double clamped_dt = std::min(dt, 1.0 / 15.0);
         double step = delta * scroll_speed * clamped_dt;
         mesh->Translate(glm::vec3(0.0f, 0.0f, static_cast<float>(step)));

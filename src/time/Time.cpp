@@ -3,6 +3,7 @@
 Time::Time()
 {
     currentTime = glfwGetTime();
+    previousTime = currentTime;
 }
 
 Time::~Time()
@@ -10,34 +11,24 @@ Time::~Time()
 
 }
 
-// returns the time delta in seconds
-double Time::GetDelta()
+void Time::Update()
 {
     previousTime = currentTime;
     currentTime = glfwGetTime();
     lastDelta = currentTime - previousTime;
-    return lastDelta;
 }
 
-double Time::GetLastDelta() const
+double Time::GetDelta() const
 {
     return lastDelta;
 }
 
-// returns the time delta in milliseconds
-double Time::GetDeltaMilliseconds()
+double Time::GetDeltaMilliseconds() const
 {
-    double deltaSeconds = GetDelta();
-    return deltaSeconds * 1000;
+    return lastDelta * 1000;
 }
 
-// returns the number of frames elapsed since the last window update
-double Time::GetDeltaFrames()
-{
-    return fps * lastDelta;
-}
-
-double Time::GetLastDeltaFrames() const
+double Time::GetDeltaFrames() const
 {
     return fps * lastDelta;
 }
