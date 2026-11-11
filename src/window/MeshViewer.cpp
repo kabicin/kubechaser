@@ -1,4 +1,5 @@
 #include "window/MeshViewer.h"
+#include "logger/Logger.h"
 #include <algorithm>
 #include <iostream>
 #include <utility>
@@ -98,33 +99,37 @@ void MeshViewer::showGUI()
         if (ImGui::Button("Save State")) {
             std::cout << "Saving state as: " << std::endl;
             std::ofstream meshOut("../output/mesh.txt");
-            if (!meshOut)
-            return;
-            mesh->da.serialize(meshOut);
-            std::cout << "Successfully saved!" << std::endl;
+            if (!meshOut) {
+                GetLogger()->LogMessage("Save State failed: could not open ../output/mesh.txt");
+            } else {
+                mesh->da.serialize(meshOut);
+                std::cout << "Successfully saved!" << std::endl;
+            }
         }
         if (ImGui::Button("Load State")) {
             std::cout << "Loading state: " << std::endl;
             std::ifstream meshIn("../output/mesh.txt");
-            if (!meshIn)
-            return;
-            DrawAttributes loadedDrawAttribs = DrawAttributes::deserialize(meshIn);
-            std::cout << loadedDrawAttribs << std::endl;
-            mesh->da = loadedDrawAttribs;
-            wireframe = loadedDrawAttribs.wireframe;
-            tesselate = loadedDrawAttribs.tesselate;
-            normal = loadedDrawAttribs.normal;
-            texture = loadedDrawAttribs.texture;
-            lighting = !loadedDrawAttribs.color;
-            blinn = loadedDrawAttribs.lightBlinn;
-            main_rgb[0] = loadedDrawAttribs.solidColor.x;
-            main_rgb[1] = loadedDrawAttribs.solidColor.y;
-            main_rgb[2] = loadedDrawAttribs.solidColor.z;
-            wireframe = loadedDrawAttribs.wireframe;
+            if (!meshIn) {
+                GetLogger()->LogMessage("Load State failed: could not open ../output/mesh.txt");
+            } else {
+                DrawAttributes loadedDrawAttribs = DrawAttributes::deserialize(meshIn);
+                std::cout << loadedDrawAttribs << std::endl;
+                mesh->da = loadedDrawAttribs;
+                wireframe = loadedDrawAttribs.wireframe;
+                tesselate = loadedDrawAttribs.tesselate;
+                normal = loadedDrawAttribs.normal;
+                texture = loadedDrawAttribs.texture;
+                lighting = !loadedDrawAttribs.color;
+                blinn = loadedDrawAttribs.lightBlinn;
+                main_rgb[0] = loadedDrawAttribs.solidColor.x;
+                main_rgb[1] = loadedDrawAttribs.solidColor.y;
+                main_rgb[2] = loadedDrawAttribs.solidColor.z;
+                wireframe = loadedDrawAttribs.wireframe;
 
-            dir_light = (loadedDrawAttribs.lightSwitch & 1) != 0;
-            point_light = (loadedDrawAttribs.lightSwitch & (1 << 1)) != 0;
-            spot_light = (loadedDrawAttribs.lightSwitch & (1 << 2)) != 0;
+                dir_light = (loadedDrawAttribs.lightSwitch & 1) != 0;
+                point_light = (loadedDrawAttribs.lightSwitch & (1 << 1)) != 0;
+                spot_light = (loadedDrawAttribs.lightSwitch & (1 << 2)) != 0;
+            }
         }
         ImGui::End();
 
