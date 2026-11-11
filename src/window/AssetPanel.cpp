@@ -1,4 +1,5 @@
 #include "window/AssetPanel.h"
+#include "entity/Entity.h"
 #include "logger/Logger.h"
 #include "utility/Reader.h"
 
@@ -182,6 +183,13 @@ int AssetPanel::addAsset(char *filename, GLuint image, int imageWidth, int image
 
 std::vector<std::unique_ptr<Asset>>::iterator AssetPanel::deleteAsset(std::vector<std::unique_ptr<Asset>>::iterator it, int assetNum)
 {
+    // Entities that borrowed this texture must stop referencing it before it
+    // is deleted, or they would keep a dangling (and later reusable) GL name.
+    const GLuint texture = (*it)->TextureNum;
+    for (const auto& entity : sceneDocument.GetEntities())
+    {
+        entity->ReleaseBorrowedTexture(texture);
+    }
     glDeleteTextures(1, &(*it)->TextureNum);
     GetLogger()->LogMessage("Deleted image: " + std::to_string(assetNum));
     clearBit(assetNum);

@@ -61,6 +61,9 @@ public:
 	// current texture untouched) if the image could not be loaded.
 	virtual bool AddTexture(const std::string& imagePath);
 	virtual void SetTexture(Asset asset);
+	// Drops the texture if it is borrowed and its ID is `texture` (the asset
+	// owning it is being deleted). Returns true if the texture was dropped.
+	bool ReleaseBorrowedTexture(GLuint texture);
 
 
 	// object changing

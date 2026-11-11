@@ -161,6 +161,19 @@ void Entity::SetTexture(Asset asset)
     TEX = asset.TextureNum; // borrowed: AssetPanel owns this texture
 }
 
+bool Entity::ReleaseBorrowedTexture(GLuint texture)
+{
+    if (ownsTexture || TEX == 0 || TEX != texture)
+    {
+        return false;
+    }
+    TEX = 0;
+    textureName = "N/A";
+    usingTexture = false;
+    da.texture = false;
+    return true;
+}
+
 GLuint Entity::GetTexture()
 {
     return TEX;
