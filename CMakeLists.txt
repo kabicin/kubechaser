@@ -51,6 +51,7 @@ if(KUBECHASER_BUILD_APP)
     add_subdirectory("${KUBECHASER_THIRD_PARTY_DIR}/imgui" imgui EXCLUDE_FROM_ALL)
 
     set(KUBECHASER_APPLICATION_SOURCES
+        src/application/Application.cpp
         src/controller/Controller.cpp
         src/entity/Entity.cpp
         src/entity/Grid.cpp
