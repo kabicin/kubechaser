@@ -1,11 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 # build
 cmake -S . -B build
-cmake --build build
+cmake --build build --parallel
 
-# make and run
-cd build
-make
-./kubechaser
-cd ..
+# run
+./build/kubechaser

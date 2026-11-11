@@ -21,3 +21,30 @@ git clone --recurse-submodules https://github.com/kabicin/kubechaser.git; cd kub
 - STB
 - GLM
 - Dear ImGUI
+
+## Development
+
+Build the desktop application and tests:
+
+```sh
+cmake -S . -B build
+cmake --build build --parallel
+```
+
+Run the tests:
+
+```sh
+./scripts/test.sh
+```
+
+This uses an incremental core-only build. To build the desktop application as
+well before running the tests, use `./scripts/test.sh --full`.
+
+The platform-independent core and its tests can be built without OpenGL or the
+desktop application:
+
+```sh
+cmake -S . -B build-core -DKUBECHASER_BUILD_APP=OFF
+cmake --build build-core --parallel
+ctest --test-dir build-core --output-on-failure
+```

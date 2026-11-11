@@ -2,4 +2,5 @@
 .DS_Store
 src/shader/mutable_shader_*.*
 build/
+build-core/
 output/
