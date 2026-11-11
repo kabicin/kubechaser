@@ -170,7 +170,13 @@ void SceneWorld::OnMouseButton(int button, int action, double xpos, double ypos)
     {
         if (sceneDocument && camera)
         {
-            Ray ray = camera->GetRay(xpos, ypos);
+            // The camera is sized in framebuffer pixels (see Render), but GLFW
+            // reports the cursor in window coordinates; scale to match on
+            // high-DPI (e.g. Retina) displays.
+            ImGuiIO& io = ImGui::GetIO();
+            double scaledX = xpos * io.DisplayFramebufferScale.x;
+            double scaledY = ypos * io.DisplayFramebufferScale.y;
+            Ray ray = camera->GetRay(scaledX, scaledY);
             double min_t = std::numeric_limits<double>::infinity();
             double temp_t = 0.0;
             int opt_i = -1;
