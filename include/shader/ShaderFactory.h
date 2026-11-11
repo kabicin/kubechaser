@@ -117,7 +117,7 @@ private:
     std::vector<ShaderMetadata> shaderMetadata;
 
     std::string readFileContents(std::string fileName);
-    bool writeFileContents(std::string fileName, std::string content);
+    bool dumpGeneratedShader(const std::string& fileName, const std::string& content);
     std::string shaderObjectToString(const MutableShader& shader);
     std::string getShaderTypeSuffix(const ShaderType& type);
     void populateShader(MutableShader& shader);
@@ -138,6 +138,8 @@ private:
 
 public:
     const std::string SHADER_DIR = std::string(SRC_DIR) + "/shader/";
+    // environment variable naming an optional directory for generated shader dumps
+    static constexpr const char* SHADER_DUMP_DIR_ENV = "KUBECHASER_SHADER_DUMP_DIR";
     const std::string OGL_VERSION = "#version 410 core";
     
     ShaderFactory();

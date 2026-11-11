@@ -40,6 +40,10 @@ Run the tests:
 This uses an incremental core-only build. To build the desktop application as
 well before running the tests, use `./scripts/test.sh --full`.
 
+Shaders are generated and compiled in memory. To inspect the generated GLSL,
+set `KUBECHASER_SHADER_DUMP_DIR` to a writable directory before launching the
+app; each generated shader is written there as `mutable_shader_<n>.<stage>`.
+
 The platform-independent core and its tests can be built without OpenGL or the
 desktop application:
 

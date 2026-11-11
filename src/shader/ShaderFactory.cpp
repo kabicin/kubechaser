@@ -1,4 +1,6 @@
 #include "shader/ShaderFactory.h"
+#include <cstdlib>
+#include <filesystem>
 #include <iostream>
 
 #include "glm.h"
@@ -121,10 +123,10 @@ unsigned int ShaderFactory::InitShader(const ShaderArgs& extraShaderArgs)
             // load the MutableShader with data
             populateShader(shader);
 
-            // write the MutableShader to a local file
+            // generate the shader source; optionally dump it for debugging
             std::string objectString = shaderObjectToString(shader);
             std::string fileName = "mutable_shader_" + std::to_string(shaderLocation) + "." + getShaderTypeSuffix(shader.type);
-            writeFileContents(fileName, objectString);
+            dumpGeneratedShader(fileName, objectString);
             shader.object.body = "";
             shader.object.variables.clear();
 
@@ -543,10 +545,36 @@ std::string ShaderFactory::shaderObjectToString(const MutableShader& shader)
     return out;
 }
 
-bool ShaderFactory::writeFileContents(std::string fileName, std::string content) {
-    std::ofstream file(SHADER_DIR + fileName);
+// Generated shaders are compiled straight from memory. Writing them to disk is
+// only a debugging aid, so it is opt-in: set KUBECHASER_SHADER_DUMP_DIR to a
+// writable directory to get a copy of every generated shader. Nothing is ever
+// written into the source tree, so read-only checkouts and installed builds work.
+bool ShaderFactory::dumpGeneratedShader(const std::string& fileName, const std::string& content) {
+    const char* dumpDir = std::getenv(SHADER_DUMP_DIR_ENV);
+    if (dumpDir == nullptr || dumpDir[0] == '\0') {
+        return false;
+    }
+
+    std::error_code ec;
+    std::filesystem::path dir(dumpDir);
+    std::filesystem::create_directories(dir, ec);
+    if (ec) {
+        std::cout << "could not create shader dump directory " << dir.string() << ": " << ec.message() << std::endl;
+        return false;
+    }
+
+    std::filesystem::path path = dir / fileName;
+    std::ofstream file(path);
+    if (!file) {
+        std::cout << "could not write generated shader to " << path.string() << std::endl;
+        return false;
+    }
     file << content;
     file.close();
+    if (!file) {
+        std::cout << "could not write generated shader to " << path.string() << std::endl;
+        return false;
+    }
     return true;
 }
 
