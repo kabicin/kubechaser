@@ -70,7 +70,13 @@ void MeshViewer::showGUI()
         ImGui::SameLine();
         ImGui::Checkbox("normal", &normal);
         ImGui::SameLine();
-        ImGui::SameLine();
+        {
+            // Only meshes that actually have a texture bound can be textured.
+            const bool hasTexture = mesh->GetTexture() != 0;
+            if (!hasTexture) ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+            ImGui::Checkbox("texture", &texture);
+            if (!hasTexture) ImGui::PopStyleVar();
+        }
         ImGui::SameLine();
         ImGui::Checkbox("lighting", &lighting);
         ImGui::ColorEdit3("color", main_rgb);
@@ -137,7 +143,7 @@ void MeshViewer::showGUI()
         mesh->da.wireframe = wireframe;
         mesh->da.tesselate = tesselate;
         mesh->da.normal = normal;
-        mesh->da.texture = false;
+        mesh->da.texture = texture && mesh->GetTexture() != 0;
         mesh->da.color = !lighting;
         mesh->da.solidColor = glm::vec3(main_rgb[0], main_rgb[1], main_rgb[2]);
         mesh->da.materialAttributes.diffuse = mesh->da.solidColor;
