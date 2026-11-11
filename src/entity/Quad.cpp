@@ -133,10 +133,16 @@ bool Quad::Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, doub
     double a1 = v1(0), b1 = v1(1), t1 = v1(2);
     double a2 = v2(0), b2 = v2(1), t2 = v2(2);
 
-    if (t1 > 0 && a1 >= 0 && b1 >= 0 && a1 + b1 <= 1 ||
-        t2 > 0 && a2 >= 0 && b2 >= 0 && a2 + b2 <= 1)
+    const bool hit1 = t1 > 0 && a1 >= 0 && b1 >= 0 && a1 + b1 <= 1;
+    const bool hit2 = t2 > 0 && a2 >= 0 && b2 >= 0 && a2 + b2 <= 1;
+
+    if (hit1 || hit2)
     {
-        t = std::min(t1, t2);
+        // only consider the distance of triangles that were actually hit
+        if (hit1 && hit2)
+            t = std::min(t1, t2);
+        else
+            t = hit1 ? t1 : t2;
         std::cout << "Quad Intersection: t=" << t << " n: (" << n(0) << "," << n(1) << "," << n(2) << ")" << std::endl;
         return true;
     }
