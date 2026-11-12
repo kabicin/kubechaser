@@ -105,6 +105,9 @@ bool Application::Initialize()
     }
 
     glfwMakeContextCurrent(window);
+    // Enable vsync so the main loop is paced to the display refresh rate
+    // instead of spinning at full CPU/GPU.
+    glfwSwapInterval(1);
     glfwSetWindowUserPointer(window, this);
     InstallCallbacks();
 
