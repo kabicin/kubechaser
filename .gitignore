@@ -4,3 +4,6 @@ src/shader/mutable_shader_*.*
 build/
 build-core/
 output/
+
+# Dear ImGui per-user window layout, rewritten on every run
+imgui.ini
