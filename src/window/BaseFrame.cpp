@@ -1,4 +1,5 @@
 #include "window/BaseFrame.h"
+#include "logger/Logger.h"
 
 BaseFrame::BaseFrame(int x, int y, int width, int height)
     : m_x(x), m_y(y), m_width(width), m_height(height)
@@ -35,7 +36,7 @@ void BaseFrame::ClearBackground(float r, float g, float b, float a)
 
 void BaseFrame::DisplayLocation()
 {
-    std::cout << "x: " << m_x << " y: " << m_y << " w: " << m_width << " h: " << m_height << std::endl;
+    Log::Info("x: ", m_x, " y: ", m_y, " w: ", m_width, " h: ", m_height);
 }
 
 void BaseFrame::Hide()

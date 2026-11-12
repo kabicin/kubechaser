@@ -86,7 +86,7 @@ int Application::Run()
 bool Application::Initialize()
 {
     if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
+        Log::Error("Failed to initialize GLFW");
         return false;
     }
     glfwInitialized = true;
@@ -100,7 +100,7 @@ bool Application::Initialize()
 
     window = glfwCreateWindow(screenWidth, screenHeight, "KubeChaser", nullptr, nullptr);
     if (window == nullptr) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
+        Log::Error("Failed to create GLFW window");
         return false;
     }
 
@@ -112,14 +112,14 @@ bool Application::Initialize()
     InstallCallbacks();
 
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
+        Log::Error("Failed to initialize GLAD");
         return false;
     }
 
     stbi_set_flip_vertically_on_load(true);
 
-    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "OpenGL version supported " << glGetString(GL_VERSION) << std::endl;
+    Log::Info("Renderer: ", glGetString(GL_RENDERER));
+    Log::Info("OpenGL version supported ", glGetString(GL_VERSION));
 
     InitializeServices();
     InitializeWindows();
@@ -129,6 +129,7 @@ bool Application::Initialize()
 void Application::InitializeServices()
 {
     services.logger = std::make_shared<Logger>();
+    Log::SetSink(services.logger);
     services.shaderFactory = std::make_shared<ShaderFactory>();
     services.time = std::make_shared<Time>();
 }
@@ -214,13 +215,13 @@ bool Application::InitializeImGui()
     ImGui::StyleColorsClassic();
 
     if (!ImGui_ImplGlfw_InitForOpenGL(window, true)) {
-        std::cerr << "Failed to initialize the ImGui GLFW backend" << std::endl;
+        Log::Error("Failed to initialize the ImGui GLFW backend");
         return false;
     }
     imguiGlfwInitialized = true;
 
     if (!ImGui_ImplOpenGL3_Init(glslVersion)) {
-        std::cerr << "Failed to initialize the ImGui OpenGL backend" << std::endl;
+        Log::Error("Failed to initialize the ImGui OpenGL backend");
         return false;
     }
     imguiOpenGLInitialized = true;

@@ -1,4 +1,5 @@
 #include "shader/ShaderFactory.h"
+#include "logger/Logger.h"
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
@@ -100,7 +101,7 @@ unsigned int ShaderFactory::cacheShaderAndReturnIndex(GLuint shaderProgram, cons
     // from this point on, index is valid
     ShaderCacheTriplet sct = std::make_pair(index, std::make_pair(shaderArgs, shaderProgram));
     cachedShaders.push_back(sct);
-    std::cout << "creating cached shader: " << shaderArgs << " , " << index << std::endl;
+    Log::Info("creating cached shader: ", shaderArgs, " , ", index);
     return index;
 }
 
@@ -137,7 +138,7 @@ unsigned int ShaderFactory::InitShader(const ShaderArgs& extraShaderArgs)
             // check the shader type
             GLuint macro = getShaderMacro(shader.type);
             if (macro == 0) {
-                std::cout << fileName << " has an unknown shader type (" << shader.type << "), skipping..." << std::endl;
+                Log::Warning(fileName, " has an unknown shader type (", shader.type, "), skipping...");
                 continue;
             }
 
@@ -208,7 +209,7 @@ void ShaderFactory::checkError(GLuint obj, std::string errorMessage) {
     if (!success)
     {
         glGetShaderInfoLog(obj, 512, NULL, infoLog);
-        std::cout << errorMessage << "\n" << infoLog << std::endl;
+        Log::Error(errorMessage, "\n", infoLog);
     }
 }
 
@@ -219,7 +220,7 @@ bool ShaderFactory::checkLinkError(GLuint program, std::string errorMessage) {
     if (!success)
     {
         glGetProgramInfoLog(program, 512, NULL, infoLog);
-        std::cout << errorMessage << "\n" << infoLog << std::endl;
+        Log::Error(errorMessage, "\n", infoLog);
     }    return success == GL_TRUE;
 }
 
@@ -582,20 +583,20 @@ bool ShaderFactory::dumpGeneratedShader(const std::string& fileName, const std::
     std::filesystem::path dir(dumpDir);
     std::filesystem::create_directories(dir, ec);
     if (ec) {
-        std::cout << "could not create shader dump directory " << dir.string() << ": " << ec.message() << std::endl;
+        Log::Error("could not create shader dump directory ", dir.string(), ": ", ec.message());
         return false;
     }
 
     std::filesystem::path path = dir / fileName;
     std::ofstream file(path);
     if (!file) {
-        std::cout << "could not write generated shader to " << path.string() << std::endl;
+        Log::Error("could not write generated shader to ", path.string());
         return false;
     }
     file << content;
     file.close();
     if (!file) {
-        std::cout << "could not write generated shader to " << path.string() << std::endl;
+        Log::Error("could not write generated shader to ", path.string());
         return false;
     }
     return true;

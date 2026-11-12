@@ -1,4 +1,5 @@
 #include "entity/Grid.h"
+#include "logger/Logger.h"
 #include <algorithm>
 #include <assert.h>
 #include <iostream>
@@ -92,7 +93,7 @@ void Grid::initializeLines(const glm::vec3& cartesianScale, int axis)
     int max_lines = std::max(0, std::min(100, lines * 5)) + 2; // +2 for the x and z cartesian axes when no cross is drawn.
     std::vector<PCVertex> vertices(2 * max_lines);
     float gridColors[4] = { neutralColor.x, neutralColor.y, neutralColor.z, neutralColor.w };
-    std::cout << "initializing (" << max_lines << ") line pairs" << std::endl;
+    Log::Info("initializing (", max_lines, ") line pairs");
     if (axis == 0 || axis == 2)
     {
         for (int i = 0; i < max_lines; i++)

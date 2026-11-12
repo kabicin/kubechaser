@@ -1,4 +1,5 @@
 #include "entity/Entity.h"
+#include "logger/Logger.h"
 #include "utility/Reader.h"
 #include <iostream>
 
@@ -129,8 +130,7 @@ bool Entity::AddTexture(const std::string& imagePath)
     unsigned char* data = stbi_load(imagePath.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
     if (!data) {
         const char* reason = stbi_failure_reason();
-        std::cerr << "ERROR: Could not load texture " << imagePath
-                  << ": " << (reason ? reason : "unknown error") << std::endl;
+        Log::Error("Could not load texture ", imagePath, ": ", (reason ? reason : "unknown error"));
         return false;
     }
 

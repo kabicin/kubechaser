@@ -1,4 +1,5 @@
 #include "utility/Linalg.h"
+#include "logger/Logger.h"
 #include <iostream>
 
 glm::vec3 Linalg::ProjectUntilZ(const Ray& ray, float z, float original_z)
@@ -27,7 +28,7 @@ bool Linalg::RayBaryIntersect(const Ray& ray, const Eigen::Vector3d& pivot,
         n = temp_n.normalized();
         if (n.dot(ray.direction) > 0)
             n = -n;
-        std::cout << "Ray-Bary Intersect: t=" << t << " n: (" << n(0) << "," << n(1) << "," << n(2) << ")"  << std::endl;
+        Log::Info("Ray-Bary Intersect: t=", t, " n: (", n(0), ",", n(1), ",", n(2), ")");
         return true;
     }
     return false;

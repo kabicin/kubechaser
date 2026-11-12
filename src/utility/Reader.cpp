@@ -1,4 +1,5 @@
 #include "utility/Reader.h"
+#include "logger/Logger.h"
 #include <unordered_map>
 #include <bitset>
 #include <climits>
@@ -10,7 +11,7 @@
 
 void Reader::ScanOBJ(const std::string& fileName)
 {
-    std::cout << "====== Scanning OBJ file =====" << std::endl << fileName << std::endl;
+    Log::Info("====== Scanning OBJ file =====\n", fileName);
     std::unordered_map<std::string, int> umap;
     std::ifstream file(MESH_DIR + fileName);
     if (file.is_open())
@@ -42,17 +43,17 @@ void Reader::ScanOBJ(const std::string& fileName)
         }
     }
     file.close();
-    std::cout << "====== RESULTS ======" << std::endl;
+    Log::Info("====== RESULTS ======");
     std::ofstream outfile;
     outfile.open(MESH_DIR + fileName + "_scan_out.txt");
 
     for (auto it = umap.begin(); it != umap.end(); ++it)
     {
         outfile << it->first << " " << it->second << std::endl;
-        std::cout << it->first << " " << it->second << std::endl;
+        Log::Info(it->first, " ", it->second);
     }
     outfile.close();
-    std::cout << "====== Finished Scan ======" << std::endl;
+    Log::Info("====== Finished Scan ======");
 }
 
 bool Reader::findMaterialKeyAndPopulateValue(const std::string& line, const std::string& key, std::string& value)
@@ -155,8 +156,7 @@ void Reader::ReadMTL(const std::string& fileName, std::vector<Material>& materia
     std::ifstream materialFile(mtlFileName);
     if (!materialFile.is_open())
     {
-        std::cout << "ERROR: Could not open file: " << mtlFileName << std::endl;
-        std::cout << "Error: " << strerror(errno) << std::endl;
+        Log::Error("Could not open file: ", mtlFileName, " (", strerror(errno), ")");
         return;
     }
 
@@ -218,15 +218,13 @@ void Reader::ReadMTL(const std::string& fileName, std::vector<Material>& materia
         }
         catch (const std::exception& error)
         {
-            std::cout << "WARNING: skipping malformed line " << lineNumber << " in " << mtlFileName
-                << ": " << error.what() << std::endl;
+            Log::Warning("skipping malformed line ", lineNumber, " in ", mtlFileName, ": ", error.what());
         }
     }
 
     for (size_t i = firstNew; i < materials.size(); ++i)
     {
-        std::cout << "ADDING TO MATERIALS" << std::endl;
-        std::cout << materials[i] << std::endl;
+        Log::Info("ADDING TO MATERIALS\n", materials[i]);
     }
 }
 
@@ -382,8 +380,8 @@ void Reader::ReadOBJ(const std::string& fileName,
             }
             catch (const std::exception& error)
             {
-                std::cout << "WARNING: skipping malformed line " << lineNumber << " in " << objFileName
-                          << ": \"" << record << "\" (" << error.what() << ")" << std::endl;
+                Log::Warning("skipping malformed line ", lineNumber, " in ", objFileName,
+                             ": \"", record, "\" (", error.what(), ")");
             }
         }
         V.resize(vecV.size(), 3);
@@ -420,8 +418,7 @@ void Reader::ReadOBJ(const std::string& fileName,
             texture_file = materials[primary].map_Kd;
         }
     } else {
-        std::cout << "ERROR: Could not open file: " << objFileName << std::endl;
-        std::cout << "Error: " << strerror(errno) << std::endl;
+        Log::Error("Could not open file: ", objFileName, " (", strerror(errno), ")");
     }
 }
 

@@ -1,4 +1,5 @@
 #include "entity/Quad.h"
+#include "logger/Logger.h"
 
 Quad::Quad()
 {
@@ -106,7 +107,7 @@ void Quad::DrawInstanced(const std::shared_ptr<ShaderFactory>& factory, const st
     da.tesselate = false;
 
     factory->Use(da, camera->GetCameraPos());
-    camera->Render(factory->GetShaderProgram(), GetCameraAttributes());
+    camera->Render(factory->GetUniformLocations(), GetCameraAttributes());
 
     glBindTexture(GL_TEXTURE_2D, TEX);
     glBindVertexArray(VAO);
@@ -180,7 +181,7 @@ bool Quad::Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, doub
             t = std::min(t1, t2);
         else
             t = hit1 ? t1 : t2;
-        std::cout << "Quad Intersection: t=" << t << " n: (" << n(0) << "," << n(1) << "," << n(2) << ")" << std::endl;
+        Log::Info("Quad Intersection: t=", t, " n: (", n(0), ",", n(1), ",", n(2), ")");
         return true;
     }
     return false;

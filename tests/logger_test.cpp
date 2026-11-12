@@ -1,6 +1,7 @@
 #include "logger/Logger.h"
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 int main()
@@ -36,6 +37,38 @@ int main()
         std::cerr << "Logger state should keep counting after trimming.\n";
         return 1;
     }
+
+    // Messages logged before a sink exists are buffered and replayed.
+    Log::Info("early ", 42);
+    auto sink = std::make_shared<Logger>();
+    Log::SetSink(sink);
+    if (sink->Output() != "early 42\n") {
+        std::cerr << "Log should replay messages logged before a sink was set.\n";
+        return 1;
+    }
+
+    Log::Warning("careful");
+    Log::Error("broken: ", 1.5, "\n");
+    if (sink->Output() != "early 42\nWARNING: careful\nERROR: broken: 1.5\n") {
+        std::cerr << "Log should prefix levels and trim trailing newlines.\n";
+        return 1;
+    }
+
+    // Once the sink is gone, logging must not crash and must not reach it.
+    std::weak_ptr<Logger> weakSink = sink;
+    sink.reset();
+    Log::Info("after sink destroyed");
+    if (!weakSink.expired()) {
+        std::cerr << "Log should hold its sink weakly.\n";
+        return 1;
+    }
+    auto second = std::make_shared<Logger>();
+    Log::SetSink(second);
+    if (second->Output() != "after sink destroyed\n") {
+        std::cerr << "Log should buffer messages while no live sink exists.\n";
+        return 1;
+    }
+    Log::SetSink(nullptr);
 
     return 0;
 }

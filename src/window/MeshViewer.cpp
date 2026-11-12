@@ -107,7 +107,7 @@ void MeshViewer::showGUI()
             mesh->da.texture ? 1 : 0);
 
         if (ImGui::Button("Print State")) {
-            std::cout << mesh->da << std::endl;
+            Log::Info(mesh->da);
         }
         if (ImGui::Button("Save State")) {
             saveState();
@@ -373,7 +373,7 @@ void MeshViewer::loadState()
     contents << meshIn.rdbuf();
 
     DrawAttributes loaded = DrawAttributes::deserialize(contents);
-    std::cout << loaded << std::endl;
+    Log::Info(loaded);
     mesh->da = loaded;
 
     wireframe = loaded.wireframe;

@@ -1,4 +1,5 @@
 #include "entity/Mesh.h"
+#include "logger/Logger.h"
 #include <algorithm>
 #include <memory>
 
@@ -136,8 +137,8 @@ std::shared_ptr<const ParsedMesh> parseOBJ(const std::string& fileNameOBJ)
     std::vector<Material> materials;
     auto parsed = std::make_shared<ParsedMesh>();
     Reader::ReadOBJ(fileNameOBJ, parsed->textureFile, V, F, UV, UF, NV, NF, materials);
-    std::cout << "READ OBJ file " << fileNameOBJ << " with materials: " << materials.size()
-        << " and texture: " << parsed->textureFile << std::endl;
+    Log::Info("READ OBJ file ", fileNameOBJ, " with materials: ", materials.size(),
+        " and texture: ", parsed->textureFile);
 
     const int primaryMaterial = Reader::PrimaryMaterialIndex(materials);
     if (primaryMaterial >= 0) {
@@ -146,8 +147,8 @@ std::shared_ptr<const ParsedMesh> parseOBJ(const std::string& fileNameOBJ)
         const auto usedMaterials = std::count_if(materials.begin(), materials.end(),
             [](const Material& m) { return m.faceCount > 0; });
         if (usedMaterials > 1) {
-            std::cout << "WARNING: " << fileNameOBJ << " uses " << usedMaterials
-                << " materials; only " << parsed->material.name << " is applied" << std::endl;
+            Log::Warning(fileNameOBJ, " uses ", usedMaterials,
+                " materials; only ", parsed->material.name, " is applied");
         }
     }
 
@@ -266,7 +267,7 @@ void Mesh::setTexture(const std::string& textureFile)
 {
     if (textureFile != "")
     {
-        std::cout << "Setting texture file: "  << textureFile << std::endl;
+        Log::Info("Setting texture file: ", textureFile);
         this->da.texture = AddTexture(Reader::MESH_DIR + textureFile);
     }
     else
@@ -316,7 +317,7 @@ bool Mesh::Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, doub
 
     // bounding box intersection
     bool intersect = rayIntersectBox(ray, t, minx, maxx, miny, maxy, minz, maxz);
-    if (intersect) std::cout << "Mesh Intersection t=" << t << std::endl;
+    if (intersect) Log::Info("Mesh Intersection t=", t);
     return intersect;
 }
 

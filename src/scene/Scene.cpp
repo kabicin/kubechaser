@@ -1,4 +1,5 @@
 #include "scene/Scene.h"
+#include "logger/Logger.h"
 
 Scene::Scene() 
 {
@@ -18,7 +19,7 @@ void Scene::Render(const std::shared_ptr<ShaderFactory>& factory, const std::sha
     // render scene
     std::shared_ptr<SceneNode> node = root;
     if (node == nullptr) {
-        std::cout << "Scene root is not initialized..." << std::endl;
+        Log::Warning("Scene root is not initialized...");
         return;
     }
     // render grid first under root scenenode
