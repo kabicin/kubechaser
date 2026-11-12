@@ -353,5 +353,6 @@ bool Mesh::rayIntersectBox(const Ray& ray, double& t, float minx, float maxx, fl
     double min_t = 0;
     double max_t = 1000;
     t = std::min(maxofmin, minofmax);
-    return maxofmin < minofmax && std::max(min_t, maxofmin) <= std::min(max_t, minofmax);  
+    // <= so flat (zero-thickness) boxes, e.g. planar meshes, can still be hit
+    return maxofmin <= minofmax && std::max(min_t, maxofmin) <= std::min(max_t, minofmax);
 }

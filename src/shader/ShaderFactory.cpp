@@ -176,6 +176,8 @@ unsigned int ShaderFactory::InitShader(const ShaderArgs& extraShaderArgs)
 
 void ShaderFactory::LoadShader(const ShaderArgs& extraShaderArgs)
 {
+    // keep IsTesselationEnabled() in sync when switching to a cached program
+    this->tesselationEnabled = (extraShaderArgs & ShaderArgs_Tesselate_5) != 0;
     // get shader type
     int program = isShaderCached(extraShaderArgs);
     if (program == -1)

@@ -53,6 +53,8 @@ public:
     void SetActiveRadius(int radius);
 
     void UpdateActiveScenes(const glm::vec3& cameraPos);
+    // Tile coordinates selected by the last UpdateActiveScenes call.
+    const std::vector<SceneCoord>& GetActiveCoords() const;
     void RenderActive(const std::shared_ptr<ShaderFactory>& factory,
                       const std::shared_ptr<Camera>& camera);
     void SetShowGrid(bool enabled, const std::shared_ptr<Camera>& camera);

@@ -54,6 +54,11 @@ void SceneManager::UpdateActiveScenes(const glm::vec3& cameraPos)
     }
 }
 
+const std::vector<SceneCoord>& SceneManager::GetActiveCoords() const
+{
+    return activeCoords;
+}
+
 void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
                                 const std::shared_ptr<Camera>& camera)
 {

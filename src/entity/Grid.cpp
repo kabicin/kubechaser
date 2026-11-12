@@ -161,10 +161,11 @@ void Grid::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
             }
         }
 
-        if (drawLines) {
+        // the cross replaces the first two lines; the Y axis has no lines at all
+        int lineCount = withCross ? num_lines[axis] - 2 : num_lines[axis];
+        if (drawLines && lineCount > 0) {
             // draw lines
             glBindVertexArray(lines_VAO[axis]);
-            int lineCount = withCross ? num_lines[axis] - 2 : num_lines[axis];
             int firstVertex = withCross ? 4 : 0;
             glDrawArrays(GL_LINES, firstVertex, lineCount * 2);
         }

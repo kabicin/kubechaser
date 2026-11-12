@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Platform-independent core library only (no OpenGL/GLFW), as documented in
+  # the README.
+  core:
+    name: Core (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Configure
+        run: cmake -S . -B build-core -DKUBECHASER_BUILD_APP=OFF -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug
+      - name: Build
+        run: cmake --build build-core --parallel
+      - name: Test
+        run: ctest --test-dir build-core --output-on-failure
+
+  # Full application build plus the renderer/entity/scene tests. The renderer
+  # test needs a real GL 4.1 context: Mesa's llvmpipe under Xvfb provides one,
+  # and KUBECHASER_REQUIRE_GL makes the test fail rather than skip without it.
+  linux:
+    name: App (Linux, Mesa)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            xorg-dev libgl1-mesa-dev libgl1-mesa-dri mesa-utils xvfb \
+            libwayland-dev libxkbcommon-dev wayland-protocols
+      - name: Configure
+        run: cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        env:
+          KUBECHASER_REQUIRE_GL: "1"
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: xvfb-run -a -s "-screen 0 1280x720x24" ctest --test-dir build --output-on-failure
+
+  # Full build on macOS (the primary development platform). The renderer test
+  # runs if the runner can create a GL context and is skipped otherwise.
+  macos:
+    name: App (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Configure
+        run: cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

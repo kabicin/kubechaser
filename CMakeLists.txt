@@ -104,6 +104,7 @@ if(KUBECHASER_BUILD_APP)
         src/shader/ShaderFactory.cpp
         src/time/Time.cpp
         src/utility/Camera.cpp
+        src/utility/StbImage.cpp
         src/window/AssetPanel.cpp
         src/window/BaseFrame.cpp
         src/window/BaseWindow.cpp
@@ -114,26 +115,34 @@ if(KUBECHASER_BUILD_APP)
         src/window/SwitchableBaseWindow.cpp
     )
 
-    add_executable(kubechaser main.cpp ${KUBECHASER_APPLICATION_SOURCES})
+    # Everything except main() lives in a static library so the tests can link
+    # the renderer, entities and scene logic.
+    add_library(kubechaser_app STATIC ${KUBECHASER_APPLICATION_SOURCES})
+    add_library(kubechaser::app ALIAS kubechaser_app)
 
-    target_compile_features(kubechaser PRIVATE cxx_std_17)
-    target_compile_definitions(kubechaser PRIVATE
+    target_compile_features(kubechaser_app PUBLIC cxx_std_17)
+    target_compile_definitions(kubechaser_app PUBLIC
         ASSET_DIR="${KUBECHASER_ROOT}/assets"
         SRC_DIR="${KUBECHASER_ROOT}/src"
         OUTPUT_DIR="${KUBECHASER_ROOT}/output"
     )
-    target_include_directories(kubechaser PRIVATE "${KUBECHASER_ROOT}/include")
-    target_include_directories(kubechaser SYSTEM PRIVATE
+    target_include_directories(kubechaser_app PUBLIC "${KUBECHASER_ROOT}/include")
+    target_include_directories(kubechaser_app SYSTEM PUBLIC
         "${KUBECHASER_THIRD_PARTY_DIR}/stb_image/include"
     )
-    target_link_libraries(kubechaser PRIVATE
-        kubechaser::core
-        glfw
-        OpenGL::GL
-        glad
-        imgui
-        kubechaser::warnings
+    target_link_libraries(kubechaser_app
+        PUBLIC
+            kubechaser::core
+            glfw
+            OpenGL::GL
+            glad
+            imgui
+        PRIVATE
+            kubechaser::warnings
     )
+
+    add_executable(kubechaser main.cpp)
+    target_link_libraries(kubechaser PRIVATE kubechaser::app kubechaser::warnings)
 endif()
 
 if(BUILD_TESTING)

@@ -14,11 +14,14 @@ Camera::Camera(int width, int height)
 
 void Camera::Resize(int width, int height)
 {
+	// ignore degenerate sizes (e.g. a minimized window) so picking never
+	// divides by a zero width or height
+	if (width <= 0 || height <= 0) {
+		return;
+	}
 	m_width = width;
 	m_height = height;
-	if (m_height > 0) {
-		projection = glm::perspective(glm::radians(45.0f), m_width / static_cast<float>(m_height), this->n, this->f);
-	}
+	projection = glm::perspective(glm::radians(45.0f), m_width / static_cast<float>(m_height), this->n, this->f);
 }
 
 glm::mat4 Camera::GetProjection()

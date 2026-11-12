@@ -4,10 +4,6 @@
 
 #include "application/Application.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb.h"
-#undef STB_IMAGE_IMPLEMENTATION
-
 #include "dearimgui.h"
 #include "entity/Mesh.h"
 #include "logger/Logger.h"
