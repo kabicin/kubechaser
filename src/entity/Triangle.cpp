@@ -69,7 +69,7 @@ void Triangle::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::sh
 {
     factory->Use(da, camera->GetCameraPos());
 
-    camera->Render(factory->GetShaderProgram(), GetCameraAttributes());
+    camera->Render(factory->GetUniformLocations(), GetCameraAttributes());
 
     // Always bind: TEX == 0 (no texture) unbinds, so a previous entity's texture doesn't leak.
     glBindTexture(GL_TEXTURE_2D, TEX);

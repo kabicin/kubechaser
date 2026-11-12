@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include "glm.h"
 #include "Linalg.h"
+#include "shader/UniformLocations.h"
 #include <memory>
 #include <utility>
 
@@ -55,7 +56,7 @@ public:
 	Camera(int width, int height);
 
 	glm::vec3 translateOffset = glm::vec3(0.0f, 0.0f, -1.0f);
-	void Render(int program, const CameraAttributes& ca);
+	void Render(const UniformLocations& uniforms, const CameraAttributes& ca);
 	void Resize(int width, int height);
 
 	glm::mat4 GetProjection();

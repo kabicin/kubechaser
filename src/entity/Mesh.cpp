@@ -219,7 +219,7 @@ void Mesh::generate(
 void Mesh::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera)
 {
     factory->Use(da, camera->GetCameraPos());
-    camera->Render(factory->GetShaderProgram(), GetCameraAttributes());
+    camera->Render(factory->GetUniformLocations(), GetCameraAttributes());
 
     glBindTexture(GL_TEXTURE_2D, TEX);
     glBindVertexArray(VAO);

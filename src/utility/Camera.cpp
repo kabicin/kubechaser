@@ -65,16 +65,11 @@ Ray Camera::GetRay(double xPos, double yPos)
 	return ray;
 }
 
-void Camera::Render(int program, const CameraAttributes& ca)
+void Camera::Render(const UniformLocations& uniforms, const CameraAttributes& ca)
 {
-	int modelLoc = glGetUniformLocation(program, "model");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(GenerateModel(ca)));
-
-	int viewLoc = glGetUniformLocation(program, "view");
-	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-	int projectionLoc = glGetUniformLocation(program, "projection");
-	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(uniforms.model, 1, GL_FALSE, glm::value_ptr(GenerateModel(ca)));
+	glUniformMatrix4fv(uniforms.view, 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(uniforms.projection, 1, GL_FALSE, glm::value_ptr(projection));
 }
 
 glm::vec3 Camera::GetLookDirection()

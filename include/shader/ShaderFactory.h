@@ -8,6 +8,8 @@
 #include <vector>
 #include <sstream>
 #include "shader/DrawAttributes.h"
+#include "shader/UniformLocations.h"
+#include <unordered_map>
 #include "glm.h"
 
 enum class VarType { VertexAttributeInput, Input, Output, Uniform, Custom, Primitive };
@@ -123,7 +125,7 @@ private:
     void populateShader(MutableShader& shader);
     GLuint getShaderMacro(const ShaderType& type);
     void checkError(GLuint obj, std::string errorMessage);
-    void checkLinkError(GLuint program, std::string errorMessage);
+    bool checkLinkError(GLuint program, std::string errorMessage);
     bool tesselationEnabled = false;
     ShaderType currentShaderArgs = 0;
     GLuint generateShaderProgram();
@@ -135,6 +137,12 @@ private:
     // cached shaders
     std::vector<ShaderCacheTriplet> cachedShaders;
     unsigned int cacheShaderAndReturnIndex(GLuint shaderProgram, const ShaderArgs& shaderArgs);
+
+    // uniform locations per program, resolved once after linking
+    std::unordered_map<GLuint, UniformLocations> uniformCache;
+    const UniformLocations* currentUniforms = nullptr;
+    static const UniformLocations emptyUniforms;
+    void selectUniforms(GLuint program);
 
 public:
     const std::string SHADER_DIR = std::string(SRC_DIR) + "/shader/";
@@ -148,6 +156,8 @@ public:
     ShaderFactory(const ShaderFactory&) = delete;
     ShaderFactory& operator=(const ShaderFactory&) = delete;
     GLuint GetShaderProgram();
+    // cached uniform locations of the current shader program
+    const UniformLocations& GetUniformLocations() const;
 
     unsigned int InitShader(const ShaderArgs& extraShaderArgs = 0);
     unsigned int InitShaderFromCache(ShaderArgs extraShaderArgs, unsigned int shaderLocation);

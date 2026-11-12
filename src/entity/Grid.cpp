@@ -148,7 +148,7 @@ void Grid::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
         ca.rotateYdeg = 0;
         ca.rotateZdeg = 0;
         factory->Use(da, camera->GetCameraPos());
-        camera->Render(factory->GetShaderProgram(), ca);
+        camera->Render(factory->GetUniformLocations(), ca);
         // draw cross
         if (withCross) {
             if (axisMask & (1 << axis)) {
@@ -199,7 +199,7 @@ void Grid::DrawLinesInstanced(const std::shared_ptr<ShaderFactory>& factory, con
     ca.rotateZdeg = 0;
 
     factory->Use(da, camera->GetCameraPos());
-    camera->Render(factory->GetShaderProgram(), ca);
+    camera->Render(factory->GetUniformLocations(), ca);
 
     glBindBuffer(GL_ARRAY_BUFFER, instance_VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * offsets.size(), offsets.data(), GL_DYNAMIC_DRAW);

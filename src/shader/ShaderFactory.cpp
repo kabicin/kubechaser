@@ -18,6 +18,8 @@ ShaderArgs ShaderArgs_Lighting = 8;
 ShaderArgs ShaderArgs_Color = 16; 
 ShaderArgs ShaderArgs_Instanced = 32;
 
+const UniformLocations ShaderFactory::emptyUniforms;
+
 ShaderFactory::ShaderFactory()
     : shaderProgram(0)
 {
@@ -34,6 +36,8 @@ ShaderFactory::~ShaderFactory()
         glDeleteProgram(cached.second.second);
     }
     cachedShaders.clear();
+    uniformCache.clear();
+    currentUniforms = nullptr;
     this->shaderProgram = 0;
 }
 
@@ -158,7 +162,14 @@ unsigned int ShaderFactory::InitShader(const ShaderArgs& extraShaderArgs)
     shader.type = shaderType;
     // link shader program
     glLinkProgram(program);
-    checkLinkError(program, "shader program " + std::to_string(shaderLocation) + " (args " + std::to_string(extraShaderArgs) + ") failed to link...");
+    bool linked = checkLinkError(program, "shader program " + std::to_string(shaderLocation) + " (args " + std::to_string(extraShaderArgs) + ") failed to link...");
+
+    // resolve uniform locations once so draw calls never look them up by name;
+    // an unlinked program keeps all locations at -1 (glUniform* ignores those)
+    UniformLocations& locations = uniformCache[program];
+    locations = UniformLocations();
+    if (linked) locations.Load(program);
+    selectUniforms(program);
     return shaderLocation;
 }
 
@@ -175,7 +186,19 @@ void ShaderFactory::LoadShader(const ShaderArgs& extraShaderArgs)
         GLuint castedProgram = (GLuint)program;
         glUseProgram(castedProgram);
         this->shaderProgram = castedProgram;
+        selectUniforms(castedProgram);
     }
+}
+
+void ShaderFactory::selectUniforms(GLuint program)
+{
+    auto it = uniformCache.find(program);
+    currentUniforms = it != uniformCache.end() ? &it->second : nullptr;
+}
+
+const UniformLocations& ShaderFactory::GetUniformLocations() const
+{
+    return currentUniforms ? *currentUniforms : emptyUniforms;
 }
 
 void ShaderFactory::checkError(GLuint obj, std::string errorMessage) {
@@ -189,7 +212,7 @@ void ShaderFactory::checkError(GLuint obj, std::string errorMessage) {
     }
 }
 
-void ShaderFactory::checkLinkError(GLuint program, std::string errorMessage) {
+bool ShaderFactory::checkLinkError(GLuint program, std::string errorMessage) {
     GLint  success;
     GLchar infoLog[512];
     glGetProgramiv(program, GL_LINK_STATUS, &success);
@@ -197,7 +220,7 @@ void ShaderFactory::checkLinkError(GLuint program, std::string errorMessage) {
     {
         glGetProgramInfoLog(program, 512, NULL, infoLog);
         std::cout << errorMessage << "\n" << infoLog << std::endl;
-    }
+    }    return success == GL_TRUE;
 }
 
 bool ShaderFactory::IsTesselationEnabled()
@@ -592,50 +615,53 @@ std::string ShaderFactory::readFileContents(std::string fileName) {
 }
 
 void ShaderFactory::SetShaderUniforms(const DrawAttributes& da, const glm::vec3& cameraPos) {
+    const UniformLocations& u = GetUniformLocations();
     if (da.lightBlinn || da.lightSwitch != 0) {
-        SetInt("blinn", da.lightBlinn ? 1 : 0);
-        SetInt("usingTexture", da.texture ? 1 : 0);
-        SetInt("lightSwitch", da.lightSwitch);
-        SetVec3("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
-        SetVec3("lightColor", 1.0f, 1.0f, 1.0f);
-       
-        SetVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-        SetVec3("dirLight.ambient", 0.3f, 0.3f, 0.3f);
-        SetVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-        SetVec3("dirLight.specular", 0.2f, 0.5f, 0.5f);
+        glUniform1i(u.blinn, da.lightBlinn ? 1 : 0);
+        glUniform1i(u.usingTexture, da.texture ? 1 : 0);
+        glUniform1i(u.lightSwitch, da.lightSwitch);
+        glUniform3f(u.viewPos, cameraPos.x, cameraPos.y, cameraPos.z);
+        glUniform3f(u.lightColor, 1.0f, 1.0f, 1.0f);
 
-        for (int i = 0; i < 4; i++) {
-            std::string prefix = "pointLights[" + std::to_string(i) + "]";
-            SetVec3(prefix + ".position", -0.2f, -1.0f, -0.3f);
-            SetVec3(prefix + ".ambient", 0.05f, 0.05f, 0.05f);
-            SetVec3(prefix + ".diffuse", 0.4f, 0.4f, 0.4f);
-            SetVec3(prefix + ".specular", 0.5f, 0.5f, 0.5f);
-            SetFloat(prefix + ".constant", 1.0f);
-            SetFloat(prefix + ".linear", 0.09f);
-            SetFloat(prefix + ".quadratic", 0.032f);
+        glUniform3f(u.dirLight.direction, -0.2f, -1.0f, -0.3f);
+        glUniform3f(u.dirLight.ambient, 0.3f, 0.3f, 0.3f);
+        glUniform3f(u.dirLight.diffuse, 0.4f, 0.4f, 0.4f);
+        glUniform3f(u.dirLight.specular, 0.2f, 0.5f, 0.5f);
+
+        for (const UniformLocations::Light& light : u.pointLights) {
+            glUniform3f(light.position, -0.2f, -1.0f, -0.3f);
+            glUniform3f(light.ambient, 0.05f, 0.05f, 0.05f);
+            glUniform3f(light.diffuse, 0.4f, 0.4f, 0.4f);
+            glUniform3f(light.specular, 0.5f, 0.5f, 0.5f);
+            glUniform1f(light.constant, 1.0f);
+            glUniform1f(light.linear, 0.09f);
+            glUniform1f(light.quadratic, 0.032f);
         }
 
-        SetVec3("spotlight.position", 0.5f, 0.0f, 3.0f);
-        SetVec3("spotlight.direction", 0.0f, 0.0f, -1.0f);
+        glUniform3f(u.spotlight.position, 0.5f, 0.0f, 3.0f);
+        glUniform3f(u.spotlight.direction, 0.0f, 0.0f, -1.0f);
 
-        SetVec3("spotlight.ambient", 0.0f, 0.0f, 0.0f);
-        SetVec3("spotlight.diffuse", 0.6f, 0.6f, 0.6f);
-        SetVec3("spotlight.specular", 1.0f, 1.0f, 1.0f);
+        glUniform3f(u.spotlight.ambient, 0.0f, 0.0f, 0.0f);
+        glUniform3f(u.spotlight.diffuse, 0.6f, 0.6f, 0.6f);
+        glUniform3f(u.spotlight.specular, 1.0f, 1.0f, 1.0f);
 
-        SetFloat("spotlight.constant", 1.0f);
-        SetFloat("spotlight.linear", 0.09);
-        SetFloat("spotlight.quadratic", 0.032);
+        glUniform1f(u.spotlight.constant, 1.0f);
+        glUniform1f(u.spotlight.linear, 0.09f);
+        glUniform1f(u.spotlight.quadratic, 0.032f);
 
-        SetFloat("spotlight.cutOff", glm::cos(glm::radians(12.5f)));
-        SetFloat("spotlight.outerCutOff", glm::cos(glm::radians(15.0f)));
+        static const float spotCutOff = glm::cos(glm::radians(12.5f));
+        static const float spotOuterCutOff = glm::cos(glm::radians(15.0f));
+        glUniform1f(u.spotlight.cutOff, spotCutOff);
+        glUniform1f(u.spotlight.outerCutOff, spotOuterCutOff);
     }
-    SetFloat("material.shininess", da.materialAttributes.shininess);
-    SetInt("material.diffuseMap", da.materialAttributes.diffuseMap);
-    SetVec3("material.diffuse", da.materialAttributes.diffuse);
-    SetVec3("material.specular", da.materialAttributes.specular);
+    const MaterialAttributes& material = da.materialAttributes;
+    glUniform1f(u.materialShininess, material.shininess);
+    glUniform1i(u.materialDiffuseMap, material.diffuseMap);
+    glUniform3f(u.materialDiffuse, material.diffuse.x, material.diffuse.y, material.diffuse.z);
+    glUniform3f(u.materialSpecular, material.specular.x, material.specular.y, material.specular.z);
     if (da.color) {
-        SetVec3("solidColor", da.solidColor);
-        SetInt("useVertexColor", da.useVertexColor ? 1 : 0);
+        glUniform3f(u.solidColor, da.solidColor.x, da.solidColor.y, da.solidColor.z);
+        glUniform1i(u.useVertexColor, da.useVertexColor ? 1 : 0);
     }
 }
 
