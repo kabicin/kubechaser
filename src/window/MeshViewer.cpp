@@ -11,14 +11,13 @@ MeshViewer::MeshViewer(const WindowServices& services, int x, int y, int width, 
     : BaseWindow(services, x, y, width, height)
 {
     camera = std::make_shared<Camera>(width, height);
-
-    mesh = std::make_shared<Mesh>("statefulset.obj");
-    mesh->SetScale(glm::vec3(1, 1, 1));
-    mesh->Translate(glm::vec3(0, 0, 0));
+    // No mesh until SetMesh is called; the viewer draws nothing until then.
 }
 
 void MeshViewer::handleInput()
 {
+    if (mesh == nullptr) return;
+
      if (GetMouseClicked()) {
         onClick();
     }
@@ -59,6 +58,8 @@ void MeshViewer::handleInput()
 
 void MeshViewer::showGUI()
 {
+    if (mesh == nullptr) return;
+
     {
         float posX = std::max(static_cast<float>(GetX()), static_cast<float>(GetX()) + (GetWidth() - 720.0f) * 0.5f);
         float posY = static_cast<float>(GetY() + GetHeight() - 210);
@@ -162,7 +163,7 @@ void MeshViewer::Render()
     glDepthFunc(GL_LESS);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    mesh->Draw(this->GetShaderFactory(), camera);
+    if (mesh != nullptr) mesh->Draw(this->GetShaderFactory(), camera);
     glDisable(GL_DEPTH_TEST);
 }
 
@@ -186,7 +187,7 @@ void MeshViewer::onClick(int x, int y)
     double scaledY = y * io.DisplayFramebufferScale.y;
     Ray ray = camera->GetRay(scaledX, scaledY);
     double min_t = std::numeric_limits<double>::infinity(), temp_t;
-    if (mesh->Intersect(camera, ray, temp_t)) {
+    if (mesh != nullptr && mesh->Intersect(camera, ray, temp_t)) {
         min_t = std::min(min_t, temp_t);
         mesh->SetObjectPicked();
         Eigen::Vector3d newray(ray.eye + ray.direction * min_t);

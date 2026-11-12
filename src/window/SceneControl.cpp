@@ -117,6 +117,9 @@ void SceneControl::Render()
                 sceneDocument.AddEntity("Mesh", obj, glm::vec3(0.0f, 0.5f, 0.0f));
                 GetLogger()->LogMessage("Added " + obj);
 
+                // The viewer gets its own instance (it edits the mesh's draw state
+                // and transform every frame); the OBJ itself is parsed once and
+                // shared through Mesh's cache, so this only uploads the vertices.
                 std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(obj);
                 mesh->SetScale(glm::vec3(1, 1, 1));
                 mesh->Translate(glm::vec3(0, 0, 0));

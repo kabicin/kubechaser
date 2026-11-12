@@ -1,98 +1,42 @@
 #include "entity/Mesh.h"
 #include <algorithm>
+#include <memory>
 
-Mesh::Mesh() {}
-
-Mesh::~Mesh()
+namespace
 {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+// Everything a Mesh needs from its OBJ file that does not depend on the GL
+// context or on per-instance state. Built once per file and shared, so
+// creating another Mesh for the same OBJ only has to upload the vertices.
+struct ParsedMesh
+{
+    std::vector<NVertex> vertices;
+    glm::vec3 lo = glm::vec3(0.0f);
+    glm::vec3 hi = glm::vec3(0.0f);
+    float ndcRatio = 0.0f; // 0 when the mesh has no non-zero coordinate
+    bool hasMaterial = false;
+    Material material;
+    std::string textureFile;
+};
+
+using ParsedMeshCache = std::unordered_map<std::string, std::shared_ptr<const ParsedMesh>>;
+
+ParsedMeshCache& parsedMeshCache()
+{
+    static ParsedMeshCache cache;
+    return cache;
 }
 
-Mesh::Mesh(const std::string& fileNameOBJ, const std::string& fileNameMTL, const std::string& textureName)
+void addToMap(std::unordered_map<int, std::unordered_set<int>>& map, int key, int val)
 {
-    Eigen::MatrixXf V;
-    Eigen::MatrixXi F;
-    Eigen::MatrixXf UV;
-    Eigen::MatrixXi UF;
-    Eigen::MatrixXf NV;
-    Eigen::MatrixXi NF;
-    initialize(V, F, UV, UF, NV, NF, fileNameOBJ, fileNameMTL, textureName);
-}
-
-void Mesh::initialize(
-    Eigen::MatrixXf& V, 
-    Eigen::MatrixXi& F,
-    Eigen::MatrixXf& UV, 
-    Eigen::MatrixXi& UF, 
-    Eigen::MatrixXf& NV, 
-    Eigen::MatrixXi& NF, 
-    const std::string& fileNameOBJ, 
-    const std::string& fileNameMTL, 
-    const std::string& textureName)
-{
-    std::string textureFile = std::string();
-    std::vector<Material> materials;
-    Reader::ReadOBJ(fileNameOBJ, textureFile, V, F, UV, UF, NV, NF, materials);
-    std::cout << "READ OBJ file with materials: " << materials.size() << " and texture: " << textureFile << " and name: " << textureName << std::endl;
-    const int primaryMaterial = Reader::PrimaryMaterialIndex(materials);
-    if (primaryMaterial >= 0) {
-        const Material& material = materials[primaryMaterial];
-        da.materialAttributes.LoadFromMaterial(material);
-        std::cout << "Loading " << material.name << " into mesh " << fileNameOBJ << std::endl;
-        const auto usedMaterials = std::count_if(materials.begin(), materials.end(),
-            [](const Material& m) { return m.faceCount > 0; });
-        if (usedMaterials > 1) {
-            std::cout << "WARNING: " << fileNameOBJ << " uses " << usedMaterials
-                << " materials; only " << material.name << " is applied" << std::endl;
-        }
-    } else {
-        da.materialAttributes.diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
-    }
-    generate(V, F, UV, UF, NV, NF, textureFile == "" ? textureName : textureFile);
-    generateBoundingBox(V);
-}
-
-void Mesh::generateBoundingBox(const Eigen::MatrixXf& V)
-{
-    // Axis-aligned bounding box in model space: the per-axis min and max over
-    // every vertex. Its 8 corners are transformed into world space in Intersect.
-    Eigen::RowVector3f lo(0, 0, 0);
-    Eigen::RowVector3f hi(0, 0, 0);
-    if (V.rows() > 0 && V.cols() >= 3)
-    {
-        lo = V.leftCols<3>().colwise().minCoeff();
-        hi = V.leftCols<3>().colwise().maxCoeff();
-    }
-    v1 = glm::vec4(hi(0), hi(1), lo(2), 1.0f);
-    v2 = glm::vec4(lo(0), hi(1), lo(2), 1.0f);
-    v3 = glm::vec4(lo(0), hi(1), hi(2), 1.0f);
-    v4 = glm::vec4(hi(0), hi(1), hi(2), 1.0f);
-    v5 = glm::vec4(hi(0), lo(1), lo(2), 1.0f);
-    v6 = glm::vec4(lo(0), lo(1), lo(2), 1.0f);
-    v7 = glm::vec4(lo(0), lo(1), hi(2), 1.0f);
-    v8 = glm::vec4(hi(0), lo(1), hi(2), 1.0f);
-}
-
-void Mesh::addToMap(std::unordered_map<int, std::unordered_set<int>>& map, const int& key, const int& val)
-{
-    if (map.find(key) == map.end()) map[key] = std::unordered_set<int>();
     map[key].insert(val);
 }
 
-void Mesh::generate(
-    const Eigen::MatrixXf& V, 
+std::vector<NVertex> buildVertices(
+    const Eigen::MatrixXf& V,
     const Eigen::MatrixXi& F,
-    const Eigen::MatrixXf& UV, 
-    const Eigen::MatrixXi& UF, 
-    const Eigen::MatrixXf& NV, 
-    const Eigen::MatrixXi& NF,
-    const std::string& textureFile)
+    const Eigen::MatrixXf& UV,
+    const Eigen::MatrixXi& UF)
 {
-    // create VAO
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
     int numTriangles = 0;
     for (int i = 0; i < F.rows(); ++i)
     {
@@ -128,17 +72,8 @@ void Mesh::generate(
             j++;
         }
     }
-    // ndcRatio is the largest absolute vertex coordinate on any axis, used to
-    // scale screen-space drag offsets into model units.
-    if (V.rows() > 0 && V.cols() >= 3)
-    {
-        const float maxAbs = V.leftCols<3>().cwiseAbs().maxCoeff();
-        if (maxAbs > 0.0f) this->ndcRatio = maxAbs;
-    }
 
-    num_vertices = face_fan.rows() * 3;
-    std::vector<NVertex> vertices(num_vertices);
-    int vertexIndex = 0;
+    std::vector<NVertex> vertices(face_fan.rows() * 3);
     for (int i = 0; i < face_fan.rows(); i++)
     {
         for (int j = 0; j < 3; j++)
@@ -152,9 +87,10 @@ void Mesh::generate(
                 : Eigen::RowVector2f(0.0f, 0.0f);
             
             Eigen::RowVector3f normal(0, 0, 0);
-            if (adjacentFaces.find(vertex) != adjacentFaces.end())
+            auto adjacent = adjacentFaces.find(vertex);
+            if (adjacent != adjacentFaces.end())
             {
-                for (const auto& k : adjacentFaces[vertex])
+                for (const auto& k : adjacent->second)
                 {
                     Eigen::RowVectorXi trifan = face_fan.row(k);
                     Eigen::RowVector3f v0, v1, v2;
@@ -186,7 +122,116 @@ void Mesh::generate(
             vertices[3 * i + j] = NVertex(pos(0), pos(1), pos(2), normal(0), normal(1), normal(2), uvpos(0), uvpos(1));
         }
     }
-    
+    return vertices;
+}
+
+std::shared_ptr<const ParsedMesh> parseOBJ(const std::string& fileNameOBJ)
+{
+    Eigen::MatrixXf V;
+    Eigen::MatrixXi F;
+    Eigen::MatrixXf UV;
+    Eigen::MatrixXi UF;
+    Eigen::MatrixXf NV;
+    Eigen::MatrixXi NF;
+    std::vector<Material> materials;
+    auto parsed = std::make_shared<ParsedMesh>();
+    Reader::ReadOBJ(fileNameOBJ, parsed->textureFile, V, F, UV, UF, NV, NF, materials);
+    std::cout << "READ OBJ file " << fileNameOBJ << " with materials: " << materials.size()
+        << " and texture: " << parsed->textureFile << std::endl;
+
+    const int primaryMaterial = Reader::PrimaryMaterialIndex(materials);
+    if (primaryMaterial >= 0) {
+        parsed->hasMaterial = true;
+        parsed->material = materials[primaryMaterial];
+        const auto usedMaterials = std::count_if(materials.begin(), materials.end(),
+            [](const Material& m) { return m.faceCount > 0; });
+        if (usedMaterials > 1) {
+            std::cout << "WARNING: " << fileNameOBJ << " uses " << usedMaterials
+                << " materials; only " << parsed->material.name << " is applied" << std::endl;
+        }
+    }
+
+    parsed->vertices = buildVertices(V, F, UV, UF);
+
+    // Axis-aligned bounding box in model space: the per-axis min and max over
+    // every vertex. ndcRatio is the largest absolute vertex coordinate on any
+    // axis, used to scale screen-space drag offsets into model units.
+    if (V.rows() > 0 && V.cols() >= 3)
+    {
+        const Eigen::RowVector3f lo = V.leftCols<3>().colwise().minCoeff();
+        const Eigen::RowVector3f hi = V.leftCols<3>().colwise().maxCoeff();
+        parsed->lo = glm::vec3(lo(0), lo(1), lo(2));
+        parsed->hi = glm::vec3(hi(0), hi(1), hi(2));
+        parsed->ndcRatio = V.leftCols<3>().cwiseAbs().maxCoeff();
+    }
+    return parsed;
+}
+
+// Returns the parsed contents of fileNameOBJ, reading the file only the first
+// time it is requested. Files that yield no geometry (missing or unreadable)
+// are not cached so a later request retries them.
+std::shared_ptr<const ParsedMesh> loadOBJ(const std::string& fileNameOBJ)
+{
+    ParsedMeshCache& cache = parsedMeshCache();
+    auto it = cache.find(fileNameOBJ);
+    if (it != cache.end()) return it->second;
+
+    std::shared_ptr<const ParsedMesh> parsed = parseOBJ(fileNameOBJ);
+    if (!parsed->vertices.empty()) cache.emplace(fileNameOBJ, parsed);
+    return parsed;
+}
+}
+
+Mesh::Mesh() {}
+
+Mesh::~Mesh()
+{
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+}
+
+Mesh::Mesh(const std::string& fileNameOBJ, const std::string& /*fileNameMTL*/, const std::string& textureName)
+{
+    std::shared_ptr<const ParsedMesh> parsed = loadOBJ(fileNameOBJ);
+
+    if (parsed->hasMaterial) {
+        da.materialAttributes.LoadFromMaterial(parsed->material);
+    } else {
+        da.materialAttributes.diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+    }
+    if (parsed->ndcRatio > 0.0f) this->ndcRatio = parsed->ndcRatio;
+
+    upload(parsed->vertices);
+    setTexture(parsed->textureFile.empty() ? textureName : parsed->textureFile);
+    setBoundingBox(parsed->lo, parsed->hi);
+}
+
+void Mesh::ClearCache()
+{
+    parsedMeshCache().clear();
+}
+
+void Mesh::setBoundingBox(const glm::vec3& lo, const glm::vec3& hi)
+{
+    // Its 8 corners are transformed into world space in Intersect.
+    v1 = glm::vec4(hi.x, hi.y, lo.z, 1.0f);
+    v2 = glm::vec4(lo.x, hi.y, lo.z, 1.0f);
+    v3 = glm::vec4(lo.x, hi.y, hi.z, 1.0f);
+    v4 = glm::vec4(hi.x, hi.y, hi.z, 1.0f);
+    v5 = glm::vec4(hi.x, lo.y, lo.z, 1.0f);
+    v6 = glm::vec4(lo.x, lo.y, lo.z, 1.0f);
+    v7 = glm::vec4(lo.x, lo.y, hi.z, 1.0f);
+    v8 = glm::vec4(hi.x, lo.y, hi.z, 1.0f);
+}
+
+void Mesh::upload(const std::vector<NVertex>& vertices)
+{
+    // create VAO
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    num_vertices = static_cast<int>(vertices.size());
+
     // create VBO
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -203,8 +248,10 @@ void Mesh::generate(
     // uv
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(NVertex), reinterpret_cast<void*>(offsetof(NVertex, TexturePos)));
     glEnableVertexAttribArray(2);
+}
 
-    // texture
+void Mesh::setTexture(const std::string& textureFile)
+{
     if (textureFile != "")
     {
         std::cout << "Setting texture file: "  << textureFile << std::endl;
