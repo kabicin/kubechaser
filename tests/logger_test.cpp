@@ -1,6 +1,7 @@
 #include "logger/Logger.h"
 
 #include <iostream>
+#include <string>
 
 int main()
 {
@@ -20,6 +21,19 @@ int main()
     }
     if (logger.GetState() != 2) {
         std::cerr << "Logger state should count appended messages.\n";
+        return 1;
+    }
+
+    Logger capped(3);
+    for (int i = 0; i < 5; ++i) {
+        capped.LogMessage("m" + std::to_string(i));
+    }
+    if (capped.Output() != "m2\nm3\nm4\n") {
+        std::cerr << "Logger should keep only the newest maxLines messages.\n";
+        return 1;
+    }
+    if (capped.GetState() != 5) {
+        std::cerr << "Logger state should keep counting after trimming.\n";
         return 1;
     }
 

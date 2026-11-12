@@ -21,7 +21,7 @@ void ConsolePanel::Render()
         // read console buffer here
         // TextUnformatted has no length limit, unlike Text which formats
         // into a fixed-size buffer and truncates long logs.
-        const std::string output = GetLogger()->Output();
+        const std::string& output = GetLogger()->Output();
         ImGui::TextUnformatted(output.c_str(), output.c_str() + output.size());
 
         // if there is a new log event, set the scrollbar to the bottom
