@@ -4,7 +4,6 @@
 #include "glm.h"
 #include "Linalg.h"
 #include "shader/UniformLocations.h"
-#include <memory>
 #include <utility>
 
 struct CameraAttributes
@@ -32,22 +31,26 @@ struct CameraModelAttributes {
 
 class Camera
 {
+public:
+	static constexpr float DEFAULT_MOVE_SPEED = 60.0f; // world units per second
+
 private:
-	int m_width, m_height;
+	int m_width = 1;
+	int m_height = 1;
 
 	const float n = 0.1;
 	const float f = 2000;
-	const float cameraSpeed = 0.1;
+	float moveSpeed = DEFAULT_MOVE_SPEED; // world units per second
 
 	const glm::vec3 initialCameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-	std::shared_ptr<glm::vec3> cameraPos = std::make_shared<glm::vec3>(initialCameraPos);
+	glm::vec3 cameraPos = initialCameraPos;
 	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 cameraDirection = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 projection;
+	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 projection = glm::mat4(1.0f);
 	glm::vec3 getClipVector(int x, int y);
 
 public:
@@ -83,7 +86,11 @@ public:
 	void SetDown();
 	void SetCenter();
 
-	void UpdateFrame(double multiplier = 1);
+	// Advances the camera along its current movement direction by
+	// moveSpeed * deltaSeconds.
+	void UpdateFrame(double deltaSeconds);
+	void SetMoveSpeed(float unitsPerSecond);
+	float GetMoveSpeed() const;
 	void GenerateView();
 	void ResetCamPos();
 	void SetLookDirection(const glm::vec3& direction);

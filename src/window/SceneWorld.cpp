@@ -51,7 +51,7 @@ void SceneWorld::Render()
     if (camera) camera->Resize(fbWidth, fbHeight);
     handleInput();
     if (camera) {
-        camera->UpdateFrame(GetTime()->GetDeltaFrames());
+        camera->UpdateFrame(GetTime()->GetDelta());
         camera->ClampMinY(1.0f);
     }
     if (manager) {

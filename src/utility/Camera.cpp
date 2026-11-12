@@ -2,14 +2,14 @@
 #include <iostream>
 
 Camera::Camera()
+	: Camera(1, 1)
 {
 }
 
 Camera::Camera(int width, int height)
-	:m_width(width), m_height(height)
 {
-	projection = glm::perspective(glm::radians(45.0f), m_width / static_cast<float>(m_height), this->n, this->f);
-	view = glm::lookAt(GetCameraPos(), cameraFront, cameraUp);
+	Resize(width, height);
+	GenerateView();
 }
 
 void Camera::Resize(int width, int height)
@@ -61,7 +61,7 @@ glm::mat4 Camera::GetModel()
 
 Ray Camera::GetRay(double xPos, double yPos)
 {
-	Ray ray(*cameraPos, Camera::GetDirection(xPos, yPos));
+	Ray ray(cameraPos, Camera::GetDirection(xPos, yPos));
 	return ray;
 }
 
@@ -107,7 +107,7 @@ glm::vec3 Camera::getClipVector(int x, int y)
 
 glm::vec3 Camera::GetCameraPos()
 {
-	return *cameraPos;
+	return cameraPos;
 }
 
 void Camera::SetForward()
@@ -165,18 +165,28 @@ void Camera::SetCenter()
 
 void Camera::GenerateView()
 { 
-	view = glm::lookAt(*cameraPos, *cameraPos - cameraFront, cameraUp);
+	view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
 }
 
-void Camera::UpdateFrame(double multiplier)
+void Camera::UpdateFrame(double deltaSeconds)
 {
-	*cameraPos += cameraDirection * (float)multiplier;
+	cameraPos += cameraDirection * (moveSpeed * static_cast<float>(deltaSeconds));
 	GenerateView();
+}
+
+void Camera::SetMoveSpeed(float unitsPerSecond)
+{
+	moveSpeed = unitsPerSecond > 0.0f ? unitsPerSecond : 0.0f;
+}
+
+float Camera::GetMoveSpeed() const
+{
+	return moveSpeed;
 }
 
 void Camera::ResetCamPos()
 {
-	*cameraPos = initialCameraPos;
+	cameraPos = initialCameraPos;
 	cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
 	cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	GenerateView();
@@ -193,8 +203,8 @@ void Camera::SetLookDirection(const glm::vec3& direction)
 
 void Camera::ClampMinY(float minY)
 {
-	if (cameraPos->y < minY) {
-		cameraPos->y = minY;
+	if (cameraPos.y < minY) {
+		cameraPos.y = minY;
 		GenerateView();
 	}
 }
