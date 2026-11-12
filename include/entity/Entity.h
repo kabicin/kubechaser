@@ -23,8 +23,6 @@ private:
 	static int acquireId();
 	static void releaseId(int id);
 
-	// camera
-	static std::shared_ptr<Camera> camera;
 	CameraAttributes ca = CameraAttributes(glm::vec3(0,0,0), glm::vec3(1,1,1), 0, 0, 0);
 
 	// true when TEX was created by AddTexture (and must be deleted by this entity);

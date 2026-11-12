@@ -5,8 +5,6 @@
 #include <sstream>
 #include <string>
 
-struct DrawAttributes da;
-
 namespace {
 
 void writeVec3(std::ostream& os, const char* key, const glm::vec3& v)

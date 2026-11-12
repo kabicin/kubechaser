@@ -58,13 +58,6 @@ void Triangle::SetObjectPicked()
     usingTexture = !usingTexture;
 }
 
-void stencil()
-{
-    glEnable(GL_STENCIL_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glStencilFunc(GL_EQUAL, 1, 0xFF);
-}
-
 void Triangle::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera)
 {
     factory->Use(da, camera->GetCameraPos());

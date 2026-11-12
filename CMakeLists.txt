@@ -63,7 +63,6 @@ if(KUBECHASER_BUILD_APP)
         src/scene/SceneDocument.cpp
         src/scene/SceneManager.cpp
         src/scene/SceneNode.cpp
-        src/shader/MaterialAttributes.cpp
         src/shader/ShaderFactory.cpp
         src/time/Time.cpp
         src/utility/Camera.cpp
