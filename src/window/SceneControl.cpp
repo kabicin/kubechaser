@@ -2,7 +2,8 @@
 #include "entity/Mesh.h"
 #include "logger/Logger.h"
 #include "window/SwitchableBaseWindow.h"
-#include <filesystem>
+#include "utility/Reader.h"
+#include <algorithm>
 
 SceneControl::SceneControl(
     const WindowServices& services,
@@ -20,26 +21,13 @@ SceneControl::~SceneControl()
 {
 }
 
-namespace fs = std::filesystem;
-static std::vector<std::string> traverseDirectory() {
-    fs::path meshPath = std::string(ASSET_DIR) + "/models/";
-
-    if (!fs::exists(meshPath)) {
-        std::cerr << "Mesh path doesn't exist" << std::endl;
-        return {};
+void SceneControl::refreshModelFiles()
+{
+    modelFiles = Reader::ListOBJFiles(Reader::MESH_DIR);
+    if (std::find(modelFiles.begin(), modelFiles.end(), selectedModel) == modelFiles.end())
+    {
+        selectedModel.clear();
     }
-
-    std::vector<std::string> files;
-
-    for (const fs::directory_entry& entry : fs::directory_iterator(meshPath)) {
-        if (entry.is_regular_file()) {
-            std::cout << entry.path().filename().string() << std::endl;
-            std::string fileName = entry.path().filename().string();
-            files.push_back(fileName);
-        }
-    }
-
-    return files;
 }
 
 void SceneControl::Render()
@@ -76,51 +64,49 @@ void SceneControl::Render()
         ImGui::SameLine();
         if (ImGui::Button("New"))
         {
+            refreshModelFiles();
             ImGui::OpenPopup("Add Object");
         }
        
         // Add Modal
-        static bool firstFrame = true;
-        static std::vector<std::string> items;
         bool addOpen = true;
         ImGui::PushStyleColor(ImGuiCol_Text, imColorWhite);
         if (ImGui::BeginPopupModal("Add Object", &addOpen))
         {
             ImGui::PopStyleColor();
             ImGui::Text("Select an asset to add to the scene.");
-
-            if (firstFrame) {
-                items = traverseDirectory();
-                firstFrame = false;
+            if (modelFiles.empty())
+            {
+                ImGui::TextDisabled("No .obj files found in %s", Reader::MESH_DIR.c_str());
             }
-            static std::string obj;
+
             ImGui::Text("Object: ");
             ImGui::SameLine();
-            const char* preview = obj.empty() ? "<select>" : obj.c_str();
+            const char* preview = selectedModel.empty() ? "<select>" : selectedModel.c_str();
             if (ImGui::BeginCombo("##combo", preview))
             {
-                for (int n = 0; n < static_cast<int>(items.size()); n++)
+                for (const std::string& item : modelFiles)
                 {
-                    bool is_selected = (obj == items[n]);
-                    if (ImGui::Selectable(items[n].c_str(), is_selected))
+                    const bool is_selected = (selectedModel == item);
+                    if (ImGui::Selectable(item.c_str(), is_selected))
                     {
-                        obj = items[n];
-                        if (is_selected)
-                            ImGui::SetItemDefaultFocus();
+                        selectedModel = item;
                     }
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
             }
 
-            if (ImGui::Button("Add") && !obj.empty())
+            if (ImGui::Button("Add") && !selectedModel.empty())
             {
-                sceneDocument.AddEntity("Mesh", obj, glm::vec3(0.0f, 0.5f, 0.0f));
-                GetLogger()->LogMessage("Added " + obj);
+                sceneDocument.AddEntity("Mesh", selectedModel, glm::vec3(0.0f, 0.5f, 0.0f));
+                GetLogger()->LogMessage("Added " + selectedModel);
 
                 // The viewer gets its own instance (it edits the mesh's draw state
                 // and transform every frame); the OBJ itself is parsed once and
                 // shared through Mesh's cache, so this only uploads the vertices.
-                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(obj);
+                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(selectedModel);
                 mesh->SetScale(glm::vec3(1, 1, 1));
                 mesh->Translate(glm::vec3(0, 0, 0));
                 if (meshAddedCallback) {

@@ -4,6 +4,8 @@
 #include "window/BaseWindow.h"
 #include "window/SwitchableBaseWindow.h"
 #include <functional>
+#include <string>
+#include <vector>
 
 class Mesh;
 
@@ -23,6 +25,12 @@ private:
     GridToggleCallback gridToggleCallback;
     MeshAddedCallback meshAddedCallback;
     void changeWindow(WindowMode window);
+
+    // "Add Object" modal state. The model list is re-read each time the modal
+    // is opened so newly added files show up.
+    std::vector<std::string> modelFiles;
+    std::string selectedModel;
+    void refreshModelFiles();
 
     ImU32 imColorWhite = IM_COL32(255, 255, 255, 255);
     ImU32 imColorGrey = IM_COL32(111,111,111,255);

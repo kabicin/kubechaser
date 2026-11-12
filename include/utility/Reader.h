@@ -46,6 +46,11 @@ public:
     // Returns the input unchanged when it contains no separator.
     static std::string FileNameFromPath(const std::string& path);
 
+    // Sorted file names of the regular files in directory with a ".obj"
+    // extension (case-insensitive). Returns an empty list if the directory
+    // doesn't exist or can't be read.
+    static std::vector<std::string> ListOBJFiles(const std::string& directory);
+
     static std::vector<std::string> split(const std::string& line, const std::string& delimiter);
 };
 #endif

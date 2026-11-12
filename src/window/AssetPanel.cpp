@@ -3,6 +3,11 @@
 #include "logger/Logger.h"
 #include "utility/Reader.h"
 
+namespace
+{
+const char* const kShapeNames[] = { "Triangle", "Quad" };
+}
+
 AssetPanel::AssetPanel(
     const WindowServices& services,
     SceneDocument& sceneDocument,
@@ -29,19 +34,10 @@ void AssetPanel::Render()
     glViewport(GetX(), GetY(), GetWidth(), GetHeight()); 
 
     {
-        static bool addTriangle = false;
-        static int addId = -1;
-
-        static bool deleteAssetDontAskAgain = false;
-        static bool assetsFull = false;
-        static int deletedId = -1;
-
 	    size_t numAssets = imageList.size();
         ImGui::SetNextWindowPos(ImVec2(GetX(), GetY()));
         ImGui::SetNextWindowSize(ImVec2(GetWidth(), GetHeight()));
         ImGui::Begin("Asset Manager", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-        static char assetPath[1024] = "";
-        static std::string loadError;
         if (ImGui::Button("Add Asset")) {
             if (numAssets >= MAX_ASSETS) {
                 ImGui::OpenPopup("Too Many Assets");
@@ -136,6 +132,7 @@ void AssetPanel::Render()
             }
             ImGui::SameLine();
             if (ImGui::Button("+")) {
+                addShapeIndex = -1;
                 ImGui::OpenPopup("Add Asset");
             }
 
@@ -144,25 +141,25 @@ void AssetPanel::Render()
             if (ImGui::BeginPopupModal("Add Asset", &addOpen))
             {
                 ImGui::Text("Add an asset to the scene builder");
-                const char* items[] = { "Triangle", "Quad"};
-                static const char* shape = NULL;
+                const char* shape = addShapeIndex >= 0 ? kShapeNames[addShapeIndex] : nullptr;
                 ImGui::Text("Shape: ");
                 if (ImGui::BeginCombo("##combo", shape))
                 {
-                    for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+                    for (int n = 0; n < IM_ARRAYSIZE(kShapeNames); n++)
                     {
-                        bool is_selected = (shape == items[n]);
-                        if (ImGui::Selectable(items[n], is_selected))
+                        const bool is_selected = (addShapeIndex == n);
+                        if (ImGui::Selectable(kShapeNames[n], is_selected))
                         {
-                            shape = items[n];
-                            if (is_selected)
-                                ImGui::SetItemDefaultFocus();
+                            addShapeIndex = n;
                         }
+                        if (is_selected)
+                            ImGui::SetItemDefaultFocus();
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGui::Button("Add") && shape != NULL)
+                if (ImGui::Button("Add") && addShapeIndex >= 0)
                 {
+                    shape = kShapeNames[addShapeIndex];
                     std::shared_ptr<Entity> entity = sceneDocument.AddEntity(shape, glm::vec3(0.0f, 0.5f, 0.0f));
                     entity->SetTexture(*ia);
                   

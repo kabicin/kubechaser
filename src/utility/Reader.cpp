@@ -4,6 +4,8 @@
 #include <climits>
 #include <sys/stat.h>
 #include <algorithm>
+#include <cctype>
+#include <filesystem>
 #include <stdexcept>
 
 void Reader::ScanOBJ(const std::string& fileName)
@@ -431,6 +433,35 @@ std::string Reader::FileNameFromPath(const std::string& path)
         return path;
     }
     return path.substr(separator + 1);
+}
+
+std::vector<std::string> Reader::ListOBJFiles(const std::string& directory)
+{
+    namespace fs = std::filesystem;
+    std::vector<std::string> files;
+    std::error_code ec;
+    fs::directory_iterator it(directory, ec);
+    if (ec)
+    {
+        return files;
+    }
+    for (const fs::directory_entry& entry : it)
+    {
+        std::error_code entryError;
+        if (!entry.is_regular_file(entryError))
+        {
+            continue;
+        }
+        std::string extension = entry.path().extension().string();
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        if (extension == ".obj")
+        {
+            files.push_back(entry.path().filename().string());
+        }
+    }
+    std::sort(files.begin(), files.end());
+    return files;
 }
 
 std::string Reader::MESH_DIR = std::string(ASSET_DIR) + "/models/";

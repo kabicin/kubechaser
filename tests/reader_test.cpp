@@ -208,5 +208,24 @@ int main()
         return 1;
     }
 
+    {
+        const std::filesystem::path listDir = std::filesystem::temp_directory_path() / "kubechaser_reader_list";
+        std::filesystem::remove_all(listDir);
+        std::filesystem::create_directories(listDir / "nested.obj");
+        for (const char* file : {"b.obj", "A.OBJ", "a.mtl", "notes.txt", "obj", "c.obj.bak"}) {
+            std::ofstream(listDir / file) << "";
+        }
+        const std::vector<std::string> objFiles = Reader::ListOBJFiles(listDir.string());
+        std::filesystem::remove_all(listDir);
+        if (objFiles != std::vector<std::string>{"A.OBJ", "b.obj"}) {
+            std::cerr << "Reader::ListOBJFiles returned unexpected files.\n";
+            return 1;
+        }
+        if (!Reader::ListOBJFiles((listDir / "missing").string()).empty()) {
+            std::cerr << "Reader::ListOBJFiles should return nothing for a missing directory.\n";
+            return 1;
+        }
+    }
+
     return 0;
 }

@@ -22,6 +22,13 @@ private:
     void clearBit(int bit);
 
     std::vector<std::unique_ptr<Asset>> imageList;
+
+    // UI state
+    bool deleteAssetDontAskAgain = false;
+    int deletedId = -1;            // list position of the asset to delete this frame
+    char assetPath[1024] = "";     // "Load Asset" modal input
+    std::string loadError;         // "Load Asset" modal error message
+    int addShapeIndex = -1;        // "Add Asset" modal selection into kShapeNames
     int addAsset(const std::string& filename, GLuint image, int imageWidth, int imageHeight);
     std::vector<std::unique_ptr<Asset>>::iterator deleteAsset(std::vector<std::unique_ptr<Asset>>::iterator it, int assetNum);
 
