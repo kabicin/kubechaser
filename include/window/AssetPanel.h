@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <bitset>
+#include <string>
 #include "scene/SceneDocument.h"
 #define MAX_ASSETS 32
 
@@ -21,7 +22,7 @@ private:
     void clearBit(int bit);
 
     std::vector<std::unique_ptr<Asset>> imageList;
-    int addAsset(char *filename, GLuint image, int imageWidth, int imageHeight);
+    int addAsset(const std::string& filename, GLuint image, int imageWidth, int imageHeight);
     std::vector<std::unique_ptr<Asset>>::iterator deleteAsset(std::vector<std::unique_ptr<Asset>>::iterator it, int assetNum);
 
 public:

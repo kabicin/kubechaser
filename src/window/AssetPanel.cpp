@@ -40,8 +40,55 @@ void AssetPanel::Render()
         ImGui::SetNextWindowPos(ImVec2(GetX(), GetY()));
         ImGui::SetNextWindowSize(ImVec2(GetWidth(), GetHeight()));
         ImGui::Begin("Asset Manager", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-        if (ImGui::Button("Add Asset") && numAssets >= MAX_ASSETS) {
-            ImGui::OpenPopup("Too Many Assets");
+        static char assetPath[1024] = "";
+        static std::string loadError;
+        if (ImGui::Button("Add Asset")) {
+            if (numAssets >= MAX_ASSETS) {
+                ImGui::OpenPopup("Too Many Assets");
+            } else {
+                loadError.clear();
+                ImGui::OpenPopup("Load Asset");
+            }
+        }
+
+        // Load an image file from disk as a new asset
+        bool loadAssetOpen = true;
+        if (ImGui::BeginPopupModal("Load Asset", &loadAssetOpen, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Image file path:");
+            if (ImGui::IsWindowAppearing())
+                ImGui::SetKeyboardFocusHere();
+            const bool submitted = ImGui::InputText("##assetPath", assetPath, IM_ARRAYSIZE(assetPath),
+                ImGuiInputTextFlags_EnterReturnsTrue);
+            if (!loadError.empty())
+                ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%s", loadError.c_str());
+
+            if (ImGui::Button("Load") || submitted)
+            {
+                GLuint texture = 0;
+                int width = 0;
+                int height = 0;
+                if (assetPath[0] == '\0')
+                {
+                    loadError = "Enter a file path.";
+                }
+                else if (!LoadTextureFromFile(assetPath, &texture, &width, &height))
+                {
+                    loadError = std::string("Could not load image: ") + assetPath;
+                    GetLogger()->LogMessage(loadError);
+                }
+                else
+                {
+                    addAsset(assetPath, texture, width, height);
+                    assetPath[0] = '\0';
+                    loadError.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+                ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
         }
 
         // Too many assets
@@ -61,12 +108,14 @@ void AssetPanel::Render()
         }
         ImGui::Text("Loaded Assets = %zu", numAssets);
 
-        auto it = imageList.begin();
         int i = 0;
         for(auto it = imageList.begin(); it < imageList.end();)
         {
             Asset* ia = it->get();
             int assetNum = ia->Num;
+            // Each asset needs its own ID scope so its child window, buttons
+            // and popups don't collide with those of the other assets.
+            ImGui::PushID(assetNum);
             float multiplier = DEFAULT_WIDTH / ia->ImageWidth;
             float xoffset = (i % 2) * (DEFAULT_WIDTH);
             float yoffset = (i / 2) * (DEFAULT_HEIGHT);
@@ -84,16 +133,6 @@ void AssetPanel::Render()
                 {
                     deletedId = i;
                 }
-            }
-            
-            if (deleteAssetDontAskAgain && deletedId == i || deletedId == i)
-            {
-                it = deleteAsset(it, assetNum);
-                deletedId = -1;
-            }
-            else 
-            {
-                it++;
             }
             ImGui::SameLine();
             if (ImGui::Button("+")) {
@@ -127,7 +166,7 @@ void AssetPanel::Render()
                     std::shared_ptr<Entity> entity = sceneDocument.AddEntity(shape, glm::vec3(0.0f, 0.5f, 0.0f));
                     entity->SetTexture(*ia);
                   
-                    GetLogger()->LogMessage("Added " + std::string(shape) + " with texture " + imageList[i]->TextureName);
+                    GetLogger()->LogMessage("Added " + std::string(shape) + " with texture " + ia->TextureName);
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::SameLine();
@@ -157,14 +196,26 @@ void AssetPanel::Render()
             ImGui::Image((void*)(intptr_t)ia->TextureNum, ImVec2(DEFAULT_WIDTH, ia->ImageHeight * multiplier));
             ImGui::EndChild();
             ImGui::PopStyleColor();
-            i++;
+            ImGui::PopID();
+
+            // Delete only after the asset is no longer referenced this frame.
+            if (deletedId == i)
+            {
+                it = deleteAsset(it, assetNum);
+                deletedId = -1;
+            }
+            else
+            {
+                it++;
+                i++;
+            }
         }
        
         ImGui::End();
     }
 }
 
-int AssetPanel::addAsset(char *filename, GLuint image, int imageWidth, int imageHeight)
+int AssetPanel::addAsset(const std::string& filename, GLuint image, int imageWidth, int imageHeight)
 {
     const std::string textureName = Reader::FileNameFromPath(filename);
     auto ia = std::make_unique<Asset>();
