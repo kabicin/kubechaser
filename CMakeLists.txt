@@ -56,7 +56,6 @@ if(KUBECHASER_BUILD_APP)
         src/application/Application.cpp
         src/entity/Entity.cpp
         src/entity/Grid.cpp
-        src/entity/GroupedEntity2D.cpp
         src/entity/Mesh.cpp
         src/entity/Quad.cpp
         src/entity/Triangle.cpp
@@ -65,7 +64,6 @@ if(KUBECHASER_BUILD_APP)
         src/scene/SceneManager.cpp
         src/scene/SceneNode.cpp
         src/shader/MaterialAttributes.cpp
-        src/shader/Shader.cpp
         src/shader/ShaderFactory.cpp
         src/time/Time.cpp
         src/utility/Camera.cpp
@@ -74,7 +72,6 @@ if(KUBECHASER_BUILD_APP)
         src/window/BaseWindow.cpp
         src/window/ConsolePanel.cpp
         src/window/MeshViewer.cpp
-        src/window/SceneBuilder.cpp
         src/window/SceneControl.cpp
         src/window/SceneWorld.cpp
         src/window/SwitchableBaseWindow.cpp

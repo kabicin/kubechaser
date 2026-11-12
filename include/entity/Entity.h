@@ -5,7 +5,6 @@
 #include "stb_image.h"
 #include "Vertex.h"
 #include "window/Asset.h"
-#include "shader/Shader.h"
 #include "shader/ShaderFactory.h"
 #include "utility/Linalg.h"
 #include "utility/Camera.h"

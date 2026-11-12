@@ -3,7 +3,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "dearimgui.h"
-#include "shader/Shader.h"
 #include "entity/Entity.h"
 #include "Asset.h"
 #include <memory>

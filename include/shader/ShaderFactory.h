@@ -4,7 +4,6 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include "shader/Shader.h"
 #include <vector>
 #include <sstream>
 #include "shader/DrawAttributes.h"
