@@ -64,6 +64,7 @@ Quad::~Quad()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &instanceVBO);
 }
 
 void Quad::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera)
@@ -88,6 +89,43 @@ void Quad::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
     }
 
     if (da.wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void Quad::DrawInstanced(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera, const std::vector<glm::vec3>& offsets)
+{
+    if (offsets.empty()) {
+        return;
+    }
+    if (instanceVBO == 0) {
+        glGenBuffers(1, &instanceVBO);
+    }
+
+    const bool prevInstanced = da.instanced;
+    const bool prevTesselate = da.tesselate;
+    da.instanced = true;
+    da.tesselate = false;
+
+    factory->Use(da, camera->GetCameraPos());
+    camera->Render(factory->GetShaderProgram(), GetCameraAttributes());
+
+    glBindTexture(GL_TEXTURE_2D, TEX);
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * offsets.size(), offsets.data(), GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glVertexAttribDivisor(4, 1);
+
+    if (da.wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(offsets.size()));
+    if (da.wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    // leave the VAO usable by the non-instanced Draw path
+    glDisableVertexAttribArray(4);
+
+    da.instanced = prevInstanced;
+    da.tesselate = prevTesselate;
 }
 
 void Quad::SetObjectPicked()

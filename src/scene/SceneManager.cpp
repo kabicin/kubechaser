@@ -82,6 +82,60 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
     }
 
     glm::vec3 oldTranslate = camera->cma.translate;
+
+    // Floor tiles are batched by shade and drawn instanced (one draw per shade)
+    // instead of one draw call + full uniform setup per tile. Tiles outside the
+    // view frustum are skipped.
+    const glm::mat4 viewProj = camera->GetProjection() * camera->GetView();
+    glm::vec4 frustumPlanes[6];
+    for (int i = 0; i < 3; i++) {
+        glm::vec4 row(viewProj[0][i], viewProj[1][i], viewProj[2][i], viewProj[3][i]);
+        glm::vec4 w(viewProj[0][3], viewProj[1][3], viewProj[2][3], viewProj[3][3]);
+        frustumPlanes[2 * i] = w + row;
+        frustumPlanes[2 * i + 1] = w - row;
+    }
+    auto boxInFrustum = [&](const glm::vec3& minCorner, const glm::vec3& maxCorner) {
+        for (const auto& plane : frustumPlanes) {
+            glm::vec3 positive(plane.x >= 0.0f ? maxCorner.x : minCorner.x,
+                               plane.y >= 0.0f ? maxCorner.y : minCorner.y,
+                               plane.z >= 0.0f ? maxCorner.z : minCorner.z);
+            if (glm::dot(glm::vec3(plane), positive) + plane.w < 0.0f) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    constexpr int floorShadeCount = 6;
+    std::vector<glm::vec3> floorOffsets[floorShadeCount];
+    const float invScale = sceneSize != 0.0f ? 1.0f / sceneSize : 0.0f;
+    const float floorY = -0.01f;
+    const float halfTile = 0.5f * sceneSize;
+
+    for (const auto& coord : activeCoords)
+    {
+        if (coord.y != 0) {
+            continue;
+        }
+        glm::vec3 floorCenter(coord.x * sceneSize, floorY, coord.z * sceneSize);
+        glm::vec3 extent(halfTile, 0.0f, halfTile);
+        if (!boxInFrustum(floorCenter - extent, floorCenter + extent)) {
+            continue;
+        }
+        // The quad lies in its local XY plane and is rotated 90 degrees about X
+        // onto the XZ plane, so world (x, z) maps to local (x, y).
+        int shadeIndex = std::abs((coord.x + coord.y + coord.z) % floorShadeCount);
+        floorOffsets[shadeIndex].push_back(glm::vec3(coord.x, coord.z, 0.0f));
+    }
+    camera->cma.translate = glm::vec3(0.0f);
+    floorQuad->SetScale(glm::vec3(sceneSize, sceneSize, sceneSize));
+    floorQuad->SetTranslate(glm::vec3(0.0f, floorY * invScale, 0.0f));
+    for (int shadeIndex = 0; shadeIndex < floorShadeCount; shadeIndex++) {
+        float shade = 0.65f + 0.05f * static_cast<float>(shadeIndex);
+        floorQuad->da.solidColor = glm::vec3(0.1f, 0.2f, shade);
+        floorQuad->DrawInstanced(factory, camera, floorOffsets[shadeIndex]);
+    }
+
     std::vector<glm::vec3> gridLineOffsets;
     gridLineOffsets.reserve(activeCoords.size());
     for (const auto& coord : activeCoords)
@@ -97,16 +151,7 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
             inView = glm::dot(glm::normalize(toTile), viewDir) >= viewCosThreshold;
         }
         bool renderScene = inView;
-        camera->cma.translate = glm::vec3(0.0f);
-        floorQuad->SetScale(glm::vec3(sceneSize, sceneSize, sceneSize));
-        float invScale = sceneSize != 0.0f ? 1.0f / sceneSize : 0.0f;
-        floorQuad->SetTranslate(glm::vec3(tileOffset.x * invScale, (tileOffset.y - 0.01f) * invScale, tileOffset.z * invScale));
-        float shade = 0.65f + 0.05f * static_cast<float>(std::abs((coord.x + coord.y + coord.z) % 6));
-        floorQuad->da.solidColor = glm::vec3(0.1f, 0.2f, shade);
         bool drawFloor = (coord.y == 0);
-        if (drawFloor) {
-            floorQuad->Draw(factory, camera);
-        }
         camera->cma.translate = tileOffset;
         if (scene != dummyScene && renderScene) {
             scene->Render(factory, camera);
@@ -121,7 +166,6 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
             bool onXZPlane = drawFloor;
             bool verticalStack = (coord.x == 0 && coord.z == 0);
             if (onXZPlane) {
-                float invScale = sceneSize != 0.0f ? 1.0f / sceneSize : 0.0f;
                 gridLineOffsets.push_back(glm::vec3(tileOffset.x * invScale, tileOffset.y * invScale, tileOffset.z * invScale));
             }
             if (onAxisLine || verticalStack) {
@@ -132,6 +176,7 @@ void SceneManager::RenderActive(const std::shared_ptr<ShaderFactory>& factory,
             }
         }
     }
+
     if (showGrid && grid != nullptr && !gridLineOffsets.empty()) {
         camera->cma.translate = oldTranslate;
         glDisable(GL_DEPTH_TEST);
