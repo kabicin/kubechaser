@@ -1,11 +1,14 @@
 #include "window/MeshViewer.h"
 #include "logger/Logger.h"
+#include "utility/Json.h"
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <string>
 #include <utility>
+#include <vector>
 
 MeshViewer::MeshViewer(const WindowServices& services, int x, int y, int width, int height)
     : BaseWindow(services, x, y, width, height)
@@ -111,6 +114,10 @@ void MeshViewer::showGUI()
         }
         if (ImGui::Button("Load State")) {
             loadState();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Save JSON")) {
+            SaveMeshJSON();
         }
         ImGui::End();
 
@@ -319,6 +326,11 @@ std::filesystem::path meshStatePath()
     return std::filesystem::path(OUTPUT_DIR) / "mesh.txt";
 }
 
+std::filesystem::path meshJSONPath()
+{
+    return std::filesystem::path(OUTPUT_DIR) / "mesh.json";
+}
+
 } // namespace
 
 void MeshViewer::saveState()
@@ -399,6 +411,88 @@ void MeshViewer::loadState()
 
 void MeshViewer::SaveMeshJSON()
 {
-    std::cout << "Saving mesh.." << std::endl;
+    if (mesh == nullptr) {
+        GetLogger()->LogMessage("Save JSON failed: no mesh loaded");
+        return;
+    }
 
+    const std::filesystem::path path = meshJSONPath();
+    std::error_code ec;
+    std::filesystem::create_directories(path.parent_path(), ec);
+    std::ofstream out(path);
+    if (!out) {
+        GetLogger()->LogMessage("Save JSON failed: could not open " + path.string());
+        return;
+    }
+
+    const CameraAttributes ca = mesh->GetCameraAttributes();
+    const std::vector<NVertex>& vertices = mesh->GetVertices();
+
+    // Writes one array per vertex attribute, one vertex per line.
+    auto writeAttribute = [&out, &vertices](const char* name, auto member, int components, bool last) {
+        out << "  ";
+        Json::WriteString(out, name);
+        out << ": [";
+        for (size_t i = 0; i < vertices.size(); ++i) {
+            out << (i == 0 ? "\n    " : ",\n    ");
+            const float* values = vertices[i].*member;
+            for (int c = 0; c < components; ++c) {
+                if (c > 0) out << ", ";
+                Json::WriteNumber(out, values[c]);
+            }
+        }
+        out << (vertices.empty() ? "]" : "\n  ]") << (last ? "\n" : ",\n");
+    };
+
+    out << "{\n";
+    out << "  \"format\": \"kubechaser-mesh\",\n";
+    out << "  \"version\": 1,\n";
+    out << "  \"source\": ";
+    Json::WriteString(out, mesh->GetSourceFile());
+    out << ",\n";
+    out << "  \"texture\": ";
+    Json::WriteString(out, mesh->GetTextureName());
+    out << ",\n";
+
+    out << "  \"transform\": {\n";
+    out << "    \"translate\": ";
+    Json::WriteVec3(out, ca.translate);
+    out << ",\n    \"scale\": ";
+    Json::WriteVec3(out, ca.scale);
+    out << ",\n    \"rotateDegrees\": ";
+    Json::WriteVec3(out, glm::vec3(ca.rotateXdeg, ca.rotateYdeg, ca.rotateZdeg));
+    out << "\n  },\n";
+
+    out << "  \"bounds\": {\n    \"min\": ";
+    Json::WriteVec3(out, mesh->GetBoundsMin());
+    out << ",\n    \"max\": ";
+    Json::WriteVec3(out, mesh->GetBoundsMax());
+    out << "\n  },\n";
+
+    out << "  \"drawAttributes\": ";
+    mesh->da.serializeJSON(out, "  ");
+    out << ",\n";
+
+    out << "  \"viewer\": {\n";
+    out << "    \"lighting\": "; Json::WriteBool(out, lighting);
+    out << ",\n    \"dirLight\": "; Json::WriteBool(out, dir_light);
+    out << ",\n    \"pointLight\": "; Json::WriteBool(out, point_light);
+    out << ",\n    \"spotLight\": "; Json::WriteBool(out, spot_light);
+    out << ",\n    \"blinn\": "; Json::WriteBool(out, blinn);
+    out << "\n  },\n";
+
+    // Non-indexed triangle list: every 3 consecutive vertices form a triangle.
+    out << "  \"vertexCount\": " << vertices.size() << ",\n";
+    writeAttribute("positions", &NVertex::Pos, 3, false);
+    writeAttribute("normals", &NVertex::Normal, 3, false);
+    writeAttribute("uvs", &NVertex::TexturePos, 2, true);
+    out << "}\n";
+
+    out.flush();
+    if (!out) {
+        GetLogger()->LogMessage("Save JSON failed: could not write " + path.string());
+        return;
+    }
+    GetLogger()->LogMessage("Saved mesh JSON (" + std::to_string(vertices.size()) +
+        " vertices) to " + path.string());
 }

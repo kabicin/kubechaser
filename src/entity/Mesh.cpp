@@ -191,8 +191,14 @@ Mesh::~Mesh()
 }
 
 Mesh::Mesh(const std::string& fileNameOBJ, const std::string& /*fileNameMTL*/, const std::string& textureName)
+    : sourceFile(fileNameOBJ)
 {
     std::shared_ptr<const ParsedMesh> parsed = loadOBJ(fileNameOBJ);
+    // Aliasing constructor: keeps the parsed mesh alive (even if the cache is
+    // cleared) while exposing only its vertices.
+    vertices = std::shared_ptr<const std::vector<NVertex>>(parsed, &parsed->vertices);
+    boundsLo = parsed->lo;
+    boundsHi = parsed->hi;
 
     if (parsed->hasMaterial) {
         da.materialAttributes.LoadFromMaterial(parsed->material);
@@ -204,6 +210,12 @@ Mesh::Mesh(const std::string& fileNameOBJ, const std::string& /*fileNameMTL*/, c
     upload(parsed->vertices);
     setTexture(parsed->textureFile.empty() ? textureName : parsed->textureFile);
     setBoundingBox(parsed->lo, parsed->hi);
+}
+
+const std::vector<NVertex>& Mesh::GetVertices() const
+{
+    static const std::vector<NVertex> empty;
+    return vertices ? *vertices : empty;
 }
 
 void Mesh::ClearCache()

@@ -20,6 +20,7 @@ add_subdirectory("${KUBECHASER_THIRD_PARTY_DIR}/glm" glm EXCLUDE_FROM_ALL)
 add_library(kubechaser_core STATIC
     src/logger/Logger.cpp
     src/shader/DrawAttributes.cpp
+    src/utility/Json.cpp
     src/utility/Linalg.cpp
     src/utility/Material.cpp
     src/utility/Reader.cpp

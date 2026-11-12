@@ -3,6 +3,8 @@
 #include "Entity.h"
 #include "utility/Reader.h"
 #include <algorithm>
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -12,6 +14,10 @@ class Mesh : public Entity
 private:
     int num_vertices = 0, num_indices = 0;
     glm::vec4 v1, v2, v3, v4, v5, v6, v7, v8;
+    std::string sourceFile;
+    // CPU copy of the uploaded triangles, shared with the parsed-OBJ cache.
+    std::shared_ptr<const std::vector<NVertex>> vertices;
+    glm::vec3 boundsLo = glm::vec3(0.0f), boundsHi = glm::vec3(0.0f);
 
     void upload(const std::vector<NVertex>& vertices);
     void setTexture(const std::string& textureFile);
@@ -28,6 +34,13 @@ public:
 	void Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera) override;
 	void SetObjectPicked() override;
 	bool Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, double& t) override;   
+
+    const std::string& GetSourceFile() const { return sourceFile; }
+    // Triangle list (3 vertices per triangle) in model space; empty for a
+    // default-constructed or unreadable mesh.
+    const std::vector<NVertex>& GetVertices() const;
+    glm::vec3 GetBoundsMin() const { return boundsLo; }
+    glm::vec3 GetBoundsMax() const { return boundsHi; }
 
     // Drops every cached parsed OBJ. Meshes created afterwards re-read their file.
     static void ClearCache();

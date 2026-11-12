@@ -9,6 +9,7 @@ add_kubechaser_core_test(logger_test logger_test.cpp)
 add_kubechaser_core_test(linalg_test linalg_test.cpp)
 add_kubechaser_core_test(reader_test reader_test.cpp)
 add_kubechaser_core_test(drawattributes_test drawattributes_test.cpp)
+add_kubechaser_core_test(json_test json_test.cpp)
 
 target_compile_definitions(reader_test PRIVATE
     KUBECHASER_TEST_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures"

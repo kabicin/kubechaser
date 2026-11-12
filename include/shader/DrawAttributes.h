@@ -1,6 +1,8 @@
 #ifndef DRAWATTRIBUTES_H
 #define DRAWATTRIBUTES_H
 #include "shader/MaterialAttributes.h"
+#include <iosfwd>
+#include <string>
 
 struct DrawAttributes
 {
@@ -41,6 +43,10 @@ struct DrawAttributes
 	
 	void serialize(std::ostream& os) const;
 	static DrawAttributes deserialize(std::istream& is);
+
+	// Writes the attributes as a JSON object. Nested lines are prefixed with
+	// `indent` so the object can be embedded in a larger document.
+	void serializeJSON(std::ostream& os, const std::string& indent = "") const;
 };
 
 #endif

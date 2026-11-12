@@ -1,4 +1,5 @@
 #include "shader/DrawAttributes.h"
+#include "utility/Json.h"
 #include <istream>
 #include <ostream>
 #include <sstream>
@@ -111,4 +112,35 @@ DrawAttributes DrawAttributes::deserialize(std::istream& is)
         else if (key == "instanced") readBool(ls, da.instanced);
     }
     return da;
+}
+
+void DrawAttributes::serializeJSON(std::ostream& os, const std::string& indent) const
+{
+    const std::string in1 = indent + "  ";
+    const std::string in2 = in1 + "  ";
+    auto key = [&os](const std::string& in, const char* name) {
+        os << in;
+        Json::WriteString(os, name);
+        os << ": ";
+    };
+
+    os << "{\n";
+    key(in1, "wireframe"); Json::WriteBool(os, wireframe); os << ",\n";
+    key(in1, "tesselate"); Json::WriteBool(os, tesselate); os << ",\n";
+    key(in1, "normal"); Json::WriteBool(os, normal); os << ",\n";
+    key(in1, "texture"); Json::WriteBool(os, texture); os << ",\n";
+    key(in1, "passthrough"); Json::WriteBool(os, passthrough); os << ",\n";
+    key(in1, "color"); Json::WriteBool(os, color); os << ",\n";
+    key(in1, "useVertexColor"); Json::WriteBool(os, useVertexColor); os << ",\n";
+    key(in1, "solidColor"); Json::WriteVec3(os, solidColor); os << ",\n";
+    key(in1, "material"); os << "{\n";
+    key(in2, "shininess"); Json::WriteNumber(os, materialAttributes.shininess); os << ",\n";
+    key(in2, "diffuseMap"); os << materialAttributes.diffuseMap << ",\n";
+    key(in2, "diffuse"); Json::WriteVec3(os, materialAttributes.diffuse); os << ",\n";
+    key(in2, "specular"); Json::WriteVec3(os, materialAttributes.specular); os << "\n";
+    os << in1 << "},\n";
+    key(in1, "lightSwitch"); os << lightSwitch << ",\n";
+    key(in1, "lightBlinn"); Json::WriteBool(os, lightBlinn); os << ",\n";
+    key(in1, "instanced"); Json::WriteBool(os, instanced); os << "\n";
+    os << indent << "}";
 }
