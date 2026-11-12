@@ -33,7 +33,7 @@ struct MutableVar {
     std::string glType;
     std::string name;
     MutableVar(VarType type, std::string glType, std::string name, int attribIndex = -1)
-        : type(type), glType(glType), name(name), attribIndex(attribIndex) {}
+        : attribIndex(attribIndex), type(type), glType(glType), name(name) {}
 };
 
 struct MutableStruct {
@@ -45,7 +45,7 @@ struct MutableStruct {
         const std::string& name, 
         const std::vector<MutableVar>& variables = std::vector<MutableVar>(),
         const std::string& body = std::string())
-        : name(name), variables(variables), body(body) {}
+        : variables(variables), name(name), body(body) {}
 
     void AddVariable(const VarType& type, const std::string& glType, const std::string& name) {
         MutableVar obj(type, glType, name);

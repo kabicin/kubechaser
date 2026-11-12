@@ -18,9 +18,9 @@ struct Plane2
 {
 	Eigen::Vector3d normal, point;
 	Plane2(Eigen::Vector3d point, Eigen::Vector3d normal)
-        : point(point), normal(normal) {}
+        : normal(normal), point(point) {}
 	Plane2(glm::vec3 point, glm::vec3 normal)
-        : point(Eigen::Vector3d(point.x, point.y, point.z)), normal(Eigen::Vector3d(normal.x, normal.y, normal.z)) {}
+        : normal(Eigen::Vector3d(normal.x, normal.y, normal.z)), point(Eigen::Vector3d(point.x, point.y, point.z)) {}
 };
 
 struct Ray

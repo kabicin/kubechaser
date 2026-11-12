@@ -21,7 +21,6 @@ class FakeEntity : public Entity
 {
 public:
     void Draw(const std::shared_ptr<ShaderFactory>&, const std::shared_ptr<Camera>&) override {}
-    void SetObjectPicked() override {}
     bool Intersect(const std::shared_ptr<Camera>&, const Ray&, double&) override { return false; }
 };
 
@@ -88,10 +87,10 @@ void testTextures()
     const auto image = writeTestImage();
     {
         FakeEntity entity;
-        expect(entity.GetTexture() == 0 && !entity.usingTexture, "starts untextured");
+        expect(entity.GetTexture() == 0 && !entity.da.texture, "starts untextured");
 
         expect(!entity.AddTexture("/nonexistent/kubechaser.png"), "missing image fails");
-        expect(entity.GetTexture() == 0 && !entity.usingTexture, "failed load leaves entity untouched");
+        expect(entity.GetTexture() == 0 && !entity.da.texture, "failed load leaves entity untouched");
 
         expect(entity.AddTexture(image.string()), "loads image texture");
         const GLuint owned = entity.GetTexture();
@@ -112,7 +111,7 @@ void testTextures()
         entity.da.texture = true;
         expect(!entity.ReleaseBorrowedTexture(1), "other texture IDs are ignored");
         expect(entity.ReleaseBorrowedTexture(4242), "borrowed texture released");
-        expect(entity.GetTexture() == 0 && !entity.usingTexture && !entity.da.texture
+        expect(entity.GetTexture() == 0 && !entity.da.texture
                    && entity.GetTextureName() == "N/A",
                "release resets texture state");
 
@@ -138,10 +137,6 @@ void testTriangleAndQuad()
         Triangle moved(glm::vec3(10, 0, 0));
         expect(moved.Intersect(camera, rayDownZ(10, 0), t), "offset constructor translates");
         expect(!moved.Intersect(camera, rayDownZ(0, 0), t), "translated triangle left origin");
-
-        const bool picked = triangle.usingTexture;
-        triangle.SetObjectPicked();
-        expect(triangle.usingTexture != picked, "picking a triangle toggles its texture");
 
         Quad quad;
         expect(quad.VAO != 0 && quad.VBO != 0 && quad.EBO != 0, "quad uploads geometry");

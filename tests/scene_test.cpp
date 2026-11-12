@@ -26,7 +26,6 @@ class RecordingEntity : public Entity
 public:
     RecordingEntity(std::vector<std::string>& log, std::string name) : log(log), name(std::move(name)) {}
     void Draw(const std::shared_ptr<ShaderFactory>&, const std::shared_ptr<Camera>&) override { log.push_back(name); }
-    void SetObjectPicked() override {}
     bool Intersect(const std::shared_ptr<Camera>&, const Ray&, double&) override { return false; }
 
 private:
