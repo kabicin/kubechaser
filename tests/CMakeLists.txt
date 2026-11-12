@@ -1,7 +1,7 @@
 function(add_kubechaser_core_test test_name source_file)
     add_executable(${test_name} ${source_file})
     target_compile_features(${test_name} PRIVATE cxx_std_17)
-    target_link_libraries(${test_name} PRIVATE kubechaser::core)
+    target_link_libraries(${test_name} PRIVATE kubechaser::core kubechaser::warnings)
     add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
