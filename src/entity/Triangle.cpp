@@ -53,11 +53,6 @@ Triangle::~Triangle()
     glDeleteBuffers(1, &VBO);
 }
 
-void Triangle::SetObjectPicked()
-{
-    usingTexture = !usingTexture;
-}
-
 void Triangle::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera)
 {
     factory->Use(da, camera->GetCameraPos());

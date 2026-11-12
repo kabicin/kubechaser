@@ -298,11 +298,6 @@ void Mesh::Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared
     if (da.wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void Mesh::SetObjectPicked()
-{
-    // do nothing
-}
-
 bool Mesh::Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, double& t)
 {
     glm::mat4 model = camera->GenerateModel(GetCameraAttributes());

@@ -24,7 +24,6 @@ public:
 	// quad's local (pre-scale, pre-rotation) space and added to each vertex.
 	// Tessellation is not used for instanced draws.
 	void DrawInstanced(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera, const std::vector<glm::vec3>& offsets);
-	void SetObjectPicked() override;
 	bool Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, double& t) override;
 };
 #endif

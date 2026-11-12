@@ -32,7 +32,6 @@ public:
     Mesh(const std::string& fileNameOBJ, const std::string& fileNameMTL = "", const std::string& textureName = "");
     ~Mesh() override;
 	void Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera) override;
-	void SetObjectPicked() override;
 	bool Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, double& t) override;   
 
     const std::string& GetSourceFile() const { return sourceFile; }

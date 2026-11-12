@@ -15,7 +15,6 @@ public:
 	~Triangle();
 
 	void Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera) override;
-	void SetObjectPicked() override;
 	bool Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, double &t) override;	
 };
 #endif

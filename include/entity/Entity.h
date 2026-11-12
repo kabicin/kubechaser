@@ -28,12 +28,13 @@ private:
 	// true when TEX was created by AddTexture (and must be deleted by this entity);
 	// false when TEX is borrowed from an Asset via SetTexture
 	bool ownsTexture = false;
+	// display name of the current texture ("N/A" when none); whether the
+	// texture is actually sampled is controlled by da.texture
+	std::string textureName = "N/A";
 	void releaseTexture();
 
 public:
 	GLuint VBO = 0, VAO = 0, EBO = 0, TEX = 0;
-	std::string textureName = "N/A";
-	bool usingTexture = false;
 
 	DrawAttributes da = DrawAttributes();
 
@@ -47,7 +48,6 @@ public:
 	
 	// subclasses must override
 	virtual void Draw(const std::shared_ptr<ShaderFactory>& factory, const std::shared_ptr<Camera>& camera) = 0;
-	virtual void SetObjectPicked() = 0;
 	virtual bool Intersect(const std::shared_ptr<Camera>& camera, const Ray &ray, double &t) = 0;
 
 	// Helpers for SceneControl

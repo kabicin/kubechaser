@@ -149,14 +149,12 @@ bool Entity::AddTexture(const std::string& imagePath)
     stbi_image_free(data);
 
     textureName = Reader::FileNameFromPath(imagePath);
-    usingTexture = true;
     return true;
 }
 
 void Entity::SetTexture(Asset asset)
 {
     textureName = asset.TextureName;
-    usingTexture = true;
     releaseTexture();
     TEX = asset.TextureNum; // borrowed: AssetPanel owns this texture
 }
@@ -169,7 +167,6 @@ bool Entity::ReleaseBorrowedTexture(GLuint texture)
     }
     TEX = 0;
     textureName = "N/A";
-    usingTexture = false;
     da.texture = false;
     return true;
 }

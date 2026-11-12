@@ -196,7 +196,6 @@ void MeshViewer::onClick(int x, int y)
     double min_t = std::numeric_limits<double>::infinity(), temp_t;
     if (mesh != nullptr && mesh->Intersect(camera, ray, temp_t)) {
         min_t = std::min(min_t, temp_t);
-        mesh->SetObjectPicked();
         Eigen::Vector3d newray(ray.eye + ray.direction * min_t);
         glm::vec3 gnewray = glm::vec3(newray(0), newray(1), newray(2));
         SetClickOffset(gnewray - mesh->GetTranslate());

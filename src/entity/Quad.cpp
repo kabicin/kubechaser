@@ -128,11 +128,6 @@ void Quad::DrawInstanced(const std::shared_ptr<ShaderFactory>& factory, const st
     da.tesselate = prevTesselate;
 }
 
-void Quad::SetObjectPicked()
-{
-    usingTexture = !usingTexture;
-}
-
 bool Quad::Intersect(const std::shared_ptr<Camera>& camera, const Ray& ray, double& t)
 {
     glm::mat4 model = camera->GenerateModel(GetCameraAttributes());
