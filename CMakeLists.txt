@@ -54,7 +54,6 @@ if(KUBECHASER_BUILD_APP)
 
     set(KUBECHASER_APPLICATION_SOURCES
         src/application/Application.cpp
-        src/controller/Controller.cpp
         src/entity/Entity.cpp
         src/entity/Grid.cpp
         src/entity/GroupedEntity2D.cpp
